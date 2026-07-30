@@ -1,7 +1,9 @@
 import type { EducationApiContext } from "./educationApiContext";
 import axios from "axios";
+import { MMKV } from 'react-native-mmkv';
 
-const baseUrl = "https://api.palminfotech.com/3336";
+const storage = new MMKV();
+const baseUrl = "https://8lqg2hx4-3339.inc1.devtunnels.ms";
 // Local instance to avoid interference
 const localInstance = axios.create();
 
@@ -46,9 +48,14 @@ export async function educationApiFetch<
   TPathParams
 >): Promise<TData> {
   try {
+    const token = storage.getString('accessToken');
     const requestHeaders: any = {
       ...headers,
     };
+
+    if (token) {
+      requestHeaders["Authorization"] = `Bearer ${token}`;
+    }
 
     if (
       requestHeaders["Content-Type"]

@@ -5,17 +5,11 @@
  */
 export type CreateUserDto = {
   /**
-   * Full name of user
+   * Display name of user
    *
-   * @example test test
+   * @example Rajesh Kumar
    */
-  full_name: string;
-  /**
-   * Email address to be registered
-   *
-   * @example test@yopmail.com
-   */
-  email: string;
+  display_name: string;
   /**
    * Country code of a user
    *
@@ -25,37 +19,30 @@ export type CreateUserDto = {
   /**
    * Phone number of a user
    *
-   * @example 1234567890
+   * @example 9876543210
    */
-  phone_number: string;
+  mobile_number: string;
   /**
-   * Password (8–30 chars, must include uppercase, lowercase, number, special character)
+   * Role of the user
    *
-   * @example Palm@123
+   * @example PLAYER
+   * @default PLAYER
    */
-  password: string;
+  role: "PLAYER" | "GROUND_OWNER" | "ORGANIZER" | "ADMIN";
   /**
-   * Confirm password (must match the password field)
+   * Profile image url of user
    *
-   * @example Test@123
+   * @example https://example.com/profiles/rajesh.jpg
    */
-  confirmPassword: string;
+  profile_image?: string;
   /**
-   * Selected area of interest IDs
-   *
-   * @example 1
-   * @example 5
-   * @example 9
-   */
-  area_of_interest: number[];
-  /**
-   * Login type of user. In case of social media -> use that type
+   * Auth type of user. Local/Social media type
    *
    * @example Local
    */
   auth_type: string;
   /**
-   * Login type of user. In case of social media -> use that type
+   * App type. App or Browser
    *
    * @example App
    */
@@ -90,33 +77,21 @@ export type CreateUserDto = {
    * @example 1.0
    */
   version_number: string;
-};
-
-export type User = {
-  user_id: number;
-  full_name: string;
-  email: string;
-  phone_number: string;
-  status: number;
-  roleType: string;
-  profile_image: string;
-  refresh_token: string;
-  access_token: string;
-  country_code: string;
-  fcm_token: string;
-  area_of_interest_ids: string[];
-  serial_number: string;
-  version_number: string;
-  role: string;
+  /**
+   * FCM token of the device
+   *
+   * @example fcm_token_001
+   */
+  fcm_token?: string;
 };
 
 export type LoginUserDto = {
   /**
-   * Email address to be registered
+   * Phone number of a user
    *
-   * @example ayushi4662@gmail.com
+   * @example 9876543210
    */
-  email: string;
+  mobile_number: string;
   /**
    * Country code of a user
    *
@@ -124,19 +99,7 @@ export type LoginUserDto = {
    */
   country_code: string;
   /**
-   * Password required to be use later while login in app
-   *
-   * @example Palm@123
-   */
-  password: string;
-  /**
-   * Login type of user. In case of social media -> use that type
-   *
-   * @example Local
-   */
-  auth_type: string;
-  /**
-   * Login type of user. In case of social media -> use that type
+   * Login type of user.
    *
    * @example App
    */
@@ -171,22 +134,44 @@ export type LoginUserDto = {
    * @example 1.0
    */
   version_number: string;
+  /**
+   * FCM token of the device
+   *
+   * @example fcm_token_001
+   */
+  fcm_token?: string;
 };
 
 export type ForgotPasswordDto = {
   /**
-   * @example test@test.com
+   * Phone number of a user
+   *
+   * @example 9876543210
    */
-  email: string;
+  mobile_number: string;
+  /**
+   * Country code of a user
+   *
+   * @example +91
+   */
+  country_code: string;
 };
 
 export type ConfirmOtpDto = {
   /**
-   * @example test@test.com
+   * Phone number of a user
+   *
+   * @example 9876543210
    */
-  email: string;
+  mobile_number: string;
   /**
-   * @example 4596
+   * Country code of a user
+   *
+   * @example +91
+   */
+  country_code: string;
+  /**
+   * @example 123456
    */
   otp: string;
   /**
@@ -197,6 +182,18 @@ export type ConfirmOtpDto = {
 
 export type ChangePasswordDto = {
   /**
+   * Phone number of a user
+   *
+   * @example 9876543210
+   */
+  mobile_number: string;
+  /**
+   * Country code of a user
+   *
+   * @example +91
+   */
+  country_code: string;
+  /**
    * @example Palm@2022
    */
   password: string;
@@ -204,10 +201,6 @@ export type ChangePasswordDto = {
    * @example Palm@2022
    */
   confirm_password: string;
-  /**
-   * @example test@test.com
-   */
-  email: string;
 };
 
 export type RefreshTokenDto = {
@@ -217,524 +210,181 @@ export type RefreshTokenDto = {
   refreshToken: string;
 };
 
-export type SendVerifyEmailLink = {
+export type GroundSlotDto = {
   /**
-   * @example test@test.com
-   */
-  email: string;
-};
-
-export type CreateImageUrlDto = {
-  /**
-   * Filepath which we get from Upload API
-   *
-   * @maxLength 400
-   */
-  filePath: string;
-  /**
-   * Generated Temp Token Number
-   */
-  tokenId: number;
-};
-
-export type UpdateFcmToken = {
-  /**
-   * fcm token of device
-   *
-   * @default ct4D7eG-RpaSwn2a_Mz_bf:APA91bGI9aRuTXFsfxyxyjSo07OoJzYXCl3bykbggJutqEJgx6Uq_BQ-WjHSk64kYnQvJ_r8cEkMx_JaSoXIwbEBMjBRvCSP_02eWt6fFcpvtWHhXVGsOvzO0nfTcpL1do8x_M3nARso
-   */
-  fcmToken: string;
-};
-
-export type ChangeNewPasswordDto = {
-  old_password: string;
-  new_password: string;
-  confirm_password: string;
-};
-
-export type UpdateProfileDto = {
-  /**
-   * User's full name
-   *
-   * @example Test smith
-   */
-  full_name?: string;
-  /**
-   * Selected area of interest IDs (optional)
-   *
-   * @example 1
-   * @example 5
-   * @example 9
-   */
-  area_of_interest?: number[];
-  /**
-   * Profile image details (optional)
-   */
-  profile_image?: CreateImageUrlDto;
-  /**
-   * User's email address (must be a valid format)
-   *
-   * @example test@example.com
-   */
-  email?: string;
-  /**
-   * User's country code
-   *
-   * @example +91
-   */
-  country_code?: string;
-  /**
-   * User's phone number (10 digits expected)
-   *
-   * @example 9876543210
-   */
-  phone_number?: string;
-};
-
-export type RecordCourseViewDto = {
-  /**
-   * Course ID
+   * Day of week: 0=Sunday … 6=Saturday
    *
    * @example 1
    */
-  course_id: number;
+  dayOfWeek: number;
+  /**
+   * Start time in HH:MM format
+   *
+   * @example 06:00
+   */
+  startTime: string;
+  /**
+   * End time in HH:MM format
+   *
+   * @example 10:00
+   */
+  endTime: string;
+  /**
+   * Price for this slot
+   *
+   * @example 500
+   */
+  price: number;
 };
 
-export type CreateUserTopicDto = {
-  topic: string;
-};
-
-export type CreateInstituteDto = {
+export type CreateGroundDto = {
   /**
-   * Name of the institute
+   * Ground name
    *
-   * @example Test Institute
-   */
-  institute_name: string;
-  /**
-   * Address of the institute
-   *
-   * @example 123 Test St, Test City, Test Country
-   */
-  institute_address: string;
-  /**
-   * Full name of user
-   *
-   * @example test test
-   */
-  full_name: string;
-  /**
-   * Email address to be registered
-   *
-   * @example test@yopmail.com
-   */
-  email: string;
-  /**
-   * Country code of a user
-   *
-   * @example +91
-   */
-  country_code: string;
-  /**
-   * Phone number of a user
-   *
-   * @example 1234567890
-   */
-  phone_number: string;
-  /**
-   * Password (8–30 chars, must include uppercase, lowercase, number, special character)
-   *
-   * @example Palm@123
-   */
-  password: string;
-  /**
-   * Role of the user
-   *
-   * @example Institute
-   */
-  role: string;
-  /**
-   * Status of the user. 1-Active, 0-Inactive
-   *
-   * @example 1
-   */
-  status: number;
-  /**
-   * State id of the user
-   *
-   * @example 1
-   */
-  state_id: number;
-  /**
-   * City id of the user
-   *
-   * @example 1
-   */
-  city_id: number;
-  /**
-   * Login type of user. In case of social media -> use that type
-   *
-   * @example Local
-   */
-  auth_type: string;
-  /**
-   * Login type of user. In case of social media -> use that type
-   *
-   * @example Browser
-   */
-  app_type: string;
-  /**
-   * Device os type
-   *
-   * @example Windows
-   */
-  os: string;
-  /**
-   * Device brand name
-   *
-   * @example Samsung A50
-   */
-  brand: string;
-  /**
-   * Device model number
-   *
-   * @example SM-A12E
-   */
-  model_no: string;
-  /**
-   * Device serial number
-   *
-   * @example SA4545as45a4
-   */
-  serial_number: string;
-  /**
-   * version number
-   *
-   * @example 1.0
-   */
-  version_number: string;
-  /**
-   * Used to identify if the institute was created by admin or self
-   *
-   * @example Admin
-   */
-  created_by: string;
-};
-
-export type LoginInstituteDto = {
-  /**
-   * Email address to be registered
-   *
-   * @example test698@yopmail.com
-   */
-  email: string;
-  /**
-   * Role type of a user
-   *
-   * @example Institute
-   */
-  roleType: string;
-  /**
-   * Password required to be use later while login in app
-   *
-   * @example Palm@123
-   */
-  password: string;
-  /**
-   * Login type of user. In case of social media -> use that type
-   *
-   * @example Local
-   */
-  auth_type: string;
-  /**
-   * Login type of user. In case of social media -> use that type
-   *
-   * @example App
-   */
-  app_type: string;
-  /**
-   * Device os type
-   *
-   * @example Android
-   */
-  os: string;
-  /**
-   * Device brand name
-   *
-   * @example Samsung A50
-   */
-  brand: string;
-  /**
-   * Device model number
-   *
-   * @example SM-A12E
-   */
-  model_no: string;
-  /**
-   * Device serial number
-   *
-   * @example SA4545as45a4
-   */
-  serial_number: string;
-  /**
-   * version number
-   *
-   * @example 1.0
-   */
-  version_number: string;
-};
-
-export type UpdateInstituteDto = {
-  /**
-   * Name of the institute
-   *
-   * @example Test Institute
-   */
-  institute_name: string;
-  /**
-   * Address of the institute
-   *
-   * @example 123 Test St, Test City, Test Country
-   */
-  institute_address: string;
-  /**
-   * Authorized person name
-   *
-   * @example John Doe
-   */
-  full_name: string;
-  /**
-   * Email address of the institute user
-   *
-   * @example test@test.com
-   */
-  email: string;
-  /**
-   * Phone number of the institute user
-   *
-   * @example 9876543210
-   */
-  phone_number: string;
-  /**
-   * State ID of the institute location
-   *
-   * @example 5
-   */
-  state_id: number;
-  /**
-   * City ID of the institute location
-   *
-   * @example 23
-   */
-  city_id: number;
-  /**
-   * Profile image details (optional)
-   */
-  profile_image?: CreateImageUrlDto;
-};
-
-export type UpdateInstituteStatusDto = {
-  /**
-   * New status of the institute (1 = Approved, 126 = Rejected, 0 = Pending)
-   *
-   * @example 1
-   */
-  status: number;
-  /**
-   * New status of the institute (1 = Approved, 126 = Rejected, 0 = Pending)
-   *
-   * @example 1
-   */
-  status1: number;
-  /**
-   * Reason for rejection (only required when status = 126)
-   *
-   * @example Insufficient documents provided
-   */
-  reason?: string;
-};
-
-export type InstituteCourseMasterDto = {
-  /**
-   * Existing ID of the master type (if selecting from dropdown)
-   *
-   * @example 3
-   */
-  id?: number;
-  /**
-   * New name to create in master table (if not selecting existing)
-   *
-   * @example Diploma
-   */
-  name?: string;
-};
-
-export type CreateInstituteCourseDto = {
-  /**
-   * @example Test Course
+   * @example PlayVerse Arena
    */
   name: string;
   /**
-   * @example This is a test course
-   */
-  course_description: string;
-  /**
-   * @example 18
-   */
-  minimum_age?: string;
-  /**
-   * @example 2025-01-01
-   */
-  start_date: string;
-  /**
-   * @example 2025-12-31
-   */
-  end_date: string;
-  /**
-   * @example Admission via online form
-   */
-  addmision_description?: string;
-  /**
-   * @example Paid
-   */
-  fee_type: "Free" | "Paid";
-  /**
-   * @example 15000
-   */
-  fee_amount?: number;
-  /**
-   * @example true
-   */
-  installment?: number;
-  /**
-   * @example 1
-   */
-  status: number;
-  /**
-   * @example Online
-   */
-  learning_mode: "Online" | "Offline" | "Hybrid";
-  /**
-   * @example 1
-   */
-  state_id?: number;
-  /**
-   * @example 1
-   */
-  city_id?: number;
-  /**
-   * @example true
-   */
-  certification_provided: number;
-  /**
-   * @example 2025-11-30
-   */
-  last_date_of_enrollment: string;
-  course_type?: InstituteCourseMasterDto;
-  course_category?: InstituteCourseMasterDto;
-  course_eligibility?: InstituteCourseMasterDto;
-  certification_type?: InstituteCourseMasterDto;
-  /**
-   * URL of the institute
+   * Ground description
    *
-   * @example https://example.com
+   * @example Best ground in the city
    */
-  institute_url?: string;
+  description?: string;
   /**
-   * Profile image details (optional)
+   * Street address
+   *
+   * @example 123 Main Street, Navrangpura
    */
-  Course_image?: CreateImageUrlDto;
+  address?: string;
   /**
-   * brochure pdf details (optional)
+   * City
+   *
+   * @example Ahmedabad
    */
-  brochure?: CreateImageUrlDto;
+  city?: string;
   /**
-   * syllabus pdf details (optional)
+   * Latitude
+   *
+   * @example 23.032
    */
-  syllabus?: CreateImageUrlDto;
+  latitude?: number;
+  /**
+   * Longitude
+   *
+   * @example 72.521
+   */
+  longitude?: number;
+  /**
+   * Array of sport IDs supported by this ground
+   *
+   * @example 1
+   * @example 2
+   */
+  sports: string[];
+  /**
+   * Working hour slots with pricing. Each slot maps a day/time range to a price.
+   */
+  slots: GroundSlotDto[];
+  /**
+   * Array of uploaded ground images (accepts plain string URLs or objects containing a url property)
+   *
+   * @example ground1.jpg
+   * @example {"filename":"1785412662411.png","url":"/drive/files/1785412662411.png"}
+   */
+  images?: string[];
 };
 
-export type UpdateInstituteCourseDto = {
+export type UpdateGroundSlotDto = {
   /**
-   * @example Updated Course Name
+   * Day of week: 0=Sunday … 6=Saturday
+   *
+   * @example 1
+   */
+  dayOfWeek?: number;
+  /**
+   * Start time in HH:MM format
+   *
+   * @example 06:00
+   */
+  startTime?: string;
+  /**
+   * End time in HH:MM format
+   *
+   * @example 10:00
+   */
+  endTime?: string;
+  /**
+   * Price for this slot
+   *
+   * @example 500
+   */
+  price?: number;
+};
+
+export type UpdateGroundDto = {
+  /**
+   * Ground name
+   *
+   * @example PlayVerse Arena
    */
   name?: string;
   /**
-   * @example Updated description for the course
+   * Ground description
    */
-  course_description?: string;
+  description?: string;
   /**
-   * @example 21
+   * Street address
    */
-  minimum_age?: string;
+  address?: string;
   /**
-   * @example 2025-02-01
-   */
-  start_date?: string;
-  /**
-   * @example 2025-12-31
-   */
-  end_date?: string;
-  /**
-   * @example Updated admission process details
-   */
-  addmision_description?: string;
-  /**
-   * @example Free
-   */
-  fee_type?: "Free" | "Paid";
-  /**
-   * @example 12000
-   */
-  fee_amount?: number;
-  /**
-   * @example false
-   */
-  installment?: number;
-  /**
-   * @example 1
-   */
-  status?: number;
-  /**
-   * @example Hybrid
-   */
-  learning_mode?: "Online" | "Offline" | "Hybrid";
-  /**
-   * @example 1
-   */
-  state_id?: number;
-  /**
-   * @example 1
-   */
-  city_id?: number;
-  /**
-   * @example true
-   */
-  certification_provided?: number;
-  /**
-   * @example 2025-11-30
-   */
-  last_date_of_enrollment?: string;
-  course_type?: InstituteCourseMasterDto;
-  course_category?: InstituteCourseMasterDto;
-  course_eligibility?: InstituteCourseMasterDto;
-  certification_type?: InstituteCourseMasterDto;
-  /**
-   * URL of the institute
+   * City
    *
-   * @example https://example.com
+   * @example Ahmedabad
    */
-  institute_url?: string;
+  city?: string;
   /**
-   * Profile image details (optional)
+   * Latitude
+   *
+   * @example 23.032
    */
-  Course_image?: CreateImageUrlDto;
+  latitude?: number;
   /**
-   * brochure pdf details (optional)
+   * Longitude
+   *
+   * @example 72.521
    */
-  brochure?: CreateImageUrlDto;
+  longitude?: number;
   /**
-   * syllabus pdf details (optional)
+   * Array of sport IDs
+   *
+   * @example 1
+   * @example 2
    */
-  syllabus?: CreateImageUrlDto;
+  sports?: string[];
+  /**
+   * Working hour slots with pricing. If provided, replaces all existing slots.
+   */
+  slots?: UpdateGroundSlotDto[];
+  /**
+   * Ground images. If provided, replaces all existing images (accepts plain string URLs or objects containing a url property).
+   *
+   * @example ground1.jpg
+   * @example {"filename":"1785412662411.png","url":"/drive/files/1785412662411.png"}
+   */
+  images?: string[];
+};
+
+export type GroundImageDto = {
+  /**
+   * Uploaded filename
+   *
+   * @example 1785412662411.png
+   */
+  filename: string;
+  /**
+   * Uploaded file URL
+   *
+   * @example /drive/files/1785412662411.png
+   */
+  url: string;
 };

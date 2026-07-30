@@ -161,7 +161,7 @@ const styleHandler = ({ dims, insets, theme: { colors } }: StyleArgs) =>
       aspectRatio: 1,
     },
     textInput: {
-      ...textStyle(14, '500', colors.black),
+      ...textStyle(14, '500', colors.textColor),
     },
     whiteFiftyStyle: {
       color: colors.white,

@@ -10,42 +10,38 @@ export const commonScreenOptions: NativeStackNavigationOptions = {
 export const isIos = Platform.OS == 'ios';
 
 
-export const DarkTheme: typeof LightTheme = {
+export const DarkTheme = {
     colors: {
-        primary: '',
+        primary: '#6C4DF6',
         white: '#FFFFFF',
-        black: '#1E1E1E',
+        black: '#0B0914',
         red: '#FF3E3E',
-        green: '#43BE24',
-        background: '#FFFFFF',
-        placeholderColor: '#C7CED5',
-        textColor: '#505050',
-        buttonBackground: '#0E63FB',
-        inputBackground: '#FDFDFD',
-        inputBorder: '#EFF0F6',
-        grey: "#808080"
-
+        green: '#00E676',
+        background: '#0B0914',
+        placeholderColor: '#9CA3AF',
+        textColor: '#FFFFFF',
+        buttonBackground: '#6C4DF6',
+        inputBackground: 'rgba(255, 255, 255, 0.04)',
+        inputBorder: 'rgba(255, 255, 255, 0.08)',
+        grey: "#9CA3AF"
     },
     dark: true,
 }
 
-
 export const LightTheme = {
     colors: {
-        primary: '',
+        primary: '#6C4DF6',
         white: '#FFFFFF',
-        black: '#1E1E1E',
-        placeholderColor: '#C7CED5',
+        black: '#0B0914',
+        placeholderColor: '#9CA3AF',
         red: '#FF3E3E',
-        green: '#43BE24',
-        background: '#FFFFFF',
-        textColor: '#505050',
-        buttonBackground: '#0E63FB',
-        inputBackground: '#FDFDFD',
-        inputBorder: '#EFF0F6',
-        grey: "#808080"
-
-
+        green: '#00E676',
+        background: '#0B0914',
+        textColor: '#FFFFFF',
+        buttonBackground: '#6C4DF6',
+        inputBackground: 'rgba(255, 255, 255, 0.04)',
+        inputBorder: 'rgba(255, 255, 255, 0.08)',
+        grey: "#9CA3AF"
     },
     dark: true,
 };

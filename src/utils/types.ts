@@ -16,7 +16,10 @@ export type HomeStackParamList = {
 }
 
 export type RootStackParamList = {
-    Index: undefined;
+    Welcome: undefined;
+    Login: undefined;
+    Register: undefined;
+    Otp: { mobileNumber: string; token: string };
     Home: NavigatorScreenParams<HomeStackParamList>;
 };
 

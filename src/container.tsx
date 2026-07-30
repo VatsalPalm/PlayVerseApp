@@ -8,13 +8,16 @@ import { RootStackParamList } from './utils/types';
 import { commonScreenOptions } from './utils/constants';
 import * as SplashScreen from 'expo-splash-screen';
 import Home from './stacks/home';
+import WelcomeScreen from './screens/Welcome';
+import LoginScreen from './screens/Login';
+import RegisterScreen from './screens/Register';
+import OtpScreen from './screens/Otp';
+import { storage } from './services/mmkv';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 SplashScreen.preventAutoHideAsync();
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>
-
-const AppContainer = (props: Props) => {
+const AppContainer = () => {
 
     useEffect(() => {
         const handleSplash = async () => {
@@ -26,9 +29,16 @@ const AppContainer = (props: Props) => {
         handleSplash();
     }, []);
 
+    const hasToken = storage.contains('accessToken');
+    const initialRouteName = hasToken ? 'Home' : 'Welcome';
+
     return (
         <>
-            <Stack.Navigator screenOptions={{ ...commonScreenOptions }}>
+            <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ ...commonScreenOptions }}>
+                <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="Otp" component={OtpScreen} />
                 <Stack.Screen name="Home" component={Home} />
             </Stack.Navigator>
         </>

@@ -18,158 +18,43 @@ type QueryFnOptions = {
   signal?: AbortController["signal"];
 };
 
-export type AuthControllerCheckExistingUserPathParams = {
-  email: string;
-  phoneNumber: string;
-};
+export type AuthControllerRegisterError = Fetcher.ErrorWrapper<undefined>;
 
-export type AuthControllerCheckExistingUserError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerCheckExistingUserVariables = {
-  pathParams: AuthControllerCheckExistingUserPathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerCheckExistingUser = (
-  variables: AuthControllerCheckExistingUserVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerCheckExistingUserError,
-    undefined,
-    {},
-    {},
-    AuthControllerCheckExistingUserPathParams
-  >({
-    url: "/api/auth/v1/existing-user/{email}/{phoneNumber}",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function authControllerCheckExistingUserQuery(
-  variables: AuthControllerCheckExistingUserVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function authControllerCheckExistingUserQuery(
-  variables: AuthControllerCheckExistingUserVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function authControllerCheckExistingUserQuery(
-  variables: AuthControllerCheckExistingUserVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/auth/v1/existing-user/{email}/{phoneNumber}",
-      operationId: "authControllerCheckExistingUser",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchAuthControllerCheckExistingUser(variables, signal),
-  };
-}
-
-export const useSuspenseAuthControllerCheckExistingUser = <TData = undefined,>(
-  variables: AuthControllerCheckExistingUserVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      AuthControllerCheckExistingUserError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    AuthControllerCheckExistingUserError,
-    TData
-  >({
-    ...authControllerCheckExistingUserQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useAuthControllerCheckExistingUser = <TData = undefined,>(
-  variables: AuthControllerCheckExistingUserVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      AuthControllerCheckExistingUserError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    AuthControllerCheckExistingUserError,
-    TData
-  >({
-    ...authControllerCheckExistingUserQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type AuthControllerCreateUserError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerCreateUserVariables = {
+export type AuthControllerRegisterVariables = {
   body: Schemas.CreateUserDto;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchAuthControllerCreateUser = (
-  variables: AuthControllerCreateUserVariables,
+export const fetchAuthControllerRegister = (
+  variables: AuthControllerRegisterVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
-    Schemas.User,
-    AuthControllerCreateUserError,
+    undefined,
+    AuthControllerRegisterError,
     Schemas.CreateUserDto,
     {},
     {},
     {}
   >({ url: "/api/auth/v1/register", method: "post", ...variables, signal });
 
-export const useAuthControllerCreateUser = (
+export const useAuthControllerRegister = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      Schemas.User,
-      AuthControllerCreateUserError,
-      AuthControllerCreateUserVariables
+      undefined,
+      AuthControllerRegisterError,
+      AuthControllerRegisterVariables
     >,
     "mutationFn"
   >,
 ) => {
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
-    Schemas.User,
-    AuthControllerCreateUserError,
-    AuthControllerCreateUserVariables
+    undefined,
+    AuthControllerRegisterError,
+    AuthControllerRegisterVariables
   >({
-    mutationFn: (variables: AuthControllerCreateUserVariables) =>
-      fetchAuthControllerCreateUser(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: AuthControllerRegisterVariables) =>
+      fetchAuthControllerRegister(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
@@ -185,7 +70,7 @@ export const fetchAuthControllerLoginUser = (
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
-    Schemas.User,
+    undefined,
     AuthControllerLoginUserError,
     Schemas.LoginUserDto,
     {},
@@ -196,7 +81,7 @@ export const fetchAuthControllerLoginUser = (
 export const useAuthControllerLoginUser = (
   options?: Omit<
     reactQuery.UseMutationOptions<
-      Schemas.User,
+      undefined,
       AuthControllerLoginUserError,
       AuthControllerLoginUserVariables
     >,
@@ -205,7 +90,7 @@ export const useAuthControllerLoginUser = (
 ) => {
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
-    Schemas.User,
+    undefined,
     AuthControllerLoginUserError,
     AuthControllerLoginUserVariables
   >({
@@ -261,6 +146,47 @@ export const useAuthControllerForgotPassword = (
   });
 };
 
+export type AuthControllerSendOtpError = Fetcher.ErrorWrapper<undefined>;
+
+export type AuthControllerSendOtpVariables = {
+  body: Schemas.ForgotPasswordDto;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchAuthControllerSendOtp = (
+  variables: AuthControllerSendOtpVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    AuthControllerSendOtpError,
+    Schemas.ForgotPasswordDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/auth/v1/send-otp", method: "post", ...variables, signal });
+
+export const useAuthControllerSendOtp = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AuthControllerSendOtpError,
+      AuthControllerSendOtpVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    AuthControllerSendOtpError,
+    AuthControllerSendOtpVariables
+  >({
+    mutationFn: (variables: AuthControllerSendOtpVariables) =>
+      fetchAuthControllerSendOtp(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type AuthControllerConfirmOtpError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerConfirmOtpVariables = {
@@ -298,6 +224,47 @@ export const useAuthControllerConfirmOtp = (
   >({
     mutationFn: (variables: AuthControllerConfirmOtpVariables) =>
       fetchAuthControllerConfirmOtp(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type AuthControllerVerifyOtpError = Fetcher.ErrorWrapper<undefined>;
+
+export type AuthControllerVerifyOtpVariables = {
+  body: Schemas.ConfirmOtpDto;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchAuthControllerVerifyOtp = (
+  variables: AuthControllerVerifyOtpVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    AuthControllerVerifyOtpError,
+    Schemas.ConfirmOtpDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/auth/v1/verify-otp", method: "post", ...variables, signal });
+
+export const useAuthControllerVerifyOtp = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AuthControllerVerifyOtpError,
+      AuthControllerVerifyOtpVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    AuthControllerVerifyOtpError,
+    AuthControllerVerifyOtpVariables
+  >({
+    mutationFn: (variables: AuthControllerVerifyOtpVariables) =>
+      fetchAuthControllerVerifyOtp(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
@@ -348,6 +315,55 @@ export const useAuthControllerResetPassword = (
   });
 };
 
+export type AuthControllerResetPasswordAliasError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type AuthControllerResetPasswordAliasVariables = {
+  body: Schemas.ChangePasswordDto;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchAuthControllerResetPasswordAlias = (
+  variables: AuthControllerResetPasswordAliasVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    AuthControllerResetPasswordAliasError,
+    Schemas.ChangePasswordDto,
+    {},
+    {},
+    {}
+  >({
+    url: "/api/auth/v1/resetpassword",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useAuthControllerResetPasswordAlias = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AuthControllerResetPasswordAliasError,
+      AuthControllerResetPasswordAliasVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    AuthControllerResetPasswordAliasError,
+    AuthControllerResetPasswordAliasVariables
+  >({
+    mutationFn: (variables: AuthControllerResetPasswordAliasVariables) =>
+      fetchAuthControllerResetPasswordAlias(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
 export type AuthControllerRefreshTokenError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerRefreshTokenVariables = {
@@ -394,2257 +410,43 @@ export const useAuthControllerRefreshToken = (
   });
 };
 
-export type AuthControllerVerifyEmailError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerVerifyEmailVariables = {
-  body: Schemas.SendVerifyEmailLink;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerVerifyEmail = (
-  variables: AuthControllerVerifyEmailVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerVerifyEmailError,
-    Schemas.SendVerifyEmailLink,
-    {},
-    {},
-    {}
-  >({ url: "/api/auth/v1/verify-email", method: "post", ...variables, signal });
-
-export const useAuthControllerVerifyEmail = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      AuthControllerVerifyEmailError,
-      AuthControllerVerifyEmailVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    AuthControllerVerifyEmailError,
-    AuthControllerVerifyEmailVariables
-  >({
-    mutationFn: (variables: AuthControllerVerifyEmailVariables) =>
-      fetchAuthControllerVerifyEmail(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type AuthControllerCheckDBError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerCheckDBVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerCheckDB = (
-  variables: AuthControllerCheckDBVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerCheckDBError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/api/auth/v1/health", method: "get", ...variables, signal });
-
-export function authControllerCheckDbQuery(
-  variables: AuthControllerCheckDBVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function authControllerCheckDbQuery(
-  variables: AuthControllerCheckDBVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function authControllerCheckDbQuery(
-  variables: AuthControllerCheckDBVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/auth/v1/health",
-      operationId: "authControllerCheckDB",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchAuthControllerCheckDB(variables, signal),
-  };
-}
-
-export const useSuspenseAuthControllerCheckDB = <TData = undefined,>(
-  variables: AuthControllerCheckDBVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerCheckDBError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    AuthControllerCheckDBError,
-    TData
-  >({
-    ...authControllerCheckDbQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useAuthControllerCheckDB = <TData = undefined,>(
-  variables: AuthControllerCheckDBVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerCheckDBError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<undefined, AuthControllerCheckDBError, TData>({
-    ...authControllerCheckDbQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type AuthControllerFetchAreaOfInterestError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerFetchAreaOfInterestVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerFetchAreaOfInterest = (
-  variables: AuthControllerFetchAreaOfInterestVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerFetchAreaOfInterestError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/auth/v1/get-area-of-interest",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function authControllerFetchAreaOfInterestQuery(
-  variables: AuthControllerFetchAreaOfInterestVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function authControllerFetchAreaOfInterestQuery(
-  variables: AuthControllerFetchAreaOfInterestVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function authControllerFetchAreaOfInterestQuery(
-  variables: AuthControllerFetchAreaOfInterestVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/auth/v1/get-area-of-interest",
-      operationId: "authControllerFetchAreaOfInterest",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchAuthControllerFetchAreaOfInterest(variables, signal),
-  };
-}
-
-export const useSuspenseAuthControllerFetchAreaOfInterest = <
-  TData = undefined,
->(
-  variables: AuthControllerFetchAreaOfInterestVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      AuthControllerFetchAreaOfInterestError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    AuthControllerFetchAreaOfInterestError,
-    TData
-  >({
-    ...authControllerFetchAreaOfInterestQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useAuthControllerFetchAreaOfInterest = <TData = undefined,>(
-  variables: AuthControllerFetchAreaOfInterestVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      AuthControllerFetchAreaOfInterestError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    AuthControllerFetchAreaOfInterestError,
-    TData
-  >({
-    ...authControllerFetchAreaOfInterestQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type AuthControllerFetchStateError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerFetchStateVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerFetchState = (
-  variables: AuthControllerFetchStateVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerFetchStateError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/api/auth/v1/state", method: "get", ...variables, signal });
-
-export function authControllerFetchStateQuery(
-  variables: AuthControllerFetchStateVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function authControllerFetchStateQuery(
-  variables: AuthControllerFetchStateVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function authControllerFetchStateQuery(
-  variables: AuthControllerFetchStateVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/auth/v1/state",
-      operationId: "authControllerFetchState",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchAuthControllerFetchState(variables, signal),
-  };
-}
-
-export const useSuspenseAuthControllerFetchState = <TData = undefined,>(
-  variables: AuthControllerFetchStateVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerFetchStateError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    AuthControllerFetchStateError,
-    TData
-  >({
-    ...authControllerFetchStateQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useAuthControllerFetchState = <TData = undefined,>(
-  variables: AuthControllerFetchStateVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerFetchStateError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<undefined, AuthControllerFetchStateError, TData>({
-    ...authControllerFetchStateQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type AuthControllerFetchCityPathParams = {
-  id: string;
-};
-
-export type AuthControllerFetchCityQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type AuthControllerFetchCityError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerFetchCityVariables = {
-  pathParams: AuthControllerFetchCityPathParams;
-  queryParams?: AuthControllerFetchCityQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchAuthControllerFetchCity = (
-  variables: AuthControllerFetchCityVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    AuthControllerFetchCityError,
-    undefined,
-    {},
-    AuthControllerFetchCityQueryParams,
-    AuthControllerFetchCityPathParams
-  >({ url: "/api/auth/v1/city/{id}", method: "get", ...variables, signal });
-
-export function authControllerFetchCityQuery(
-  variables: AuthControllerFetchCityVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function authControllerFetchCityQuery(
-  variables: AuthControllerFetchCityVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function authControllerFetchCityQuery(
-  variables: AuthControllerFetchCityVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/auth/v1/city/{id}",
-      operationId: "authControllerFetchCity",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchAuthControllerFetchCity(variables, signal),
-  };
-}
-
-export const useSuspenseAuthControllerFetchCity = <TData = undefined,>(
-  variables: AuthControllerFetchCityVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerFetchCityError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    AuthControllerFetchCityError,
-    TData
-  >({
-    ...authControllerFetchCityQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useAuthControllerFetchCity = <TData = undefined,>(
-  variables: AuthControllerFetchCityVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<undefined, AuthControllerFetchCityError, TData>,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<undefined, AuthControllerFetchCityError, TData>({
-    ...authControllerFetchCityQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerCreateImageUrlError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerCreateImageUrlVariables = {
-  body: Schemas.CreateImageUrlDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerCreateImageUrl = (
-  variables: UserControllerCreateImageUrlVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerCreateImageUrlError,
-    Schemas.CreateImageUrlDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/get-image-url",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerCreateImageUrl = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerCreateImageUrlError,
-      UserControllerCreateImageUrlVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerCreateImageUrlError,
-    UserControllerCreateImageUrlVariables
-  >({
-    mutationFn: (variables: UserControllerCreateImageUrlVariables) =>
-      fetchUserControllerCreateImageUrl(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerLogoutError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerLogoutVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerLogout = (
-  variables: UserControllerLogoutVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerLogoutError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/api/user/v1/logout", method: "put", ...variables, signal });
-
-export const useUserControllerLogout = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerLogoutError,
-      UserControllerLogoutVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerLogoutError,
-    UserControllerLogoutVariables
-  >({
-    mutationFn: (variables: UserControllerLogoutVariables) =>
-      fetchUserControllerLogout(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerDeleteUserAccountError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerDeleteUserAccountVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerDeleteUserAccount = (
-  variables: UserControllerDeleteUserAccountVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerDeleteUserAccountError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/delete-account",
-    method: "delete",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerDeleteUserAccount = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerDeleteUserAccountError,
-      UserControllerDeleteUserAccountVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerDeleteUserAccountError,
-    UserControllerDeleteUserAccountVariables
-  >({
-    mutationFn: (variables: UserControllerDeleteUserAccountVariables) =>
-      fetchUserControllerDeleteUserAccount(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type UserControllerUpdateFcmTokenError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerUpdateFcmTokenVariables = {
-  body: Schemas.UpdateFcmToken;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerUpdateFcmToken = (
-  variables: UserControllerUpdateFcmTokenVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerUpdateFcmTokenError,
-    Schemas.UpdateFcmToken,
-    {},
-    {},
-    {}
-  >({ url: "/api/user/v1/fcmToken", method: "put", ...variables, signal });
-
-export const useUserControllerUpdateFcmToken = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerUpdateFcmTokenError,
-      UserControllerUpdateFcmTokenVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerUpdateFcmTokenError,
-    UserControllerUpdateFcmTokenVariables
-  >({
-    mutationFn: (variables: UserControllerUpdateFcmTokenVariables) =>
-      fetchUserControllerUpdateFcmToken(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerChangePasswordError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerChangePasswordVariables = {
-  body: Schemas.ChangeNewPasswordDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerChangePassword = (
-  variables: UserControllerChangePasswordVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerChangePasswordError,
-    Schemas.ChangeNewPasswordDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/change-password",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerChangePassword = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerChangePasswordError,
-      UserControllerChangePasswordVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerChangePasswordError,
-    UserControllerChangePasswordVariables
-  >({
-    mutationFn: (variables: UserControllerChangePasswordVariables) =>
-      fetchUserControllerChangePassword(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerUpdateProfileError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerUpdateProfileVariables = {
-  body?: Schemas.UpdateProfileDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerUpdateProfile = (
-  variables: UserControllerUpdateProfileVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerUpdateProfileError,
-    Schemas.UpdateProfileDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/update-profile",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerUpdateProfile = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerUpdateProfileError,
-      UserControllerUpdateProfileVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerUpdateProfileError,
-    UserControllerUpdateProfileVariables
-  >({
-    mutationFn: (variables: UserControllerUpdateProfileVariables) =>
-      fetchUserControllerUpdateProfile(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerGetUserDetalsError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetUserDetalsVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetUserDetals = (
-  variables: UserControllerGetUserDetalsVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetUserDetalsError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/get-user-profile",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function userControllerGetUserDetalsQuery(
-  variables: UserControllerGetUserDetalsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetUserDetalsQuery(
-  variables: UserControllerGetUserDetalsVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetUserDetalsQuery(
-  variables: UserControllerGetUserDetalsVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/get-user-profile",
-      operationId: "userControllerGetUserDetals",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetUserDetals(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetUserDetals = <TData = undefined,>(
-  variables: UserControllerGetUserDetalsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserDetalsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetUserDetalsError,
-    TData
-  >({
-    ...userControllerGetUserDetalsQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetUserDetals = <TData = undefined,>(
-  variables: UserControllerGetUserDetalsVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserDetalsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetUserDetalsError,
-    TData
-  >({
-    ...userControllerGetUserDetalsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerGetLocationTimingsDetailsQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type UserControllerGetLocationTimingsDetailsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetLocationTimingsDetailsVariables = {
-  queryParams?: UserControllerGetLocationTimingsDetailsQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetLocationTimingsDetails = (
-  variables: UserControllerGetLocationTimingsDetailsVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetLocationTimingsDetailsError,
-    undefined,
-    {},
-    UserControllerGetLocationTimingsDetailsQueryParams,
-    {}
-  >({ url: "/api/user/v1/user-list", method: "get", ...variables, signal });
-
-export function userControllerGetLocationTimingsDetailsQuery(
-  variables: UserControllerGetLocationTimingsDetailsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetLocationTimingsDetailsQuery(
-  variables:
-    | UserControllerGetLocationTimingsDetailsVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetLocationTimingsDetailsQuery(
-  variables:
-    | UserControllerGetLocationTimingsDetailsVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/user-list",
-      operationId: "userControllerGetLocationTimingsDetails",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetLocationTimingsDetails(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetLocationTimingsDetails = <
-  TData = undefined,
->(
-  variables: UserControllerGetLocationTimingsDetailsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetLocationTimingsDetailsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetLocationTimingsDetailsError,
-    TData
-  >({
-    ...userControllerGetLocationTimingsDetailsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetLocationTimingsDetails = <TData = undefined,>(
-  variables:
-    | UserControllerGetLocationTimingsDetailsVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetLocationTimingsDetailsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetLocationTimingsDetailsError,
-    TData
-  >({
-    ...userControllerGetLocationTimingsDetailsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerGetUserAreaOfInterestError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetUserAreaOfInterestVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetUserAreaOfInterest = (
-  variables: UserControllerGetUserAreaOfInterestVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetUserAreaOfInterestError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/user-area-of-interest",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function userControllerGetUserAreaOfInterestQuery(
-  variables: UserControllerGetUserAreaOfInterestVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetUserAreaOfInterestQuery(
-  variables:
-    | UserControllerGetUserAreaOfInterestVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetUserAreaOfInterestQuery(
-  variables:
-    | UserControllerGetUserAreaOfInterestVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/user-area-of-interest",
-      operationId: "userControllerGetUserAreaOfInterest",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetUserAreaOfInterest(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetUserAreaOfInterest = <
-  TData = undefined,
->(
-  variables: UserControllerGetUserAreaOfInterestVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserAreaOfInterestError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetUserAreaOfInterestError,
-    TData
-  >({
-    ...userControllerGetUserAreaOfInterestQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetUserAreaOfInterest = <TData = undefined,>(
-  variables:
-    | UserControllerGetUserAreaOfInterestVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserAreaOfInterestError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetUserAreaOfInterestError,
-    TData
-  >({
-    ...userControllerGetUserAreaOfInterestQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerSendVerifyEmailOTPError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerSendVerifyEmailOTPVariables = {
-  body: Schemas.ForgotPasswordDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerSendVerifyEmailOTP = (
-  variables: UserControllerSendVerifyEmailOTPVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerSendVerifyEmailOTPError,
-    Schemas.ForgotPasswordDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/send-verification-otp",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerSendVerifyEmailOTP = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerSendVerifyEmailOTPError,
-      UserControllerSendVerifyEmailOTPVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerSendVerifyEmailOTPError,
-    UserControllerSendVerifyEmailOTPVariables
-  >({
-    mutationFn: (variables: UserControllerSendVerifyEmailOTPVariables) =>
-      fetchUserControllerSendVerifyEmailOTP(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type UserControllerConfirmOtpError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerConfirmOtpVariables = {
-  body: Schemas.ConfirmOtpDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerConfirmOtp = (
-  variables: UserControllerConfirmOtpVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerConfirmOtpError,
-    Schemas.ConfirmOtpDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/confirm-otp-v2",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerConfirmOtp = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerConfirmOtpError,
-      UserControllerConfirmOtpVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerConfirmOtpError,
-    UserControllerConfirmOtpVariables
-  >({
-    mutationFn: (variables: UserControllerConfirmOtpVariables) =>
-      fetchUserControllerConfirmOtp(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerRecordCourseViewError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerRecordCourseViewVariables = {
-  body: Schemas.RecordCourseViewDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerRecordCourseView = (
-  variables: UserControllerRecordCourseViewVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerRecordCourseViewError,
-    Schemas.RecordCourseViewDto,
-    {},
-    {},
-    {}
-  >({ url: "/api/user/v1/course-view", method: "post", ...variables, signal });
-
-export const useUserControllerRecordCourseView = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerRecordCourseViewError,
-      UserControllerRecordCourseViewVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerRecordCourseViewError,
-    UserControllerRecordCourseViewVariables
-  >({
-    mutationFn: (variables: UserControllerRecordCourseViewVariables) =>
-      fetchUserControllerRecordCourseView(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerGetCourseDescriptionPathParams = {
-  courseId: number;
-};
-
-export type UserControllerGetCourseDescriptionQueryParams = {
-  userId: number;
-};
-
-export type UserControllerGetCourseDescriptionError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetCourseDescriptionVariables = {
-  pathParams: UserControllerGetCourseDescriptionPathParams;
-  queryParams: UserControllerGetCourseDescriptionQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetCourseDescription = (
-  variables: UserControllerGetCourseDescriptionVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetCourseDescriptionError,
-    undefined,
-    {},
-    UserControllerGetCourseDescriptionQueryParams,
-    UserControllerGetCourseDescriptionPathParams
-  >({
-    url: "/api/user/v1/course-description/{courseId}",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function userControllerGetCourseDescriptionQuery(
-  variables: UserControllerGetCourseDescriptionVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetCourseDescriptionQuery(
-  variables: UserControllerGetCourseDescriptionVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetCourseDescriptionQuery(
-  variables: UserControllerGetCourseDescriptionVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/course-description/{courseId}",
-      operationId: "userControllerGetCourseDescription",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetCourseDescription(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetCourseDescription = <
-  TData = undefined,
->(
-  variables: UserControllerGetCourseDescriptionVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetCourseDescriptionError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetCourseDescriptionError,
-    TData
-  >({
-    ...userControllerGetCourseDescriptionQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetCourseDescription = <TData = undefined,>(
-  variables: UserControllerGetCourseDescriptionVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetCourseDescriptionError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetCourseDescriptionError,
-    TData
-  >({
-    ...userControllerGetCourseDescriptionQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerGetStudentCourseFeedQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-  /**
-   * Filter by Course Type IDs (Comma separated)
-   */
-  course_type_ids?: string;
-  /**
-   * Filter by Eligibility IDs (Comma separated)
-   */
-  eligibility_ids?: string;
-  /**
-   * Filter by State IDs (Comma separated)
-   */
-  state_ids?: string;
-  /**
-   * Filter by City IDs (Comma separated)
-   */
-  city_ids?: string;
-  /**
-   * Minimum Cost
-   */
-  min_cost?: number;
-  /**
-   * Maximum Cost
-   */
-  max_cost?: number;
-  /**
-   * Learning Mode (Online, Offline, Hybrid)
-   */
-  learning_mode?: string;
-  /**
-   * Filter by Course Category IDs (Comma separated)
-   */
-  course_category_ids?: string;
-  /**
-   * Filter by Installment Option (1 for eligible, 0 for not)
-   */
-  installment?: number;
-  /**
-   * Filter by Certification Type IDs (Comma separated)
-   */
-  certification_type_ids?: string;
-  /**
-   * Fee Type (Free or Paid)
-   */
-  fee_type?: string;
-  /**
-   * User ID to check favourites against
-   */
-  user_id?: number;
-};
-
-export type UserControllerGetStudentCourseFeedError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetStudentCourseFeedVariables = {
-  queryParams?: UserControllerGetStudentCourseFeedQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetStudentCourseFeed = (
-  variables: UserControllerGetStudentCourseFeedVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetStudentCourseFeedError,
-    undefined,
-    {},
-    UserControllerGetStudentCourseFeedQueryParams,
-    {}
-  >({ url: "/api/user/v1/student/feed", method: "get", ...variables, signal });
-
-export function userControllerGetStudentCourseFeedQuery(
-  variables: UserControllerGetStudentCourseFeedVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetStudentCourseFeedQuery(
-  variables: UserControllerGetStudentCourseFeedVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetStudentCourseFeedQuery(
-  variables: UserControllerGetStudentCourseFeedVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/student/feed",
-      operationId: "userControllerGetStudentCourseFeed",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetStudentCourseFeed(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetStudentCourseFeed = <
-  TData = undefined,
->(
-  variables: UserControllerGetStudentCourseFeedVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetStudentCourseFeedError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetStudentCourseFeedError,
-    TData
-  >({
-    ...userControllerGetStudentCourseFeedQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetStudentCourseFeed = <TData = undefined,>(
-  variables: UserControllerGetStudentCourseFeedVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetStudentCourseFeedError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetStudentCourseFeedError,
-    TData
-  >({
-    ...userControllerGetStudentCourseFeedQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerInstituteTypesError = Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerInstituteTypesVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerInstituteTypes = (
-  variables: UserControllerInstituteTypesVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerInstituteTypesError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/user/v1/institute-all-types",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function userControllerInstituteTypesQuery(
-  variables: UserControllerInstituteTypesVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerInstituteTypesQuery(
-  variables: UserControllerInstituteTypesVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerInstituteTypesQuery(
-  variables: UserControllerInstituteTypesVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/institute-all-types",
-      operationId: "userControllerInstituteTypes",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerInstituteTypes(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerInstituteTypes = <TData = undefined,>(
-  variables: UserControllerInstituteTypesVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerInstituteTypesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerInstituteTypesError,
-    TData
-  >({
-    ...userControllerInstituteTypesQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerInstituteTypes = <TData = undefined,>(
-  variables: UserControllerInstituteTypesVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerInstituteTypesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerInstituteTypesError,
-    TData
-  >({
-    ...userControllerInstituteTypesQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerAddFavouriteCoursePathParams = {
-  courseId: number;
-  status: number;
-};
-
-export type UserControllerAddFavouriteCourseError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerAddFavouriteCourseVariables = {
-  pathParams: UserControllerAddFavouriteCoursePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerAddFavouriteCourse = (
-  variables: UserControllerAddFavouriteCourseVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerAddFavouriteCourseError,
-    undefined,
-    {},
-    {},
-    UserControllerAddFavouriteCoursePathParams
-  >({
-    url: "/api/user/v1/add-favourite-course/{courseId}/{status}",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerAddFavouriteCourse = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerAddFavouriteCourseError,
-      UserControllerAddFavouriteCourseVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerAddFavouriteCourseError,
-    UserControllerAddFavouriteCourseVariables
-  >({
-    mutationFn: (variables: UserControllerAddFavouriteCourseVariables) =>
-      fetchUserControllerAddFavouriteCourse(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type UserControllerRemoveFavouriteCoursePathParams = {
-  courseId: number;
-};
-
-export type UserControllerRemoveFavouriteCourseError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerRemoveFavouriteCourseVariables = {
-  pathParams: UserControllerRemoveFavouriteCoursePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerRemoveFavouriteCourse = (
-  variables: UserControllerRemoveFavouriteCourseVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerRemoveFavouriteCourseError,
-    undefined,
-    {},
-    {},
-    UserControllerRemoveFavouriteCoursePathParams
-  >({
-    url: "/api/user/v1/favourite-course/{courseId}",
-    method: "delete",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerRemoveFavouriteCourse = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerRemoveFavouriteCourseError,
-      UserControllerRemoveFavouriteCourseVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerRemoveFavouriteCourseError,
-    UserControllerRemoveFavouriteCourseVariables
-  >({
-    mutationFn: (variables: UserControllerRemoveFavouriteCourseVariables) =>
-      fetchUserControllerRemoveFavouriteCourse(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type UserControllerGetFavouriteCoursesQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type UserControllerGetFavouriteCoursesError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetFavouriteCoursesVariables = {
-  queryParams?: UserControllerGetFavouriteCoursesQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetFavouriteCourses = (
-  variables: UserControllerGetFavouriteCoursesVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetFavouriteCoursesError,
-    undefined,
-    {},
-    UserControllerGetFavouriteCoursesQueryParams,
-    {}
-  >({
-    url: "/api/user/v1/favourite-courses",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function userControllerGetFavouriteCoursesQuery(
-  variables: UserControllerGetFavouriteCoursesVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetFavouriteCoursesQuery(
-  variables: UserControllerGetFavouriteCoursesVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetFavouriteCoursesQuery(
-  variables: UserControllerGetFavouriteCoursesVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/favourite-courses",
-      operationId: "userControllerGetFavouriteCourses",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetFavouriteCourses(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetFavouriteCourses = <
-  TData = undefined,
->(
-  variables: UserControllerGetFavouriteCoursesVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetFavouriteCoursesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetFavouriteCoursesError,
-    TData
-  >({
-    ...userControllerGetFavouriteCoursesQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetFavouriteCourses = <TData = undefined,>(
-  variables: UserControllerGetFavouriteCoursesVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetFavouriteCoursesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetFavouriteCoursesError,
-    TData
-  >({
-    ...userControllerGetFavouriteCoursesQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerGetNotificationsQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type UserControllerGetNotificationsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetNotificationsVariables = {
-  queryParams?: UserControllerGetNotificationsQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetNotifications = (
-  variables: UserControllerGetNotificationsVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetNotificationsError,
-    undefined,
-    {},
-    UserControllerGetNotificationsQueryParams,
-    {}
-  >({ url: "/api/user/v1/notifications", method: "get", ...variables, signal });
-
-export function userControllerGetNotificationsQuery(
-  variables: UserControllerGetNotificationsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetNotificationsQuery(
-  variables: UserControllerGetNotificationsVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetNotificationsQuery(
-  variables: UserControllerGetNotificationsVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/notifications",
-      operationId: "userControllerGetNotifications",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetNotifications(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetNotifications = <TData = undefined,>(
-  variables: UserControllerGetNotificationsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetNotificationsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetNotificationsError,
-    TData
-  >({
-    ...userControllerGetNotificationsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetNotifications = <TData = undefined,>(
-  variables: UserControllerGetNotificationsVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetNotificationsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetNotificationsError,
-    TData
-  >({
-    ...userControllerGetNotificationsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerCreateUserTopicPathParams = {
-  userId: number;
-};
-
-export type UserControllerCreateUserTopicError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerCreateUserTopicVariables = {
-  body: Schemas.CreateUserTopicDto;
-  pathParams: UserControllerCreateUserTopicPathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerCreateUserTopic = (
-  variables: UserControllerCreateUserTopicVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerCreateUserTopicError,
-    Schemas.CreateUserTopicDto,
-    {},
-    {},
-    UserControllerCreateUserTopicPathParams
-  >({
-    url: "/api/user/v1/add-topic/{userId}",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerCreateUserTopic = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerCreateUserTopicError,
-      UserControllerCreateUserTopicVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerCreateUserTopicError,
-    UserControllerCreateUserTopicVariables
-  >({
-    mutationFn: (variables: UserControllerCreateUserTopicVariables) =>
-      fetchUserControllerCreateUserTopic(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type UserControllerGetUserTopicListError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerGetUserTopicListVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerGetUserTopicList = (
-  variables: UserControllerGetUserTopicListVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerGetUserTopicListError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/api/user/v1/topic-list", method: "get", ...variables, signal });
-
-export function userControllerGetUserTopicListQuery(
-  variables: UserControllerGetUserTopicListVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function userControllerGetUserTopicListQuery(
-  variables: UserControllerGetUserTopicListVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function userControllerGetUserTopicListQuery(
-  variables: UserControllerGetUserTopicListVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/user/v1/topic-list",
-      operationId: "userControllerGetUserTopicList",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchUserControllerGetUserTopicList(variables, signal),
-  };
-}
-
-export const useSuspenseUserControllerGetUserTopicList = <TData = undefined,>(
-  variables: UserControllerGetUserTopicListVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserTopicListError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    UserControllerGetUserTopicListError,
-    TData
-  >({
-    ...userControllerGetUserTopicListQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useUserControllerGetUserTopicList = <TData = undefined,>(
-  variables: UserControllerGetUserTopicListVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      UserControllerGetUserTopicListError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    UserControllerGetUserTopicListError,
-    TData
-  >({
-    ...userControllerGetUserTopicListQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type UserControllerDeleteUserTopicPathParams = {
-  topic: string;
-};
-
-export type UserControllerDeleteUserTopicError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type UserControllerDeleteUserTopicVariables = {
-  pathParams: UserControllerDeleteUserTopicPathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchUserControllerDeleteUserTopic = (
-  variables: UserControllerDeleteUserTopicVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    UserControllerDeleteUserTopicError,
-    undefined,
-    {},
-    {},
-    UserControllerDeleteUserTopicPathParams
-  >({
-    url: "/api/user/v1/delete-topic/{topic}",
-    method: "delete",
-    ...variables,
-    signal,
-  });
-
-export const useUserControllerDeleteUserTopic = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      UserControllerDeleteUserTopicError,
-      UserControllerDeleteUserTopicVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    UserControllerDeleteUserTopicError,
-    UserControllerDeleteUserTopicVariables
-  >({
-    mutationFn: (variables: UserControllerDeleteUserTopicVariables) =>
-      fetchUserControllerDeleteUserTopic(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
+export type UploadControllerUploadFileQueryParams = {
+  type?: "profile" | "files";
 };
 
-export type UploadControllerUploadMultipleFilesError =
-  Fetcher.ErrorWrapper<undefined>;
+export type UploadControllerUploadFileError = Fetcher.ErrorWrapper<undefined>;
 
-export type UploadControllerUploadMultipleFilesRequestBody = {
+export type UploadControllerUploadFileRequestBody = {
   /**
    * @format binary
    */
   file?: Blob;
 };
 
-export type UploadControllerUploadMultipleFilesVariables = {
-  body?: UploadControllerUploadMultipleFilesRequestBody;
+export type UploadControllerUploadFileVariables = {
+  body?: UploadControllerUploadFileRequestBody;
+  queryParams?: UploadControllerUploadFileQueryParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchUploadControllerUploadMultipleFiles = (
-  variables: UploadControllerUploadMultipleFilesVariables,
+export const fetchUploadControllerUploadFile = (
+  variables: UploadControllerUploadFileVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    UploadControllerUploadMultipleFilesError,
-    UploadControllerUploadMultipleFilesRequestBody,
+    UploadControllerUploadFileError,
+    UploadControllerUploadFileRequestBody,
     {},
-    {},
+    UploadControllerUploadFileQueryParams,
     {}
-  >({ url: "/api/utils/v1/upload", method: "post", ...variables, signal });
+  >({ url: "/api/upload/v1/file", method: "post", ...variables, signal });
 
-export const useUploadControllerUploadMultipleFiles = (
+export const useUploadControllerUploadFile = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      UploadControllerUploadMultipleFilesError,
-      UploadControllerUploadMultipleFilesVariables
+      UploadControllerUploadFileError,
+      UploadControllerUploadFileVariables
     >,
     "mutationFn"
   >,
@@ -2652,49 +454,49 @@ export const useUploadControllerUploadMultipleFiles = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    UploadControllerUploadMultipleFilesError,
-    UploadControllerUploadMultipleFilesVariables
+    UploadControllerUploadFileError,
+    UploadControllerUploadFileVariables
   >({
-    mutationFn: (variables: UploadControllerUploadMultipleFilesVariables) =>
-      fetchUploadControllerUploadMultipleFiles(
-        deepMerge(fetcherOptions, variables),
-      ),
+    mutationFn: (variables: UploadControllerUploadFileVariables) =>
+      fetchUploadControllerUploadFile(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type UploadControllerUploadImageError = Fetcher.ErrorWrapper<undefined>;
-
-export type UploadControllerUploadImageRequestBody = {
-  /**
-   * @format binary
-   */
-  file?: Blob;
+export type UploadControllerUploadFilesQueryParams = {
+  type?: "profile" | "files";
 };
 
-export type UploadControllerUploadImageVariables = {
-  body?: UploadControllerUploadImageRequestBody;
+export type UploadControllerUploadFilesError = Fetcher.ErrorWrapper<undefined>;
+
+export type UploadControllerUploadFilesRequestBody = {
+  files?: Blob[];
+};
+
+export type UploadControllerUploadFilesVariables = {
+  body?: UploadControllerUploadFilesRequestBody;
+  queryParams?: UploadControllerUploadFilesQueryParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchUploadControllerUploadImage = (
-  variables: UploadControllerUploadImageVariables,
+export const fetchUploadControllerUploadFiles = (
+  variables: UploadControllerUploadFilesVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    UploadControllerUploadImageError,
-    UploadControllerUploadImageRequestBody,
+    UploadControllerUploadFilesError,
+    UploadControllerUploadFilesRequestBody,
     {},
-    {},
+    UploadControllerUploadFilesQueryParams,
     {}
-  >({ url: "/api/utils/v2/upload", method: "post", ...variables, signal });
+  >({ url: "/api/upload/v1/files", method: "post", ...variables, signal });
 
-export const useUploadControllerUploadImage = (
+export const useUploadControllerUploadFiles = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      UploadControllerUploadImageError,
-      UploadControllerUploadImageVariables
+      UploadControllerUploadFilesError,
+      UploadControllerUploadFilesVariables
     >,
     "mutationFn"
   >,
@@ -2702,45 +504,40 @@ export const useUploadControllerUploadImage = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    UploadControllerUploadImageError,
-    UploadControllerUploadImageVariables
+    UploadControllerUploadFilesError,
+    UploadControllerUploadFilesVariables
   >({
-    mutationFn: (variables: UploadControllerUploadImageVariables) =>
-      fetchUploadControllerUploadImage(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: UploadControllerUploadFilesVariables) =>
+      fetchUploadControllerUploadFiles(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type InstituteControllerCreateError = Fetcher.ErrorWrapper<undefined>;
+export type GroundControllerCreateGroundError = Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerCreateVariables = {
-  body: Schemas.CreateInstituteDto;
+export type GroundControllerCreateGroundVariables = {
+  body: Schemas.CreateGroundDto;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerCreate = (
-  variables: InstituteControllerCreateVariables,
+export const fetchGroundControllerCreateGround = (
+  variables: GroundControllerCreateGroundVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerCreateError,
-    Schemas.CreateInstituteDto,
+    GroundControllerCreateGroundError,
+    Schemas.CreateGroundDto,
     {},
     {},
     {}
-  >({
-    url: "/api/institute/v1/register-institute",
-    method: "post",
-    ...variables,
-    signal,
-  });
+  >({ url: "/api/grounds/v1", method: "post", ...variables, signal });
 
-export const useInstituteControllerCreate = (
+export const useGroundControllerCreateGround = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      InstituteControllerCreateError,
-      InstituteControllerCreateVariables
+      GroundControllerCreateGroundError,
+      GroundControllerCreateGroundVariables
     >,
     "mutationFn"
   >,
@@ -2748,175 +545,135 @@ export const useInstituteControllerCreate = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    InstituteControllerCreateError,
-    InstituteControllerCreateVariables
+    GroundControllerCreateGroundError,
+    GroundControllerCreateGroundVariables
   >({
-    mutationFn: (variables: InstituteControllerCreateVariables) =>
-      fetchInstituteControllerCreate(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: GroundControllerCreateGroundVariables) =>
+      fetchGroundControllerCreateGround(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type InstituteControllerLoginError = Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerLoginVariables = {
-  body: Schemas.LoginInstituteDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerLogin = (
-  variables: InstituteControllerLoginVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerLoginError,
-    Schemas.LoginInstituteDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/institute/v1/login-institute",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerLogin = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerLoginError,
-      InstituteControllerLoginVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerLoginError,
-    InstituteControllerLoginVariables
-  >({
-    mutationFn: (variables: InstituteControllerLoginVariables) =>
-      fetchInstituteControllerLogin(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type InstituteControllerInstituteFindAllPathParams = {
-  /**
-   * Status of institutes to fetch
-   */
-  status: string;
-};
-
-export type InstituteControllerInstituteFindAllQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
+export type GroundControllerGetPublicGroundsQueryParams = {
   /**
    * Page number
    *
-   * @minimum 1
    * @default 1
    */
   page?: number;
   /**
-   * Record limit
+   * Records per page
    *
-   * @minimum 10
-   * @maximum 500
    * @default 10
    */
   limit?: number;
   /**
-   * Search query text
+   * Search by ground name or city
    */
-  q?: string;
+  search?: string;
   /**
-   * Filter by State ID
+   * Filter by city
    */
-  state_id?: number;
+  city?: string;
   /**
-   * Filter by City ID
+   * Filter by sport ID
    */
-  city_id?: number;
+  sportId?: number;
+  /**
+   * Minimum slot price filter
+   */
+  priceFrom?: number;
+  /**
+   * Maximum slot price filter
+   */
+  priceTo?: number;
+  /**
+   * User latitude for geo-radius search
+   */
+  latitude?: number;
+  /**
+   * User longitude for geo-radius search
+   */
+  longitude?: number;
+  /**
+   * Search radius in km (requires latitude & longitude). Default: 5 km
+   *
+   * @default 5
+   */
+  radius?: number;
+  /**
+   * Sort field
+   *
+   * @default created_at
+   */
+  sortBy?: string;
+  /**
+   * Sort order
+   *
+   * @default DESC
+   */
+  sortOrder?: "ASC" | "DESC";
 };
 
-export type InstituteControllerInstituteFindAllError =
+export type GroundControllerGetPublicGroundsError =
   Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerInstituteFindAllVariables = {
-  pathParams: InstituteControllerInstituteFindAllPathParams;
-  queryParams?: InstituteControllerInstituteFindAllQueryParams;
+export type GroundControllerGetPublicGroundsVariables = {
+  queryParams?: GroundControllerGetPublicGroundsQueryParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerInstituteFindAll = (
-  variables: InstituteControllerInstituteFindAllVariables,
+export const fetchGroundControllerGetPublicGrounds = (
+  variables: GroundControllerGetPublicGroundsVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerInstituteFindAllError,
+    GroundControllerGetPublicGroundsError,
     undefined,
     {},
-    InstituteControllerInstituteFindAllQueryParams,
-    InstituteControllerInstituteFindAllPathParams
-  >({
-    url: "/api/institute/v1/all-institutes/{status}",
-    method: "get",
-    ...variables,
-    signal,
-  });
+    GroundControllerGetPublicGroundsQueryParams,
+    {}
+  >({ url: "/api/grounds/v1", method: "get", ...variables, signal });
 
-export function instituteControllerInstituteFindAllQuery(
-  variables: InstituteControllerInstituteFindAllVariables,
+export function groundControllerGetPublicGroundsQuery(
+  variables: GroundControllerGetPublicGroundsVariables,
 ): {
   queryKey: reactQuery.QueryKey;
   queryFn: (options: QueryFnOptions) => Promise<undefined>;
 };
 
-export function instituteControllerInstituteFindAllQuery(
-  variables:
-    | InstituteControllerInstituteFindAllVariables
-    | reactQuery.SkipToken,
+export function groundControllerGetPublicGroundsQuery(
+  variables: GroundControllerGetPublicGroundsVariables | reactQuery.SkipToken,
 ): {
   queryKey: reactQuery.QueryKey;
   queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
 };
 
-export function instituteControllerInstituteFindAllQuery(
-  variables:
-    | InstituteControllerInstituteFindAllVariables
-    | reactQuery.SkipToken,
+export function groundControllerGetPublicGroundsQuery(
+  variables: GroundControllerGetPublicGroundsVariables | reactQuery.SkipToken,
 ) {
   return {
     queryKey: queryKeyFn({
-      path: "/api/institute/v1/all-institutes/{status}",
-      operationId: "instituteControllerInstituteFindAll",
+      path: "/api/grounds/v1",
+      operationId: "groundControllerGetPublicGrounds",
       variables,
     }),
     queryFn:
       variables === reactQuery.skipToken
         ? reactQuery.skipToken
         : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerInstituteFindAll(variables, signal),
+            fetchGroundControllerGetPublicGrounds(variables, signal),
   };
 }
 
-export const useSuspenseInstituteControllerInstituteFindAll = <
-  TData = undefined,
->(
-  variables: InstituteControllerInstituteFindAllVariables,
+export const useSuspenseGroundControllerGetPublicGrounds = <TData = undefined,>(
+  variables: GroundControllerGetPublicGroundsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
       undefined,
-      InstituteControllerInstituteFindAllError,
+      GroundControllerGetPublicGroundsError,
       TData
     >,
     "queryKey" | "queryFn" | "initialData"
@@ -2925,10 +682,10 @@ export const useSuspenseInstituteControllerInstituteFindAll = <
   const { queryOptions, fetcherOptions } = useEducationApiContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
-    InstituteControllerInstituteFindAllError,
+    GroundControllerGetPublicGroundsError,
     TData
   >({
-    ...instituteControllerInstituteFindAllQuery(
+    ...groundControllerGetPublicGroundsQuery(
       deepMerge(fetcherOptions, variables),
     ),
     ...options,
@@ -2936,14 +693,12 @@ export const useSuspenseInstituteControllerInstituteFindAll = <
   });
 };
 
-export const useInstituteControllerInstituteFindAll = <TData = undefined,>(
-  variables:
-    | InstituteControllerInstituteFindAllVariables
-    | reactQuery.SkipToken,
+export const useGroundControllerGetPublicGrounds = <TData = undefined,>(
+  variables: GroundControllerGetPublicGroundsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
       undefined,
-      InstituteControllerInstituteFindAllError,
+      GroundControllerGetPublicGroundsError,
       TData
     >,
     "queryKey" | "queryFn" | "initialData"
@@ -2952,10 +707,10 @@ export const useInstituteControllerInstituteFindAll = <TData = undefined,>(
   const { queryOptions, fetcherOptions } = useEducationApiContext(options);
   return reactQuery.useQuery<
     undefined,
-    InstituteControllerInstituteFindAllError,
+    GroundControllerGetPublicGroundsError,
     TData
   >({
-    ...instituteControllerInstituteFindAllQuery(
+    ...groundControllerGetPublicGroundsQuery(
       variables === reactQuery.skipToken
         ? variables
         : deepMerge(fetcherOptions, variables),
@@ -2965,45 +720,286 @@ export const useInstituteControllerInstituteFindAll = <TData = undefined,>(
   });
 };
 
-export type InstituteControllerUpdateProfilePathParams = {
+export type GroundControllerGetMyGroundsQueryParams = {
   /**
-   * ID of the institute to update
+   * Page number
+   *
+   * @default 1
    */
-  id: string;
+  page?: number;
+  /**
+   * Records per page
+   *
+   * @default 10
+   */
+  limit?: number;
+  /**
+   * Search by name or city
+   */
+  search?: string;
+  /**
+   * Filter by status: 1=active, 0=inactive
+   */
+  status?: number;
+  /**
+   * Filter by sport ID
+   */
+  sportId?: number;
+  /**
+   * Sort field
+   *
+   * @default created_at
+   */
+  sortBy?: string;
+  /**
+   * Sort order
+   *
+   * @default DESC
+   */
+  sortOrder?: "ASC" | "DESC";
 };
 
-export type InstituteControllerUpdateProfileError =
+export type GroundControllerGetMyGroundsError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetMyGroundsVariables = {
+  queryParams?: GroundControllerGetMyGroundsQueryParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerGetMyGrounds = (
+  variables: GroundControllerGetMyGroundsVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerGetMyGroundsError,
+    undefined,
+    {},
+    GroundControllerGetMyGroundsQueryParams,
+    {}
+  >({ url: "/api/grounds/v1/my", method: "get", ...variables, signal });
+
+export function groundControllerGetMyGroundsQuery(
+  variables: GroundControllerGetMyGroundsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetMyGroundsQuery(
+  variables: GroundControllerGetMyGroundsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetMyGroundsQuery(
+  variables: GroundControllerGetMyGroundsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/my",
+      operationId: "groundControllerGetMyGrounds",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetMyGrounds(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetMyGrounds = <TData = undefined,>(
+  variables: GroundControllerGetMyGroundsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetMyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetMyGroundsError,
+    TData
+  >({
+    ...groundControllerGetMyGroundsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetMyGrounds = <TData = undefined,>(
+  variables: GroundControllerGetMyGroundsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetMyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetMyGroundsError,
+    TData
+  >({
+    ...groundControllerGetMyGroundsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetGroundDetailsPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetGroundDetailsError =
   Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerUpdateProfileVariables = {
-  body: Schemas.UpdateInstituteDto;
-  pathParams: InstituteControllerUpdateProfilePathParams;
+export type GroundControllerGetGroundDetailsVariables = {
+  pathParams: GroundControllerGetGroundDetailsPathParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerUpdateProfile = (
-  variables: InstituteControllerUpdateProfileVariables,
+export const fetchGroundControllerGetGroundDetails = (
+  variables: GroundControllerGetGroundDetailsVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerUpdateProfileError,
-    Schemas.UpdateInstituteDto,
+    GroundControllerGetGroundDetailsError,
+    undefined,
     {},
     {},
-    InstituteControllerUpdateProfilePathParams
-  >({
-    url: "/api/institute/v1/update-profile/{id}",
-    method: "put",
-    ...variables,
-    signal,
-  });
+    GroundControllerGetGroundDetailsPathParams
+  >({ url: "/api/grounds/v1/{id}", method: "get", ...variables, signal });
 
-export const useInstituteControllerUpdateProfile = (
+export function groundControllerGetGroundDetailsQuery(
+  variables: GroundControllerGetGroundDetailsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetGroundDetailsQuery(
+  variables: GroundControllerGetGroundDetailsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetGroundDetailsQuery(
+  variables: GroundControllerGetGroundDetailsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}",
+      operationId: "groundControllerGetGroundDetails",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetGroundDetails(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetGroundDetails = <TData = undefined,>(
+  variables: GroundControllerGetGroundDetailsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetGroundDetailsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetGroundDetailsError,
+    TData
+  >({
+    ...groundControllerGetGroundDetailsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetGroundDetails = <TData = undefined,>(
+  variables: GroundControllerGetGroundDetailsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetGroundDetailsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetGroundDetailsError,
+    TData
+  >({
+    ...groundControllerGetGroundDetailsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerUpdateGroundPathParams = {
+  id: number;
+};
+
+export type GroundControllerUpdateGroundError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerUpdateGroundVariables = {
+  body?: Schemas.UpdateGroundDto;
+  pathParams: GroundControllerUpdateGroundPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerUpdateGround = (
+  variables: GroundControllerUpdateGroundVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerUpdateGroundError,
+    Schemas.UpdateGroundDto,
+    {},
+    {},
+    GroundControllerUpdateGroundPathParams
+  >({ url: "/api/grounds/v1/{id}", method: "put", ...variables, signal });
+
+export const useGroundControllerUpdateGround = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      InstituteControllerUpdateProfileError,
-      InstituteControllerUpdateProfileVariables
+      GroundControllerUpdateGroundError,
+      GroundControllerUpdateGroundVariables
     >,
     "mutationFn"
   >,
@@ -3011,107 +1007,221 @@ export const useInstituteControllerUpdateProfile = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    InstituteControllerUpdateProfileError,
-    InstituteControllerUpdateProfileVariables
+    GroundControllerUpdateGroundError,
+    GroundControllerUpdateGroundVariables
   >({
-    mutationFn: (variables: InstituteControllerUpdateProfileVariables) =>
-      fetchInstituteControllerUpdateProfile(
-        deepMerge(fetcherOptions, variables),
-      ),
+    mutationFn: (variables: GroundControllerUpdateGroundVariables) =>
+      fetchGroundControllerUpdateGround(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type InstituteControllerUpdatePathParams = {
+export type GroundControllerDeleteGroundPathParams = {
+  id: number;
+};
+
+export type GroundControllerDeleteGroundError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerDeleteGroundVariables = {
+  pathParams: GroundControllerDeleteGroundPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerDeleteGround = (
+  variables: GroundControllerDeleteGroundVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerDeleteGroundError,
+    undefined,
+    {},
+    {},
+    GroundControllerDeleteGroundPathParams
+  >({ url: "/api/grounds/v1/{id}", method: "delete", ...variables, signal });
+
+export const useGroundControllerDeleteGround = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerDeleteGroundError,
+      GroundControllerDeleteGroundVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerDeleteGroundError,
+    GroundControllerDeleteGroundVariables
+  >({
+    mutationFn: (variables: GroundControllerDeleteGroundVariables) =>
+      fetchGroundControllerDeleteGround(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type GroundControllerGetAvailabilityPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetAvailabilityQueryParams = {
   /**
-   * ID of the institute to update
+   * Date to check availability (YYYY-MM-DD)
    */
-  id: string;
+  date: string;
+  /**
+   * Filter by sport ID to verify the ground supports this sport
+   */
+  sportId?: number;
 };
 
-export type InstituteControllerUpdateError = Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerUpdateVariables = {
-  body: Schemas.UpdateInstituteStatusDto;
-  pathParams: InstituteControllerUpdatePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerUpdate = (
-  variables: InstituteControllerUpdateVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerUpdateError,
-    Schemas.UpdateInstituteStatusDto,
-    {},
-    {},
-    InstituteControllerUpdatePathParams
-  >({
-    url: "/api/institute/v1/update-institute/{id}",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerUpdate = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerUpdateError,
-      InstituteControllerUpdateVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerUpdateError,
-    InstituteControllerUpdateVariables
-  >({
-    mutationFn: (variables: InstituteControllerUpdateVariables) =>
-      fetchInstituteControllerUpdate(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type InstituteControllerUpdateStatusPathParams = {
-  id: string;
-  status: string;
-};
-
-export type InstituteControllerUpdateStatusError =
+export type GroundControllerGetAvailabilityError =
   Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerUpdateStatusVariables = {
-  pathParams: InstituteControllerUpdateStatusPathParams;
+export type GroundControllerGetAvailabilityVariables = {
+  pathParams: GroundControllerGetAvailabilityPathParams;
+  queryParams: GroundControllerGetAvailabilityQueryParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerUpdateStatus = (
-  variables: InstituteControllerUpdateStatusVariables,
+export const fetchGroundControllerGetAvailability = (
+  variables: GroundControllerGetAvailabilityVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerUpdateStatusError,
+    GroundControllerGetAvailabilityError,
     undefined,
     {},
-    {},
-    InstituteControllerUpdateStatusPathParams
+    GroundControllerGetAvailabilityQueryParams,
+    GroundControllerGetAvailabilityPathParams
   >({
-    url: "/api/institute/v1/institute-active/{id}/{status}",
-    method: "put",
+    url: "/api/grounds/v1/{id}/availability",
+    method: "get",
     ...variables,
     signal,
   });
 
-export const useInstituteControllerUpdateStatus = (
+export function groundControllerGetAvailabilityQuery(
+  variables: GroundControllerGetAvailabilityVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetAvailabilityQuery(
+  variables: GroundControllerGetAvailabilityVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetAvailabilityQuery(
+  variables: GroundControllerGetAvailabilityVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/availability",
+      operationId: "groundControllerGetAvailability",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetAvailability(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetAvailability = <TData = undefined,>(
+  variables: GroundControllerGetAvailabilityVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAvailabilityError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetAvailabilityError,
+    TData
+  >({
+    ...groundControllerGetAvailabilityQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetAvailability = <TData = undefined,>(
+  variables: GroundControllerGetAvailabilityVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAvailabilityError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetAvailabilityError,
+    TData
+  >({
+    ...groundControllerGetAvailabilityQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerAddImagePathParams = {
+  id: number;
+};
+
+export type GroundControllerAddImageError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerAddImageVariables = {
+  body: Schemas.GroundImageDto;
+  pathParams: GroundControllerAddImagePathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerAddImage = (
+  variables: GroundControllerAddImageVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerAddImageError,
+    Schemas.GroundImageDto,
+    {},
+    {},
+    GroundControllerAddImagePathParams
+  >({
+    url: "/api/grounds/v1/{id}/images",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerAddImage = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      InstituteControllerUpdateStatusError,
-      InstituteControllerUpdateStatusVariables
+      GroundControllerAddImageError,
+      GroundControllerAddImageVariables
     >,
     "mutationFn"
   >,
@@ -3119,54 +1229,50 @@ export const useInstituteControllerUpdateStatus = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    InstituteControllerUpdateStatusError,
-    InstituteControllerUpdateStatusVariables
+    GroundControllerAddImageError,
+    GroundControllerAddImageVariables
   >({
-    mutationFn: (variables: InstituteControllerUpdateStatusVariables) =>
-      fetchInstituteControllerUpdateStatus(
-        deepMerge(fetcherOptions, variables),
-      ),
+    mutationFn: (variables: GroundControllerAddImageVariables) =>
+      fetchGroundControllerAddImage(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type InstituteControllerRemovePathParams = {
-  /**
-   * ID of the institute to delete
-   */
-  id: string;
+export type GroundControllerRemoveImagePathParams = {
+  id: number;
+  imageId: number;
 };
 
-export type InstituteControllerRemoveError = Fetcher.ErrorWrapper<undefined>;
+export type GroundControllerRemoveImageError = Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerRemoveVariables = {
-  pathParams: InstituteControllerRemovePathParams;
+export type GroundControllerRemoveImageVariables = {
+  pathParams: GroundControllerRemoveImagePathParams;
 } & EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerRemove = (
-  variables: InstituteControllerRemoveVariables,
+export const fetchGroundControllerRemoveImage = (
+  variables: GroundControllerRemoveImageVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerRemoveError,
+    GroundControllerRemoveImageError,
     undefined,
     {},
     {},
-    InstituteControllerRemovePathParams
+    GroundControllerRemoveImagePathParams
   >({
-    url: "/api/institute/v1/delete-institute/{id}",
+    url: "/api/grounds/v1/{id}/images/{imageId}",
     method: "delete",
     ...variables,
     signal,
   });
 
-export const useInstituteControllerRemove = (
+export const useGroundControllerRemoveImage = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      InstituteControllerRemoveError,
-      InstituteControllerRemoveVariables
+      GroundControllerRemoveImageError,
+      GroundControllerRemoveImageVariables
     >,
     "mutationFn"
   >,
@@ -3174,607 +1280,72 @@ export const useInstituteControllerRemove = (
   const { fetcherOptions } = useEducationApiContext();
   return reactQuery.useMutation<
     undefined,
-    InstituteControllerRemoveError,
-    InstituteControllerRemoveVariables
+    GroundControllerRemoveImageError,
+    GroundControllerRemoveImageVariables
   >({
-    mutationFn: (variables: InstituteControllerRemoveVariables) =>
-      fetchInstituteControllerRemove(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: GroundControllerRemoveImageVariables) =>
+      fetchGroundControllerRemoveImage(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
 
-export type InstituteControllerAddInstituteCourseError =
-  Fetcher.ErrorWrapper<undefined>;
+export type MasterControllerGetSportsError = Fetcher.ErrorWrapper<undefined>;
 
-export type InstituteControllerAddInstituteCourseVariables = {
-  body: Schemas.CreateInstituteCourseDto;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerAddInstituteCourse = (
-  variables: InstituteControllerAddInstituteCourseVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerAddInstituteCourseError,
-    Schemas.CreateInstituteCourseDto,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/institute/v1/add-institute-course",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerAddInstituteCourse = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerAddInstituteCourseError,
-      InstituteControllerAddInstituteCourseVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerAddInstituteCourseError,
-    InstituteControllerAddInstituteCourseVariables
-  >({
-    mutationFn: (variables: InstituteControllerAddInstituteCourseVariables) =>
-      fetchInstituteControllerAddInstituteCourse(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type InstituteControllerUpdateInstituteCoursePathParams = {
-  /**
-   * ID of the institute course to update
-   */
-  id: string;
-};
-
-export type InstituteControllerUpdateInstituteCourseError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerUpdateInstituteCourseVariables = {
-  body?: Schemas.UpdateInstituteCourseDto;
-  pathParams: InstituteControllerUpdateInstituteCoursePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerUpdateInstituteCourse = (
-  variables: InstituteControllerUpdateInstituteCourseVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerUpdateInstituteCourseError,
-    Schemas.UpdateInstituteCourseDto,
-    {},
-    {},
-    InstituteControllerUpdateInstituteCoursePathParams
-  >({
-    url: "/api/institute/v1/update-institute-course/{id}",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerUpdateInstituteCourse = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerUpdateInstituteCourseError,
-      InstituteControllerUpdateInstituteCourseVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerUpdateInstituteCourseError,
-    InstituteControllerUpdateInstituteCourseVariables
-  >({
-    mutationFn: (
-      variables: InstituteControllerUpdateInstituteCourseVariables,
-    ) =>
-      fetchInstituteControllerUpdateInstituteCourse(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type InstituteControllerDeleteInstituteCoursePathParams = {
-  /**
-   * ID of the institute course to delete
-   */
-  id: string;
-};
-
-export type InstituteControllerDeleteInstituteCourseError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerDeleteInstituteCourseVariables = {
-  pathParams: InstituteControllerDeleteInstituteCoursePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerDeleteInstituteCourse = (
-  variables: InstituteControllerDeleteInstituteCourseVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerDeleteInstituteCourseError,
-    undefined,
-    {},
-    {},
-    InstituteControllerDeleteInstituteCoursePathParams
-  >({
-    url: "/api/institute/v1/delete-institute-course/{id}",
-    method: "delete",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerDeleteInstituteCourse = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerDeleteInstituteCourseError,
-      InstituteControllerDeleteInstituteCourseVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerDeleteInstituteCourseError,
-    InstituteControllerDeleteInstituteCourseVariables
-  >({
-    mutationFn: (
-      variables: InstituteControllerDeleteInstituteCourseVariables,
-    ) =>
-      fetchInstituteControllerDeleteInstituteCourse(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type InstituteControllerInstituteCourseFindAllQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type InstituteControllerInstituteCourseFindAllError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerInstituteCourseFindAllVariables = {
-  queryParams?: InstituteControllerInstituteCourseFindAllQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerInstituteCourseFindAll = (
-  variables: InstituteControllerInstituteCourseFindAllVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerInstituteCourseFindAllError,
-    undefined,
-    {},
-    InstituteControllerInstituteCourseFindAllQueryParams,
-    {}
-  >({
-    url: "/api/institute/v1/all-institute-courses",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function instituteControllerInstituteCourseFindAllQuery(
-  variables: InstituteControllerInstituteCourseFindAllVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function instituteControllerInstituteCourseFindAllQuery(
-  variables:
-    | InstituteControllerInstituteCourseFindAllVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function instituteControllerInstituteCourseFindAllQuery(
-  variables:
-    | InstituteControllerInstituteCourseFindAllVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/institute/v1/all-institute-courses",
-      operationId: "instituteControllerInstituteCourseFindAll",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerInstituteCourseFindAll(variables, signal),
-  };
-}
-
-export const useSuspenseInstituteControllerInstituteCourseFindAll = <
-  TData = undefined,
->(
-  variables: InstituteControllerInstituteCourseFindAllVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteCourseFindAllError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    InstituteControllerInstituteCourseFindAllError,
-    TData
-  >({
-    ...instituteControllerInstituteCourseFindAllQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useInstituteControllerInstituteCourseFindAll = <
-  TData = undefined,
->(
-  variables:
-    | InstituteControllerInstituteCourseFindAllVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteCourseFindAllError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerInstituteCourseFindAllError,
-    TData
-  >({
-    ...instituteControllerInstituteCourseFindAllQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type InstituteControllerInstituteCourseFindByIdPathParams = {
-  id: string;
-};
-
-export type InstituteControllerInstituteCourseFindByIdQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type InstituteControllerInstituteCourseFindByIdError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerInstituteCourseFindByIdVariables = {
-  pathParams: InstituteControllerInstituteCourseFindByIdPathParams;
-  queryParams?: InstituteControllerInstituteCourseFindByIdQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerInstituteCourseFindById = (
-  variables: InstituteControllerInstituteCourseFindByIdVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerInstituteCourseFindByIdError,
-    undefined,
-    {},
-    InstituteControllerInstituteCourseFindByIdQueryParams,
-    InstituteControllerInstituteCourseFindByIdPathParams
-  >({
-    url: "/api/institute/v1/institute-courses/{id}",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function instituteControllerInstituteCourseFindByIdQuery(
-  variables: InstituteControllerInstituteCourseFindByIdVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function instituteControllerInstituteCourseFindByIdQuery(
-  variables:
-    | InstituteControllerInstituteCourseFindByIdVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function instituteControllerInstituteCourseFindByIdQuery(
-  variables:
-    | InstituteControllerInstituteCourseFindByIdVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/institute/v1/institute-courses/{id}",
-      operationId: "instituteControllerInstituteCourseFindById",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerInstituteCourseFindById(variables, signal),
-  };
-}
-
-export const useSuspenseInstituteControllerInstituteCourseFindById = <
-  TData = undefined,
->(
-  variables: InstituteControllerInstituteCourseFindByIdVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteCourseFindByIdError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    InstituteControllerInstituteCourseFindByIdError,
-    TData
-  >({
-    ...instituteControllerInstituteCourseFindByIdQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useInstituteControllerInstituteCourseFindById = <
-  TData = undefined,
->(
-  variables:
-    | InstituteControllerInstituteCourseFindByIdVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteCourseFindByIdError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerInstituteCourseFindByIdError,
-    TData
-  >({
-    ...instituteControllerInstituteCourseFindByIdQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type InstituteControllerUpdateCourseStatusPathParams = {
-  /**
-   * ID of the course to update
-   */
-  id: string;
-  /**
-   * New status of the course
-   */
-  status: string;
-};
-
-export type InstituteControllerUpdateCourseStatusError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerUpdateCourseStatusVariables = {
-  pathParams: InstituteControllerUpdateCourseStatusPathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerUpdateCourseStatus = (
-  variables: InstituteControllerUpdateCourseStatusVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerUpdateCourseStatusError,
-    undefined,
-    {},
-    {},
-    InstituteControllerUpdateCourseStatusPathParams
-  >({
-    url: "/api/institute/v1/update-course-status/{id}/{status}",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerUpdateCourseStatus = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerUpdateCourseStatusError,
-      InstituteControllerUpdateCourseStatusVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerUpdateCourseStatusError,
-    InstituteControllerUpdateCourseStatusVariables
-  >({
-    mutationFn: (variables: InstituteControllerUpdateCourseStatusVariables) =>
-      fetchInstituteControllerUpdateCourseStatus(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type InstituteControllerInstituteTypesError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerInstituteTypesVariables =
+export type MasterControllerGetSportsVariables =
   EducationApiContext["fetcherOptions"];
 
-export const fetchInstituteControllerInstituteTypes = (
-  variables: InstituteControllerInstituteTypesVariables,
+export const fetchMasterControllerGetSports = (
+  variables: MasterControllerGetSportsVariables,
   signal?: AbortSignal,
 ) =>
   educationApiFetch<
     undefined,
-    InstituteControllerInstituteTypesError,
+    MasterControllerGetSportsError,
     undefined,
     {},
     {},
     {}
-  >({
-    url: "/api/institute/v1/institute-all-types",
-    method: "get",
-    ...variables,
-    signal,
-  });
+  >({ url: "/api/master/v1/sports", method: "get", ...variables, signal });
 
-export function instituteControllerInstituteTypesQuery(
-  variables: InstituteControllerInstituteTypesVariables,
+export function masterControllerGetSportsQuery(
+  variables: MasterControllerGetSportsVariables,
 ): {
   queryKey: reactQuery.QueryKey;
   queryFn: (options: QueryFnOptions) => Promise<undefined>;
 };
 
-export function instituteControllerInstituteTypesQuery(
-  variables: InstituteControllerInstituteTypesVariables | reactQuery.SkipToken,
+export function masterControllerGetSportsQuery(
+  variables: MasterControllerGetSportsVariables | reactQuery.SkipToken,
 ): {
   queryKey: reactQuery.QueryKey;
   queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
 };
 
-export function instituteControllerInstituteTypesQuery(
-  variables: InstituteControllerInstituteTypesVariables | reactQuery.SkipToken,
+export function masterControllerGetSportsQuery(
+  variables: MasterControllerGetSportsVariables | reactQuery.SkipToken,
 ) {
   return {
     queryKey: queryKeyFn({
-      path: "/api/institute/v1/institute-all-types",
-      operationId: "instituteControllerInstituteTypes",
+      path: "/api/master/v1/sports",
+      operationId: "masterControllerGetSports",
       variables,
     }),
     queryFn:
       variables === reactQuery.skipToken
         ? reactQuery.skipToken
         : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerInstituteTypes(variables, signal),
+            fetchMasterControllerGetSports(variables, signal),
   };
 }
 
-export const useSuspenseInstituteControllerInstituteTypes = <
-  TData = undefined,
->(
-  variables: InstituteControllerInstituteTypesVariables,
+export const useSuspenseMasterControllerGetSports = <TData = undefined,>(
+  variables: MasterControllerGetSportsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
       undefined,
-      InstituteControllerInstituteTypesError,
+      MasterControllerGetSportsError,
       TData
     >,
     "queryKey" | "queryFn" | "initialData"
@@ -3783,668 +1354,67 @@ export const useSuspenseInstituteControllerInstituteTypes = <
   const { queryOptions, fetcherOptions } = useEducationApiContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
-    InstituteControllerInstituteTypesError,
+    MasterControllerGetSportsError,
     TData
   >({
-    ...instituteControllerInstituteTypesQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
+    ...masterControllerGetSportsQuery(deepMerge(fetcherOptions, variables)),
     ...options,
     ...queryOptions,
   });
 };
 
-export const useInstituteControllerInstituteTypes = <TData = undefined,>(
-  variables: InstituteControllerInstituteTypesVariables | reactQuery.SkipToken,
+export const useMasterControllerGetSports = <TData = undefined,>(
+  variables: MasterControllerGetSportsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
       undefined,
-      InstituteControllerInstituteTypesError,
+      MasterControllerGetSportsError,
       TData
     >,
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
   const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerInstituteTypesError,
-    TData
-  >({
-    ...instituteControllerInstituteTypesQuery(
+  return reactQuery.useQuery<undefined, MasterControllerGetSportsError, TData>({
+    ...masterControllerGetSportsQuery(
       variables === reactQuery.skipToken
         ? variables
         : deepMerge(fetcherOptions, variables),
     ),
     ...options,
     ...queryOptions,
-  });
-};
-
-export type InstituteControllerInstituteProfileError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerInstituteProfileVariables =
-  EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerInstituteProfile = (
-  variables: InstituteControllerInstituteProfileVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerInstituteProfileError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/institute/v1/institute-profile",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function instituteControllerInstituteProfileQuery(
-  variables: InstituteControllerInstituteProfileVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function instituteControllerInstituteProfileQuery(
-  variables:
-    | InstituteControllerInstituteProfileVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function instituteControllerInstituteProfileQuery(
-  variables:
-    | InstituteControllerInstituteProfileVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/institute/v1/institute-profile",
-      operationId: "instituteControllerInstituteProfile",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerInstituteProfile(variables, signal),
-  };
-}
-
-export const useSuspenseInstituteControllerInstituteProfile = <
-  TData = undefined,
->(
-  variables: InstituteControllerInstituteProfileVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteProfileError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    InstituteControllerInstituteProfileError,
-    TData
-  >({
-    ...instituteControllerInstituteProfileQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useInstituteControllerInstituteProfile = <TData = undefined,>(
-  variables:
-    | InstituteControllerInstituteProfileVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerInstituteProfileError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerInstituteProfileError,
-    TData
-  >({
-    ...instituteControllerInstituteProfileQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type InstituteControllerGetDashboardStatsQueryParams = {
-  /**
-   * Filter type: 7days, 1month, or custom
-   */
-  filter_type?: "7days" | "1month" | "custom";
-  /**
-   * Start date for custom filter (YYYY-MM-DD)
-   */
-  start_date?: string;
-  /**
-   * End date for custom filter (YYYY-MM-DD)
-   */
-  end_date?: string;
-};
-
-export type InstituteControllerGetDashboardStatsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerGetDashboardStatsVariables = {
-  queryParams?: InstituteControllerGetDashboardStatsQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerGetDashboardStats = (
-  variables: InstituteControllerGetDashboardStatsVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerGetDashboardStatsError,
-    undefined,
-    {},
-    InstituteControllerGetDashboardStatsQueryParams,
-    {}
-  >({
-    url: "/api/institute/v1/dashboard-stats",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function instituteControllerGetDashboardStatsQuery(
-  variables: InstituteControllerGetDashboardStatsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function instituteControllerGetDashboardStatsQuery(
-  variables:
-    | InstituteControllerGetDashboardStatsVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function instituteControllerGetDashboardStatsQuery(
-  variables:
-    | InstituteControllerGetDashboardStatsVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/institute/v1/dashboard-stats",
-      operationId: "instituteControllerGetDashboardStats",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerGetDashboardStats(variables, signal),
-  };
-}
-
-export const useSuspenseInstituteControllerGetDashboardStats = <
-  TData = undefined,
->(
-  variables: InstituteControllerGetDashboardStatsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerGetDashboardStatsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    InstituteControllerGetDashboardStatsError,
-    TData
-  >({
-    ...instituteControllerGetDashboardStatsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useInstituteControllerGetDashboardStats = <TData = undefined,>(
-  variables:
-    | InstituteControllerGetDashboardStatsVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerGetDashboardStatsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerGetDashboardStatsError,
-    TData
-  >({
-    ...instituteControllerGetDashboardStatsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type InstituteControllerStudentListQueryParams = {
-  /**
-   * Pagination
-   *
-   * @default yes
-   */
-  pagination?: "yes" | "no";
-  /**
-   * Page number
-   *
-   * @minimum 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Record limit
-   *
-   * @minimum 1
-   * @maximum 500
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Search query
-   */
-  q?: string;
-};
-
-export type InstituteControllerStudentListError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerStudentListVariables = {
-  queryParams?: InstituteControllerStudentListQueryParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerStudentList = (
-  variables: InstituteControllerStudentListVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerStudentListError,
-    undefined,
-    {},
-    InstituteControllerStudentListQueryParams,
-    {}
-  >({
-    url: "/api/institute/v1/student-list",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function instituteControllerStudentListQuery(
-  variables: InstituteControllerStudentListVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function instituteControllerStudentListQuery(
-  variables: InstituteControllerStudentListVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-  | ((options: QueryFnOptions) => Promise<undefined>)
-  | reactQuery.SkipToken;
-};
-
-export function instituteControllerStudentListQuery(
-  variables: InstituteControllerStudentListVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/institute/v1/student-list",
-      operationId: "instituteControllerStudentList",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-          fetchInstituteControllerStudentList(variables, signal),
-  };
-}
-
-export const useSuspenseInstituteControllerStudentList = <TData = undefined,>(
-  variables: InstituteControllerStudentListVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerStudentListError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    InstituteControllerStudentListError,
-    TData
-  >({
-    ...instituteControllerStudentListQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useInstituteControllerStudentList = <TData = undefined,>(
-  variables: InstituteControllerStudentListVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      InstituteControllerStudentListError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    InstituteControllerStudentListError,
-    TData
-  >({
-    ...instituteControllerStudentListQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type InstituteControllerStudentStatusUpdatePathParams = {
-  id: string;
-  status: string;
-};
-
-export type InstituteControllerStudentStatusUpdateError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerStudentStatusUpdateVariables = {
-  pathParams: InstituteControllerStudentStatusUpdatePathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerStudentStatusUpdate = (
-  variables: InstituteControllerStudentStatusUpdateVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerStudentStatusUpdateError,
-    undefined,
-    {},
-    {},
-    InstituteControllerStudentStatusUpdatePathParams
-  >({
-    url: "/api/institute/v1/update-student-status/{id}/{status}",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerStudentStatusUpdate = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerStudentStatusUpdateError,
-      InstituteControllerStudentStatusUpdateVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerStudentStatusUpdateError,
-    InstituteControllerStudentStatusUpdateVariables
-  >({
-    mutationFn: (variables: InstituteControllerStudentStatusUpdateVariables) =>
-      fetchInstituteControllerStudentStatusUpdate(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type InstituteControllerDeleteStudentPathParams = {
-  id: string;
-};
-
-export type InstituteControllerDeleteStudentError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type InstituteControllerDeleteStudentVariables = {
-  pathParams: InstituteControllerDeleteStudentPathParams;
-} & EducationApiContext["fetcherOptions"];
-
-export const fetchInstituteControllerDeleteStudent = (
-  variables: InstituteControllerDeleteStudentVariables,
-  signal?: AbortSignal,
-) =>
-  educationApiFetch<
-    undefined,
-    InstituteControllerDeleteStudentError,
-    undefined,
-    {},
-    {},
-    InstituteControllerDeleteStudentPathParams
-  >({
-    url: "/api/institute/v1/delete-student/{id}",
-    method: "delete",
-    ...variables,
-    signal,
-  });
-
-export const useInstituteControllerDeleteStudent = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      InstituteControllerDeleteStudentError,
-      InstituteControllerDeleteStudentVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = useEducationApiContext();
-  return reactQuery.useMutation<
-    undefined,
-    InstituteControllerDeleteStudentError,
-    InstituteControllerDeleteStudentVariables
-  >({
-    mutationFn: (variables: InstituteControllerDeleteStudentVariables) =>
-      fetchInstituteControllerDeleteStudent(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
   });
 };
 
 export type QueryOperation =
   | {
-    path: "/api/auth/v1/existing-user/{email}/{phoneNumber}";
-    operationId: "authControllerCheckExistingUser";
-    variables:
-    | AuthControllerCheckExistingUserVariables
-    | reactQuery.SkipToken;
-  }
+      path: "/api/grounds/v1";
+      operationId: "groundControllerGetPublicGrounds";
+      variables:
+        | GroundControllerGetPublicGroundsVariables
+        | reactQuery.SkipToken;
+    }
   | {
-    path: "/api/auth/v1/health";
-    operationId: "authControllerCheckDB";
-    variables: AuthControllerCheckDBVariables | reactQuery.SkipToken;
-  }
+      path: "/api/grounds/v1/my";
+      operationId: "groundControllerGetMyGrounds";
+      variables: GroundControllerGetMyGroundsVariables | reactQuery.SkipToken;
+    }
   | {
-    path: "/api/auth/v1/get-area-of-interest";
-    operationId: "authControllerFetchAreaOfInterest";
-    variables:
-    | AuthControllerFetchAreaOfInterestVariables
-    | reactQuery.SkipToken;
-  }
+      path: "/api/grounds/v1/{id}";
+      operationId: "groundControllerGetGroundDetails";
+      variables:
+        | GroundControllerGetGroundDetailsVariables
+        | reactQuery.SkipToken;
+    }
   | {
-    path: "/api/auth/v1/state";
-    operationId: "authControllerFetchState";
-    variables: AuthControllerFetchStateVariables | reactQuery.SkipToken;
-  }
+      path: "/api/grounds/v1/{id}/availability";
+      operationId: "groundControllerGetAvailability";
+      variables:
+        | GroundControllerGetAvailabilityVariables
+        | reactQuery.SkipToken;
+    }
   | {
-    path: "/api/auth/v1/city/{id}";
-    operationId: "authControllerFetchCity";
-    variables: AuthControllerFetchCityVariables | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/get-user-profile";
-    operationId: "userControllerGetUserDetals";
-    variables: UserControllerGetUserDetalsVariables | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/user-list";
-    operationId: "userControllerGetLocationTimingsDetails";
-    variables:
-    | UserControllerGetLocationTimingsDetailsVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/user-area-of-interest";
-    operationId: "userControllerGetUserAreaOfInterest";
-    variables:
-    | UserControllerGetUserAreaOfInterestVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/course-description/{courseId}";
-    operationId: "userControllerGetCourseDescription";
-    variables:
-    | UserControllerGetCourseDescriptionVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/student/feed";
-    operationId: "userControllerGetStudentCourseFeed";
-    variables:
-    | UserControllerGetStudentCourseFeedVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/institute-all-types";
-    operationId: "userControllerInstituteTypes";
-    variables: UserControllerInstituteTypesVariables | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/favourite-courses";
-    operationId: "userControllerGetFavouriteCourses";
-    variables:
-    | UserControllerGetFavouriteCoursesVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/notifications";
-    operationId: "userControllerGetNotifications";
-    variables: UserControllerGetNotificationsVariables | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/user/v1/topic-list";
-    operationId: "userControllerGetUserTopicList";
-    variables: UserControllerGetUserTopicListVariables | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/all-institutes/{status}";
-    operationId: "instituteControllerInstituteFindAll";
-    variables:
-    | InstituteControllerInstituteFindAllVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/all-institute-courses";
-    operationId: "instituteControllerInstituteCourseFindAll";
-    variables:
-    | InstituteControllerInstituteCourseFindAllVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/institute-courses/{id}";
-    operationId: "instituteControllerInstituteCourseFindById";
-    variables:
-    | InstituteControllerInstituteCourseFindByIdVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/institute-all-types";
-    operationId: "instituteControllerInstituteTypes";
-    variables:
-    | InstituteControllerInstituteTypesVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/institute-profile";
-    operationId: "instituteControllerInstituteProfile";
-    variables:
-    | InstituteControllerInstituteProfileVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/dashboard-stats";
-    operationId: "instituteControllerGetDashboardStats";
-    variables:
-    | InstituteControllerGetDashboardStatsVariables
-    | reactQuery.SkipToken;
-  }
-  | {
-    path: "/api/institute/v1/student-list";
-    operationId: "instituteControllerStudentList";
-    variables: InstituteControllerStudentListVariables | reactQuery.SkipToken;
-  };
+      path: "/api/master/v1/sports";
+      operationId: "masterControllerGetSports";
+      variables: MasterControllerGetSportsVariables | reactQuery.SkipToken;
+    };
