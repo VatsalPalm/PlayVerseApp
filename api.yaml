@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  title: The Stack - Mobile API
+  description: >-
+    API collection for The Stack mobile application. Hosted at
+    https://peptide-web-app.onrender.com/
+  version: 1.0.0
+servers:
+  - url: https://peptide-web-app.onrender.com
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+tags:
+  - name: Mobile
+  - name: Terra
+paths:
+  /api/v1/mobile/config:
+    get:
+      tags:
+        - Mobile
+      summary: Get Config
+      operationId: getConfig
+      description: >-
+        Fetch dynamic configuration for onboarding (Goals and Conditions).
+        Public endpoint.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/mobile/onboarding:
+    post:
+      tags:
+        - Mobile
+      summary: Complete Onboarding
+      operationId: completeOnboarding
+      description: >-
+        Complete user onboarding by saving health profile, goals, and
+        conditions. Requires Supabase JWT.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                full_name: John Doe
+                date_of_birth: '1990-01-01'
+                sex: MALE
+                height_cm: 180
+                weight_lbs: 170
+                activity_level: ACTIVE
+                diet_type: VEGAN
+                typical_breakfast_time: '08:00'
+                typical_lunch_time: '13:00'
+                typical_dinner_time: '19:00'
+                has_used_peptides: true
+                interested_in_learning: true
+                other_medications: None
+                goal_ids:
+                  - goal-uuid-1
+                  - goal-uuid-2
+                condition_ids:
+                  - condition-uuid-1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/mobile/devices:
+    post:
+      tags:
+        - Mobile
+      summary: Register Device
+      operationId: registerDevice
+      description: Register or update a device FCM token for push notifications.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                fcm_token: fcm-token-from-firebase
+                device_id: unique-hardware-id
+                platform: ios
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/mobile/devices/unique-hardware-id:
+    delete:
+      tags:
+        - Mobile
+      summary: Unregister Device
+      operationId: unregisterDevice
+      description: Unregister a device (e.g., on logout).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/terra/widget-session:
+    post:
+      tags:
+        - Terra
+      summary: Create Widget Session
+      operationId: createWidgetSession
+      description: Get a Terra widget session URL to link a wearable device.
+      requestBody:
+        content: {}
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/terra/biometrics:
+    get:
+      tags:
+        - Terra
+      summary: Get Biometrics
+      operationId: getBiometrics
+      description: Fetch historical daily biometrics for the user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+          example: '30'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/terra/webhook:
+    post:
+      tags:
+        - Terra
+      summary: Terra Webhook (Reference)
+      operationId: terraWebhook
+      description: Handle webhooks from Terra. Verified via HMAC signature.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                type: daily
+                user:
+                  reference_id: user-uuid
+                  user_id: terra-user-id
+                data: []
+      parameters:
+        - name: terra-signature
+          in: header
+          schema:
+            type: string
+          example: t=TIMESTAMP,v1=SIGNATURE
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
