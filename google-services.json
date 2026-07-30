@@ -1,37 +1,26 @@
 {
   "project_info": {
-    "project_number": "988429882832",
-    "firebase_url": "https://merci-crm.firebaseio.com",
-    "project_id": "merci-crm",
-    "storage_bucket": "merci-crm.firebasestorage.app"
+    "project_number": "206341069906",
+    "project_id": "playverse-2c9e1",
+    "storage_bucket": "playverse-2c9e1.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:988429882832:android:8c69f6a201637916f155d5",
+        "mobilesdk_app_id": "1:206341069906:android:37ae5efc12a00f8842138b",
         "android_client_info": {
           "package_name": "com.playverse"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "988429882832-nrfm9a6vkone5jk8e64v1m5eer97qhg0.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyASRhEyC3EeZIW2zUsrXuedr7amzobj3nQ"
+          "current_key": "AIzaSyCqiZTYky-5bA7rjRB7RBHBEmjKWHGMYTI"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "988429882832-3rk2humr1ia0ev2dm159ijibpgkecaro.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
