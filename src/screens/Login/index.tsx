@@ -20,39 +20,49 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
 
   const { mutate: login, isPending } = useAuthControllerLoginUser({
     onSuccess: (data: any) => {
-      if (data?.access_token) {
-        storage.set('accessToken', data.access_token);
-        if (data?.refresh_token) {
-          storage.set('refreshToken', data.refresh_token);
-        }
-        storage.set('userProfile', JSON.stringify(data));
-        
+      const otpToken = data?.data?.token || data?.token;
+      if (otpToken) {
         showMessage({
-          message: 'Welcome Back!',
-          description: `Logged in successfully as ${data.full_name || 'User'}`,
+          message: 'OTP Sent',
+          description: 'Please verify with the static OTP code.',
           type: 'success',
           icon: 'success',
         });
-
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
+        navigation.navigate('Otp', { mobileNumber: phone.trim(), token: otpToken });
       } else {
-        // Fallback if no token is returned but success
-        showMessage({
-          message: 'Login Successful',
-          description: 'Access granted.',
-          type: 'success',
-        });
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
+        const accessToken = data?.access_token || data?.result?.accessToken;
+        if (accessToken) {
+          storage.set('accessToken', accessToken);
+          if (data?.refresh_token || data?.result?.refreshToken) {
+            storage.set('refreshToken', data.refresh_token || data.result.refreshToken);
+          }
+          storage.set('userProfile', JSON.stringify(data?.result || data));
+          const primaryRole = data?.result?.roles?.[0]?.name || 'PLAYER';
+          storage.set('userRole', primaryRole);
+          
+          showMessage({
+            message: 'Welcome Back!',
+            description: `Logged in successfully.`,
+            type: 'success',
+            icon: 'success',
+          });
+
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+          });
+        } else {
+          showMessage({
+            message: 'Login Successful',
+            description: 'Please verify the OTP code sent to your phone.',
+            type: 'success',
+          });
+          // Attempt redirecting with an empty token parameter so they can input code manually if required
+          navigation.navigate('Otp', { mobileNumber: phone.trim(), token: '' });
+        }
       }
     },
     onError: (error: any) => {
@@ -83,7 +93,6 @@ const LoginScreen = () => {
           type: 'warning',
           icon: 'warning',
         });
-        // Navigate to Otp screen, passing mobileNumber and a dummy/empty token if none exists yet
         navigation.navigate('Otp', { mobileNumber: phone.trim(), token: '' });
       } else {
         showMessage({
@@ -97,10 +106,10 @@ const LoginScreen = () => {
   });
 
   const handleLogin = async () => {
-    if (!phone.trim() || !password.trim()) {
+    if (!phone.trim()) {
       showMessage({
         message: 'Required Fields',
-        description: 'Please enter both phone number and password.',
+        description: 'Please enter your phone number.',
         type: 'warning',
       });
       return;
@@ -131,7 +140,6 @@ const LoginScreen = () => {
       body: {
         mobile_number: phone.trim(),
         country_code: '+91',
-        password: password.trim(),
         app_type: 'App',
         os,
         brand,
@@ -170,7 +178,7 @@ const LoginScreen = () => {
           
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Sign In</Text>
-            <Text style={styles.subtitle}>Welcome back! Enter your credentials to access your account.</Text>
+            <Text style={styles.subtitle}>Welcome back! Enter your phone number to access your account.</Text>
           </View>
 
           <SizedBox height={30} />
@@ -186,18 +194,7 @@ const LoginScreen = () => {
               autoCapitalize="none"
             />
             
-            <SizedBox height={20} />
-            
-            <CTextInput 
-              label="Password" 
-              placeholder="Enter your password" 
-              value={password}
-              onChangeTextValue={setPassword}
-              secureTextEntry={true}
-              autoCapitalize="none"
-            />
-
-            <SizedBox height={40} />
+            <SizedBox height={30} />
 
             <TouchableOpacity 
               style={styles.btnLogin} 

@@ -8,7 +8,8 @@ import CTextInput from '../../Components/atoms/CTextInput';
 import SizedBox from '../../Components/atoms/SizeBox';
 import CImage from '../../Components/atoms/CImage';
 import { Icons } from '../../assets';
-import { useAuthControllerConfirmOtp } from '../../Api/educationApiComponents';
+import { useAuthControllerVerifyOtp } from '../../Api/educationApiComponents';
+import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
@@ -24,19 +25,43 @@ const OtpScreen = () => {
 
   const [otp, setOtp] = useState('');
 
-  const { mutate: confirmOtp, isPending } = useAuthControllerConfirmOtp({
+  const { mutate: verifyOtp, isPending } = useAuthControllerVerifyOtp({
     onSuccess: (data: any) => {
-      showMessage({
-        message: 'Account Verified!',
-        description: 'Your account is verified successfully. You can now login.',
-        type: 'success',
-        icon: 'success',
-        duration: 3500,
-      });
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
+      const result = data?.result || data;
+      if (result?.accessToken) {
+        storage.set('accessToken', result.accessToken);
+        if (result?.refreshToken) {
+          storage.set('refreshToken', result.refreshToken);
+        }
+        storage.set('userProfile', JSON.stringify(result));
+        const primaryRole = result?.roles?.[0]?.name || 'PLAYER';
+        storage.set('userRole', primaryRole);
+
+        showMessage({
+          message: 'OTP Verified!',
+          description: 'Login successful.',
+          type: 'success',
+          icon: 'success',
+          duration: 3000,
+        });
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        });
+      } else {
+        showMessage({
+          message: 'Account Verified!',
+          description: 'Your account is verified successfully. You can now login.',
+          type: 'success',
+          icon: 'success',
+          duration: 3500,
+        });
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
     },
     onError: (error: any) => {
       console.log('OTP verification error:', error);
@@ -78,7 +103,7 @@ const OtpScreen = () => {
       return;
     }
 
-    confirmOtp({
+    verifyOtp({
       body: {
         mobile_number: mobileNumber,
         country_code: '+91',

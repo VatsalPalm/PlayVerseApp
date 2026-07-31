@@ -47,7 +47,7 @@ const RegisterScreen = () => {
   const { mutate: uploadFile, isPending: isUploading } = useUploadControllerUploadFile({
     onSuccess: (data: any) => {
       console.log('Upload success data:', data);
-      const url = data?.url || data?.path;
+      const url = data?.result?.url || data?.url || data?.path;
       if (url) {
         setUploadedImageUrl(url);
         showMessage({
@@ -124,8 +124,9 @@ const RegisterScreen = () => {
         icon: 'info',
         duration: 4000,
       });
+      const otpToken = data?.result?.otpToken || data?.token || data?.result?.token || '';
       // Navigate to OTP screen. We pass mobileNumber and token
-      navigation.navigate('Otp', { mobileNumber: phone.trim(), token: data?.token || '' });
+      navigation.navigate('Otp', { mobileNumber: phone.trim(), token: otpToken });
     },
     onError: (error: any) => {
       console.log('Registration error:', error);

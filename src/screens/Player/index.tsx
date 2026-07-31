@@ -9,19 +9,17 @@ import Animated, {
   withSequence,
   Easing
 } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Stop, Circle, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../utils/types';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
-import CImage from '../../Components/atoms/CImage';
-import { Icons } from '../../assets';
 import SizedBox from '../../Components/atoms/SizeBox';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const HomeScreen = () => {
+const PlayerHomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [userName, setUserName] = useState('User');
   const [selectedSport, setSelectedSport] = useState('Cricket');
@@ -32,7 +30,9 @@ const HomeScreen = () => {
       const stored = storage.getString('userProfile');
       if (stored) {
         const userObj = JSON.parse(stored);
-        if (userObj?.full_name) {
+        if (userObj?.display_name) {
+          setUserName(userObj.display_name);
+        } else if (userObj?.full_name) {
           setUserName(userObj.full_name);
         }
       }
@@ -44,8 +44,6 @@ const HomeScreen = () => {
   // Shared values for background orbs
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
   const orb1Y = useSharedValue(SCREEN_HEIGHT * 0.15);
-  const orb2X = useSharedValue(SCREEN_WIDTH * 0.7);
-  const orb2Y = useSharedValue(SCREEN_HEIGHT * 0.7);
 
   useEffect(() => {
     // Orb animations
@@ -67,12 +65,11 @@ const HomeScreen = () => {
     );
   }, []);
 
-
-
   const handleLocalLogout = () => {
     storage.delete('accessToken');
     storage.delete('refreshToken');
     storage.delete('userProfile');
+    storage.delete('userRole');
     showMessage({
       message: 'Signed Out',
       description: 'You have logged out successfully.',
@@ -248,8 +245,6 @@ const HomeScreen = () => {
     </View>
   );
 };
-
-export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -552,3 +547,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export default PlayerHomeScreen;
