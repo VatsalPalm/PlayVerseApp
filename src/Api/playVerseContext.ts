@@ -5,9 +5,9 @@ import {
   type QueryKey,
   type UseQueryOptions,
 } from "@tanstack/react-query";
-import type { QueryOperation } from "./educationApiComponents";
+import type { QueryOperation } from "./playVerseComponents";
 
-export type EducationApiContext<
+export type PlayVerseContext<
   TQueryFnData = unknown,
   TError = DefaultError,
   TData = TQueryFnData,
@@ -37,7 +37,7 @@ export type EducationApiContext<
  *
  * @param queryOptions options from the useQuery wrapper
  */
-export function useEducationApiContext<
+export function usePlayVerseContext<
   TQueryFnData = unknown,
   TError = DefaultError,
   TData = TQueryFnData,
@@ -47,7 +47,7 @@ export function useEducationApiContext<
     UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
     "queryKey" | "queryFn"
   >,
-): EducationApiContext<TQueryFnData, TError, TData, TQueryKey> {
+): PlayVerseContext<TQueryFnData, TError, TData, TQueryKey> {
   return {
     fetcherOptions: {},
     queryOptions: {},

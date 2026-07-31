@@ -5,14 +5,14 @@
  */
 import * as reactQuery from "@tanstack/react-query";
 import {
-  type EducationApiContext,
-  useEducationApiContext,
+  type PlayVerseContext,
+  usePlayVerseContext,
   queryKeyFn,
-} from "./educationApiContext";
-import { deepMerge } from "./educationApiUtils";
-import type * as Fetcher from "./educationApiFetcher";
-import { educationApiFetch } from "./educationApiFetcher";
-import type * as Schemas from "./educationApiSchemas";
+} from "./playVerseContext";
+import { deepMerge } from "./playVerseUtils";
+import type * as Fetcher from "./playVerseFetcher";
+import { playVerseFetch } from "./playVerseFetcher";
+import type * as Schemas from "./playVerseSchemas";
 
 type QueryFnOptions = {
   signal?: AbortController["signal"];
@@ -22,13 +22,13 @@ export type AuthControllerRegisterError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerRegisterVariables = {
   body: Schemas.CreateUserDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerRegister = (
   variables: AuthControllerRegisterVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerRegisterError,
     Schemas.CreateUserDto,
@@ -47,7 +47,7 @@ export const useAuthControllerRegister = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerRegisterError,
@@ -63,13 +63,13 @@ export type AuthControllerLoginUserError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerLoginUserVariables = {
   body: Schemas.LoginUserDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerLoginUser = (
   variables: AuthControllerLoginUserVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerLoginUserError,
     Schemas.LoginUserDto,
@@ -88,7 +88,7 @@ export const useAuthControllerLoginUser = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerLoginUserError,
@@ -104,13 +104,13 @@ export type AuthControllerForgotPasswordError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerForgotPasswordVariables = {
   body: Schemas.ForgotPasswordDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerForgotPassword = (
   variables: AuthControllerForgotPasswordVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerForgotPasswordError,
     Schemas.ForgotPasswordDto,
@@ -134,7 +134,7 @@ export const useAuthControllerForgotPassword = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerForgotPasswordError,
@@ -150,13 +150,13 @@ export type AuthControllerSendOtpError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerSendOtpVariables = {
   body: Schemas.ForgotPasswordDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerSendOtp = (
   variables: AuthControllerSendOtpVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerSendOtpError,
     Schemas.ForgotPasswordDto,
@@ -175,7 +175,7 @@ export const useAuthControllerSendOtp = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerSendOtpError,
@@ -191,13 +191,13 @@ export type AuthControllerConfirmOtpError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerConfirmOtpVariables = {
   body: Schemas.ConfirmOtpDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerConfirmOtp = (
   variables: AuthControllerConfirmOtpVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerConfirmOtpError,
     Schemas.ConfirmOtpDto,
@@ -216,7 +216,7 @@ export const useAuthControllerConfirmOtp = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerConfirmOtpError,
@@ -232,13 +232,13 @@ export type AuthControllerVerifyOtpError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerVerifyOtpVariables = {
   body: Schemas.ConfirmOtpDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerVerifyOtp = (
   variables: AuthControllerVerifyOtpVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerVerifyOtpError,
     Schemas.ConfirmOtpDto,
@@ -257,7 +257,7 @@ export const useAuthControllerVerifyOtp = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerVerifyOtpError,
@@ -273,13 +273,13 @@ export type AuthControllerResetPasswordError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerResetPasswordVariables = {
   body: Schemas.ChangePasswordDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerResetPassword = (
   variables: AuthControllerResetPasswordVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerResetPasswordError,
     Schemas.ChangePasswordDto,
@@ -303,7 +303,7 @@ export const useAuthControllerResetPassword = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerResetPasswordError,
@@ -320,13 +320,13 @@ export type AuthControllerResetPasswordAliasError =
 
 export type AuthControllerResetPasswordAliasVariables = {
   body: Schemas.ChangePasswordDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerResetPasswordAlias = (
   variables: AuthControllerResetPasswordAliasVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerResetPasswordAliasError,
     Schemas.ChangePasswordDto,
@@ -350,7 +350,7 @@ export const useAuthControllerResetPasswordAlias = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerResetPasswordAliasError,
@@ -368,13 +368,13 @@ export type AuthControllerRefreshTokenError = Fetcher.ErrorWrapper<undefined>;
 
 export type AuthControllerRefreshTokenVariables = {
   body: Schemas.RefreshTokenDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchAuthControllerRefreshToken = (
   variables: AuthControllerRefreshTokenVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     AuthControllerRefreshTokenError,
     Schemas.RefreshTokenDto,
@@ -398,7 +398,7 @@ export const useAuthControllerRefreshToken = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     AuthControllerRefreshTokenError,
@@ -426,13 +426,13 @@ export type UploadControllerUploadFileRequestBody = {
 export type UploadControllerUploadFileVariables = {
   body?: UploadControllerUploadFileRequestBody;
   queryParams?: UploadControllerUploadFileQueryParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchUploadControllerUploadFile = (
   variables: UploadControllerUploadFileVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     UploadControllerUploadFileError,
     UploadControllerUploadFileRequestBody,
@@ -451,7 +451,7 @@ export const useUploadControllerUploadFile = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     UploadControllerUploadFileError,
@@ -476,13 +476,13 @@ export type UploadControllerUploadFilesRequestBody = {
 export type UploadControllerUploadFilesVariables = {
   body?: UploadControllerUploadFilesRequestBody;
   queryParams?: UploadControllerUploadFilesQueryParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchUploadControllerUploadFiles = (
   variables: UploadControllerUploadFilesVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     UploadControllerUploadFilesError,
     UploadControllerUploadFilesRequestBody,
@@ -501,7 +501,7 @@ export const useUploadControllerUploadFiles = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     UploadControllerUploadFilesError,
@@ -513,17 +513,251 @@ export const useUploadControllerUploadFiles = (
   });
 };
 
+export type AiControllerGetNearbyGroundsPathParams = {
+  /**
+   * The ID of the user
+   */
+  userId: number;
+};
+
+export type AiControllerGetNearbyGroundsQueryParams = {
+  /**
+   * Free-text search query (e.g. 'find cricket ground near me'). If omitted, searches based on user profile sports/city.
+   */
+  query?: string;
+};
+
+export type AiControllerGetNearbyGroundsError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerGetNearbyGroundsVariables = {
+  pathParams: AiControllerGetNearbyGroundsPathParams;
+  queryParams?: AiControllerGetNearbyGroundsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerGetNearbyGrounds = (
+  variables: AiControllerGetNearbyGroundsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    undefined,
+    {},
+    AiControllerGetNearbyGroundsQueryParams,
+    AiControllerGetNearbyGroundsPathParams
+  >({
+    url: "/api/ai/nearby-grounds/{userId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/ai/nearby-grounds/{userId}",
+      operationId: "aiControllerGetNearbyGrounds",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchAiControllerGetNearbyGrounds(variables, signal),
+  };
+}
+
+export const useSuspenseAiControllerGetNearbyGrounds = <TData = undefined,>(
+  variables: AiControllerGetNearbyGroundsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetNearbyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    TData
+  >({
+    ...aiControllerGetNearbyGroundsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useAiControllerGetNearbyGrounds = <TData = undefined,>(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetNearbyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    TData
+  >({
+    ...aiControllerGetNearbyGroundsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type AiControllerGetPlayerStatsPathParams = {
+  /**
+   * The ID of the user
+   */
+  userId: number;
+};
+
+export type AiControllerGetPlayerStatsError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerGetPlayerStatsVariables = {
+  pathParams: AiControllerGetPlayerStatsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerGetPlayerStats = (
+  variables: AiControllerGetPlayerStatsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerGetPlayerStatsError,
+    undefined,
+    {},
+    {},
+    AiControllerGetPlayerStatsPathParams
+  >({
+    url: "/api/ai/player-stats/{userId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/ai/player-stats/{userId}",
+      operationId: "aiControllerGetPlayerStats",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchAiControllerGetPlayerStats(variables, signal),
+  };
+}
+
+export const useSuspenseAiControllerGetPlayerStats = <TData = undefined,>(
+  variables: AiControllerGetPlayerStatsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetPlayerStatsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    AiControllerGetPlayerStatsError,
+    TData
+  >({
+    ...aiControllerGetPlayerStatsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useAiControllerGetPlayerStats = <TData = undefined,>(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetPlayerStatsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<undefined, AiControllerGetPlayerStatsError, TData>(
+    {
+      ...aiControllerGetPlayerStatsQuery(
+        variables === reactQuery.skipToken
+          ? variables
+          : deepMerge(fetcherOptions, variables),
+      ),
+      ...options,
+      ...queryOptions,
+    },
+  );
+};
+
 export type GroundControllerCreateGroundError = Fetcher.ErrorWrapper<undefined>;
 
 export type GroundControllerCreateGroundVariables = {
   body: Schemas.CreateGroundDto;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerCreateGround = (
   variables: GroundControllerCreateGroundVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerCreateGroundError,
     Schemas.CreateGroundDto,
@@ -542,7 +776,7 @@ export const useGroundControllerCreateGround = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     GroundControllerCreateGroundError,
@@ -620,13 +854,13 @@ export type GroundControllerGetPublicGroundsError =
 
 export type GroundControllerGetPublicGroundsVariables = {
   queryParams?: GroundControllerGetPublicGroundsQueryParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerGetPublicGrounds = (
   variables: GroundControllerGetPublicGroundsVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerGetPublicGroundsError,
     undefined,
@@ -679,7 +913,7 @@ export const useSuspenseGroundControllerGetPublicGrounds = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
     GroundControllerGetPublicGroundsError,
@@ -704,7 +938,7 @@ export const useGroundControllerGetPublicGrounds = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useQuery<
     undefined,
     GroundControllerGetPublicGroundsError,
@@ -763,13 +997,13 @@ export type GroundControllerGetMyGroundsError = Fetcher.ErrorWrapper<undefined>;
 
 export type GroundControllerGetMyGroundsVariables = {
   queryParams?: GroundControllerGetMyGroundsQueryParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerGetMyGrounds = (
   variables: GroundControllerGetMyGroundsVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerGetMyGroundsError,
     undefined,
@@ -822,7 +1056,7 @@ export const useSuspenseGroundControllerGetMyGrounds = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
     GroundControllerGetMyGroundsError,
@@ -845,7 +1079,7 @@ export const useGroundControllerGetMyGrounds = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useQuery<
     undefined,
     GroundControllerGetMyGroundsError,
@@ -870,13 +1104,13 @@ export type GroundControllerGetGroundDetailsError =
 
 export type GroundControllerGetGroundDetailsVariables = {
   pathParams: GroundControllerGetGroundDetailsPathParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerGetGroundDetails = (
   variables: GroundControllerGetGroundDetailsVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerGetGroundDetailsError,
     undefined,
@@ -929,7 +1163,7 @@ export const useSuspenseGroundControllerGetGroundDetails = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
     GroundControllerGetGroundDetailsError,
@@ -954,7 +1188,7 @@ export const useGroundControllerGetGroundDetails = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useQuery<
     undefined,
     GroundControllerGetGroundDetailsError,
@@ -979,13 +1213,13 @@ export type GroundControllerUpdateGroundError = Fetcher.ErrorWrapper<undefined>;
 export type GroundControllerUpdateGroundVariables = {
   body?: Schemas.UpdateGroundDto;
   pathParams: GroundControllerUpdateGroundPathParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerUpdateGround = (
   variables: GroundControllerUpdateGroundVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerUpdateGroundError,
     Schemas.UpdateGroundDto,
@@ -1004,7 +1238,7 @@ export const useGroundControllerUpdateGround = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     GroundControllerUpdateGroundError,
@@ -1024,13 +1258,13 @@ export type GroundControllerDeleteGroundError = Fetcher.ErrorWrapper<undefined>;
 
 export type GroundControllerDeleteGroundVariables = {
   pathParams: GroundControllerDeleteGroundPathParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerDeleteGround = (
   variables: GroundControllerDeleteGroundVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerDeleteGroundError,
     undefined,
@@ -1049,7 +1283,7 @@ export const useGroundControllerDeleteGround = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     GroundControllerDeleteGroundError,
@@ -1082,13 +1316,13 @@ export type GroundControllerGetAvailabilityError =
 export type GroundControllerGetAvailabilityVariables = {
   pathParams: GroundControllerGetAvailabilityPathParams;
   queryParams: GroundControllerGetAvailabilityQueryParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerGetAvailability = (
   variables: GroundControllerGetAvailabilityVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerGetAvailabilityError,
     undefined,
@@ -1146,7 +1380,7 @@ export const useSuspenseGroundControllerGetAvailability = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
     GroundControllerGetAvailabilityError,
@@ -1171,7 +1405,7 @@ export const useGroundControllerGetAvailability = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useQuery<
     undefined,
     GroundControllerGetAvailabilityError,
@@ -1196,13 +1430,13 @@ export type GroundControllerAddImageError = Fetcher.ErrorWrapper<undefined>;
 export type GroundControllerAddImageVariables = {
   body: Schemas.GroundImageDto;
   pathParams: GroundControllerAddImagePathParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerAddImage = (
   variables: GroundControllerAddImageVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerAddImageError,
     Schemas.GroundImageDto,
@@ -1226,7 +1460,7 @@ export const useGroundControllerAddImage = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     GroundControllerAddImageError,
@@ -1247,13 +1481,13 @@ export type GroundControllerRemoveImageError = Fetcher.ErrorWrapper<undefined>;
 
 export type GroundControllerRemoveImageVariables = {
   pathParams: GroundControllerRemoveImagePathParams;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
 export const fetchGroundControllerRemoveImage = (
   variables: GroundControllerRemoveImageVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     GroundControllerRemoveImageError,
     undefined,
@@ -1277,7 +1511,7 @@ export const useGroundControllerRemoveImage = (
     "mutationFn"
   >,
 ) => {
-  const { fetcherOptions } = useEducationApiContext();
+  const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
     GroundControllerRemoveImageError,
@@ -1289,16 +1523,172 @@ export const useGroundControllerRemoveImage = (
   });
 };
 
+export type GroundControllerAddSlotPathParams = {
+  id: number;
+};
+
+export type GroundControllerAddSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerAddSlotRequestBody = Schemas.GroundSlotDto[];
+
+export type GroundControllerAddSlotVariables = {
+  body?: GroundControllerAddSlotRequestBody;
+  pathParams: GroundControllerAddSlotPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerAddSlot = (
+  variables: GroundControllerAddSlotVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerAddSlotError,
+    GroundControllerAddSlotRequestBody,
+    {},
+    {},
+    GroundControllerAddSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerAddSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerAddSlotError,
+      GroundControllerAddSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerAddSlotError,
+    GroundControllerAddSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerAddSlotVariables) =>
+      fetchGroundControllerAddSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type GroundControllerUpdateSlotPathParams = {
+  id: number;
+  slotId: number;
+};
+
+export type GroundControllerUpdateSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerUpdateSlotVariables = {
+  body?: Schemas.UpdateGroundSlotDto;
+  pathParams: GroundControllerUpdateSlotPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerUpdateSlot = (
+  variables: GroundControllerUpdateSlotVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerUpdateSlotError,
+    Schemas.UpdateGroundSlotDto,
+    {},
+    {},
+    GroundControllerUpdateSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots/{slotId}",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerUpdateSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerUpdateSlotError,
+      GroundControllerUpdateSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerUpdateSlotError,
+    GroundControllerUpdateSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerUpdateSlotVariables) =>
+      fetchGroundControllerUpdateSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type GroundControllerDeleteSlotPathParams = {
+  id: number;
+  slotId: number;
+};
+
+export type GroundControllerDeleteSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerDeleteSlotVariables = {
+  pathParams: GroundControllerDeleteSlotPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerDeleteSlot = (
+  variables: GroundControllerDeleteSlotVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerDeleteSlotError,
+    undefined,
+    {},
+    {},
+    GroundControllerDeleteSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots/{slotId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerDeleteSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerDeleteSlotError,
+      GroundControllerDeleteSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerDeleteSlotError,
+    GroundControllerDeleteSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerDeleteSlotVariables) =>
+      fetchGroundControllerDeleteSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type MasterControllerGetSportsError = Fetcher.ErrorWrapper<undefined>;
 
 export type MasterControllerGetSportsVariables =
-  EducationApiContext["fetcherOptions"];
+  PlayVerseContext["fetcherOptions"];
 
 export const fetchMasterControllerGetSports = (
   variables: MasterControllerGetSportsVariables,
   signal?: AbortSignal,
 ) =>
-  educationApiFetch<
+  playVerseFetch<
     undefined,
     MasterControllerGetSportsError,
     undefined,
@@ -1351,7 +1741,7 @@ export const useSuspenseMasterControllerGetSports = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useSuspenseQuery<
     undefined,
     MasterControllerGetSportsError,
@@ -1374,7 +1764,7 @@ export const useMasterControllerGetSports = <TData = undefined,>(
     "queryKey" | "queryFn" | "initialData"
   >,
 ) => {
-  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
   return reactQuery.useQuery<undefined, MasterControllerGetSportsError, TData>({
     ...masterControllerGetSportsQuery(
       variables === reactQuery.skipToken
@@ -1387,6 +1777,16 @@ export const useMasterControllerGetSports = <TData = undefined,>(
 };
 
 export type QueryOperation =
+  | {
+      path: "/api/ai/nearby-grounds/{userId}";
+      operationId: "aiControllerGetNearbyGrounds";
+      variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/ai/player-stats/{userId}";
+      operationId: "aiControllerGetPlayerStats";
+      variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken;
+    }
   | {
       path: "/api/grounds/v1";
       operationId: "groundControllerGetPublicGrounds";

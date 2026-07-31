@@ -8,7 +8,7 @@ import CTextInput from '../../Components/atoms/CTextInput';
 import SizedBox from '../../Components/atoms/SizeBox';
 import CImage from '../../Components/atoms/CImage';
 import { Icons } from '../../assets';
-import { useAuthControllerVerifyOtp } from '../../Api/educationApiComponents';
+import { useAuthControllerVerifyOtp } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';

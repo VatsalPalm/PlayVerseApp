@@ -13,6 +13,9 @@ export type StyleArgs = {
 
 export type HomeStackParamList = {
     HomeScreen: undefined;
+    GroundsList: undefined;
+    AddEditGround: { groundId?: number };
+    ManageSlots: { groundId: number };
 }
 
 export type RootStackParamList = {

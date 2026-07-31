@@ -1,17 +1,15 @@
-import type { EducationApiContext } from "./educationApiContext";
+import type { PlayVerseContext } from "./playVerseContext";
 import axios from "axios";
-import { MMKV } from 'react-native-mmkv';
+import { storage } from "../services/mmkv";
 
-const storage = new MMKV();
 const baseUrl = "https://8lqg2hx4-3339.inc1.devtunnels.ms";
-// Local instance to avoid interference
 const localInstance = axios.create();
 
 export type ErrorWrapper<TError> =
   | TError
   | { status: "unknown"; payload: string };
 
-export type EducationApiFetcherOptions<
+export type PlayVerseFetcherOptions<
   TBody,
   THeaders,
   TQueryParams,
@@ -24,9 +22,9 @@ export type EducationApiFetcherOptions<
   queryParams?: TQueryParams;
   pathParams?: TPathParams;
   signal?: AbortSignal;
-} & EducationApiContext["fetcherOptions"];
+} & PlayVerseContext["fetcherOptions"];
 
-export async function educationApiFetch<
+export async function playVerseFetch<
   TData,
   TError,
   TBody extends {} | FormData | undefined | null,
@@ -41,14 +39,14 @@ export async function educationApiFetch<
   pathParams,
   queryParams,
   signal,
-}: EducationApiFetcherOptions<
+}: PlayVerseFetcherOptions<
   TBody,
   THeaders,
   TQueryParams,
   TPathParams
 >): Promise<TData> {
   try {
-    const token = storage.getString('accessToken');
+    const token = storage.getString("accessToken");
     const requestHeaders: any = {
       ...headers,
     };
@@ -75,15 +73,13 @@ export async function educationApiFetch<
     });
     return response.data as TData;
   } catch (e: any) {
-    let errorObject: ErrorWrapper<TError> = {
-      status: "unknown",
-      payload: e.message || "Unknown error"
-    }
-
     if (e.response && e.response.data) {
       throw e.response.data;
     }
-
+    const errorObject: ErrorWrapper<TError> = {
+      status: "unknown",
+      payload: e.message || "Unknown error",
+    };
     throw errorObject;
   }
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Image, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,7 +10,7 @@ import CTextInput from '../../Components/atoms/CTextInput';
 import CImage from '../../Components/atoms/CImage';
 import SizedBox from '../../Components/atoms/SizeBox';
 import { Icons } from '../../assets';
-import { useAuthControllerRegister, useUploadControllerUploadFile } from '../../Api/educationApiComponents';
+import { useAuthControllerRegister, useUploadControllerUploadFile } from '../../Api/playVerseComponents';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import DeviceInfo from 'react-native-device-info';
@@ -207,6 +208,22 @@ const RegisterScreen = () => {
       console.log('Failed to fetch device / fcm info:', e);
     }
 
+    let lat: number | undefined;
+    let lng: number | undefined;
+
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        if (loc && loc.coords) {
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+        }
+      }
+    } catch (e) {
+      console.log('Failed to fetch location on register:', e);
+    }
+
     register({
       body: {
         full_name: fullName.trim(),
@@ -227,6 +244,8 @@ const RegisterScreen = () => {
         version_number: osVersion,
         fcm_token: fcmToken,
         area_of_interest: selectedSports,
+        latitude: lat,
+        longitude: lng,
       } as any
     });
   };

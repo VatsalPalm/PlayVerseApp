@@ -3,6 +3,21 @@
  *
  * @version 1.0
  */
+export type ProfileImageDto = {
+  /**
+   * Uploaded filename
+   *
+   * @example 1785412662411.png
+   */
+  filename: string;
+  /**
+   * URL of the uploaded image
+   *
+   * @example /drive/files/1785412662411.png
+   */
+  url: string;
+};
+
 export type CreateUserDto = {
   /**
    * Display name of user
@@ -30,11 +45,9 @@ export type CreateUserDto = {
    */
   role: "PLAYER" | "GROUND_OWNER" | "ORGANIZER" | "ADMIN";
   /**
-   * Profile image url of user
-   *
-   * @example https://example.com/profiles/rajesh.jpg
+   * Profile image upload object (filename and url), can also accept a plain URL string
    */
-  profile_image?: string;
+  profile_image?: ProfileImageDto;
   /**
    * Auth type of user. Local/Social media type
    *
@@ -83,6 +96,13 @@ export type CreateUserDto = {
    * @example fcm_token_001
    */
   fcm_token?: string;
+  /**
+   * List of sport IDs that the user plays or is interested in
+   *
+   * @example 1
+   * @example 2
+   */
+  sports?: string[];
 };
 
 export type LoginUserDto = {
@@ -319,6 +339,12 @@ export type UpdateGroundSlotDto = {
    * @example 500
    */
   price?: number;
+  /**
+   * Slot status: 1=active, 0=inactive
+   *
+   * @example 1
+   */
+  status?: number;
 };
 
 export type UpdateGroundDto = {

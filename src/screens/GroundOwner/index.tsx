@@ -12,7 +12,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../utils/types';
+import { HomeStackParamList } from '../../utils/types';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import SizedBox from '../../Components/atoms/SizeBox';
@@ -20,7 +20,7 @@ import SizedBox from '../../Components/atoms/SizeBox';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const GroundOwnerHomeScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<any>();
   const [userName, setUserName] = useState('Owner');
 
   useEffect(() => {
@@ -37,14 +37,22 @@ const GroundOwnerHomeScreen = () => {
     }
   }, []);
 
-  const orb1X = useSharedValue(SCREEN_WIDTH * 0.7);
-  const orb1Y = useSharedValue(SCREEN_HEIGHT * 0.2);
+  const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
+  const orb1Y = useSharedValue(SCREEN_HEIGHT * 0.15);
 
   useEffect(() => {
     orb1X.value = withRepeat(
       withSequence(
-        withTiming(SCREEN_WIDTH * 0.5, { duration: 9000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(SCREEN_WIDTH * 0.8, { duration: 9000, easing: Easing.inOut(Easing.ease) })
+        withTiming(SCREEN_WIDTH * 0.35, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(SCREEN_WIDTH * 0.15, { duration: 10000, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+    orb1Y.value = withRepeat(
+      withSequence(
+        withTiming(SCREEN_HEIGHT * 0.1, { duration: 9000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(SCREEN_HEIGHT * 0.25, { duration: 9000, easing: Easing.inOut(Easing.ease) })
       ),
       -1,
       true
@@ -80,7 +88,7 @@ const GroundOwnerHomeScreen = () => {
           <Defs>
             <LinearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
               <Stop offset="0%" stopColor="#080612" />
-              <Stop offset="50%" stopColor="#150D2A" />
+              <Stop offset="50%" stopColor="#120E2E" />
               <Stop offset="100%" stopColor="#03020A" />
             </LinearGradient>
           </Defs>
@@ -126,52 +134,25 @@ const GroundOwnerHomeScreen = () => {
 
           <SizedBox height={10} />
 
-          {/* Booking Approvals Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pending Approval (2)</Text>
-            
-            <View style={styles.approvalCard}>
-              <View style={styles.approvalHeader}>
-                <Text style={styles.approvalGround}>Green Field Arena (Pitch A)</Text>
-                <Text style={styles.approvalTime}>Today • 6:00 PM</Text>
-              </View>
-              <Text style={styles.approvalUser}>Booked by: Rajesh Kumar (Cricket)</Text>
-              <View style={styles.approvalActions}>
-                <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]}>
-                  <Text style={styles.declineText}>Decline</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, styles.approveBtn]}>
-                  <Text style={styles.approveText}>Approve</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            <View style={styles.approvalCard}>
-              <View style={styles.approvalHeader}>
-                <Text style={styles.approvalGround}>Smash Pickle Club (Court 2)</Text>
-                <Text style={styles.approvalTime}>Tomorrow • 8:00 AM</Text>
-              </View>
-              <Text style={styles.approvalUser}>Booked by: Steve Smith (Pickleball)</Text>
-              <View style={styles.approvalActions}>
-                <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]}>
-                  <Text style={styles.declineText}>Decline</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, styles.approveBtn]}>
-                  <Text style={styles.approveText}>Approve</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
 
           {/* Quick Actions */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Venue Quick Actions</Text>
             <View style={styles.quickActionsGrid}>
-              <TouchableOpacity style={styles.actionCard}>
+              <TouchableOpacity 
+                style={styles.actionCard} 
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('AddEditGround')}
+              >
                 <Text style={styles.actionIcon}>➕</Text>
                 <Text style={styles.actionTitle}>Add Ground</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionCard}>
+              <TouchableOpacity 
+                style={styles.actionCard} 
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('GroundsList')}
+              >
                 <Text style={styles.actionIcon}>📅</Text>
                 <Text style={styles.actionTitle}>Manage Slots</Text>
               </TouchableOpacity>
@@ -202,14 +183,14 @@ const styles = StyleSheet.create({
   floatingOrb: {
     position: 'absolute',
     borderRadius: 9999,
-    width: 200,
-    height: 200,
-    opacity: 0.12,
+    width: 250,
+    height: 250,
+    opacity: 0.15,
   },
   orb1: {
-    backgroundColor: '#00D2FF',
-    bottom: 100,
-    right: -50,
+    backgroundColor: '#6C4DF6',
+    top: -50,
+    left: -50,
   },
   header: {
     flexDirection: 'row',

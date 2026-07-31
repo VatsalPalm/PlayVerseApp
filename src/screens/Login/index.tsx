@@ -8,11 +8,12 @@ import CTextInput from '../../Components/atoms/CTextInput';
 import CImage from '../../Components/atoms/CImage';
 import SizedBox from '../../Components/atoms/SizeBox';
 import { Icons } from '../../assets';
-import { useAuthControllerLoginUser } from '../../Api/educationApiComponents';
+import { useAuthControllerLoginUser } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import DeviceInfo from 'react-native-device-info';
+import * as Location from 'expo-location';
 import { getFcmPushToken } from '../../utils/helpers';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -136,6 +137,22 @@ const LoginScreen = () => {
       console.log('Failed to fetch device / fcm info:', e);
     }
 
+    let lat: number | undefined;
+    let lng: number | undefined;
+
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        if (loc && loc.coords) {
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+        }
+      }
+    } catch (e) {
+      console.log('Failed to fetch location on login:', e);
+    }
+
     login({
       body: {
         mobile_number: phone.trim(),
@@ -147,6 +164,8 @@ const LoginScreen = () => {
         serial_number: uniqueId,
         version_number: osVersion,
         fcm_token: fcmToken,
+        latitude: lat,
+        longitude: lng,
       } as any
     });
   };
