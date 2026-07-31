@@ -49,13 +49,16 @@ export async function playVerseFetch<
     const token = storage.getString("accessToken");
     const requestHeaders: any = {
       ...headers,
+      "X-Tunnel-Skip-AntiSpam": "true",
     };
 
     if (token) {
       requestHeaders["Authorization"] = `Bearer ${token}`;
     }
 
-    if (
+    if (body instanceof FormData) {
+      requestHeaders["Content-Type"] = "multipart/form-data";
+    } else if (
       requestHeaders["Content-Type"]
         ?.toLowerCase()
         .includes("multipart/form-data")

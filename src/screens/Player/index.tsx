@@ -128,9 +128,13 @@ const PlayerHomeScreen = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Choose Your Sport</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sportsScroll}>
-              {['Cricket', 'Pickleball', 'Football', 'Badminton'].map((sport) => {
+              {['Cricket', 'Football', 'Basketball', 'Tennis', 'Pickleball'].map((sport) => {
                 const isSelected = selectedSport === sport;
-                const emoji = sport === 'Cricket' ? '🏏' : sport === 'Pickleball' ? '🏓' : sport === 'Football' ? '⚽' : '🏸';
+                const emoji = 
+                  sport === 'Cricket' ? '🏏' : 
+                  sport === 'Football' ? '⚽' : 
+                  sport === 'Basketball' ? '🏀' : 
+                  sport === 'Tennis' ? '🎾' : '🏓';
                 return (
                   <TouchableOpacity
                     key={sport}
