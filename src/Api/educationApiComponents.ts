@@ -513,6 +513,240 @@ export const useUploadControllerUploadFiles = (
   });
 };
 
+export type AiControllerGetNearbyGroundsPathParams = {
+  /**
+   * The ID of the user
+   */
+  userId: number;
+};
+
+export type AiControllerGetNearbyGroundsQueryParams = {
+  /**
+   * Free-text search query (e.g. 'find cricket ground near me'). If omitted, searches based on user profile sports/city.
+   */
+  query?: string;
+};
+
+export type AiControllerGetNearbyGroundsError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerGetNearbyGroundsVariables = {
+  pathParams: AiControllerGetNearbyGroundsPathParams;
+  queryParams?: AiControllerGetNearbyGroundsQueryParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchAiControllerGetNearbyGrounds = (
+  variables: AiControllerGetNearbyGroundsVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    undefined,
+    {},
+    AiControllerGetNearbyGroundsQueryParams,
+    AiControllerGetNearbyGroundsPathParams
+  >({
+    url: "/api/ai/nearby-grounds/{userId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function aiControllerGetNearbyGroundsQuery(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/ai/nearby-grounds/{userId}",
+      operationId: "aiControllerGetNearbyGrounds",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchAiControllerGetNearbyGrounds(variables, signal),
+  };
+}
+
+export const useSuspenseAiControllerGetNearbyGrounds = <TData = undefined,>(
+  variables: AiControllerGetNearbyGroundsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetNearbyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    TData
+  >({
+    ...aiControllerGetNearbyGroundsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useAiControllerGetNearbyGrounds = <TData = undefined,>(
+  variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetNearbyGroundsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    AiControllerGetNearbyGroundsError,
+    TData
+  >({
+    ...aiControllerGetNearbyGroundsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type AiControllerGetPlayerStatsPathParams = {
+  /**
+   * The ID of the user
+   */
+  userId: number;
+};
+
+export type AiControllerGetPlayerStatsError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerGetPlayerStatsVariables = {
+  pathParams: AiControllerGetPlayerStatsPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchAiControllerGetPlayerStats = (
+  variables: AiControllerGetPlayerStatsVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    AiControllerGetPlayerStatsError,
+    undefined,
+    {},
+    {},
+    AiControllerGetPlayerStatsPathParams
+  >({
+    url: "/api/ai/player-stats/{userId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function aiControllerGetPlayerStatsQuery(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/ai/player-stats/{userId}",
+      operationId: "aiControllerGetPlayerStats",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchAiControllerGetPlayerStats(variables, signal),
+  };
+}
+
+export const useSuspenseAiControllerGetPlayerStats = <TData = undefined,>(
+  variables: AiControllerGetPlayerStatsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetPlayerStatsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    AiControllerGetPlayerStatsError,
+    TData
+  >({
+    ...aiControllerGetPlayerStatsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useAiControllerGetPlayerStats = <TData = undefined,>(
+  variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetPlayerStatsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useEducationApiContext(options);
+  return reactQuery.useQuery<undefined, AiControllerGetPlayerStatsError, TData>(
+    {
+      ...aiControllerGetPlayerStatsQuery(
+        variables === reactQuery.skipToken
+          ? variables
+          : deepMerge(fetcherOptions, variables),
+      ),
+      ...options,
+      ...queryOptions,
+    },
+  );
+};
+
 export type GroundControllerCreateGroundError = Fetcher.ErrorWrapper<undefined>;
 
 export type GroundControllerCreateGroundVariables = {
@@ -1289,6 +1523,162 @@ export const useGroundControllerRemoveImage = (
   });
 };
 
+export type GroundControllerAddSlotPathParams = {
+  id: number;
+};
+
+export type GroundControllerAddSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerAddSlotRequestBody = Schemas.GroundSlotDto[];
+
+export type GroundControllerAddSlotVariables = {
+  body?: GroundControllerAddSlotRequestBody;
+  pathParams: GroundControllerAddSlotPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerAddSlot = (
+  variables: GroundControllerAddSlotVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerAddSlotError,
+    GroundControllerAddSlotRequestBody,
+    {},
+    {},
+    GroundControllerAddSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerAddSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerAddSlotError,
+      GroundControllerAddSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerAddSlotError,
+    GroundControllerAddSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerAddSlotVariables) =>
+      fetchGroundControllerAddSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type GroundControllerUpdateSlotPathParams = {
+  id: number;
+  slotId: number;
+};
+
+export type GroundControllerUpdateSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerUpdateSlotVariables = {
+  body?: Schemas.UpdateGroundSlotDto;
+  pathParams: GroundControllerUpdateSlotPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerUpdateSlot = (
+  variables: GroundControllerUpdateSlotVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerUpdateSlotError,
+    Schemas.UpdateGroundSlotDto,
+    {},
+    {},
+    GroundControllerUpdateSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots/{slotId}",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerUpdateSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerUpdateSlotError,
+      GroundControllerUpdateSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerUpdateSlotError,
+    GroundControllerUpdateSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerUpdateSlotVariables) =>
+      fetchGroundControllerUpdateSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type GroundControllerDeleteSlotPathParams = {
+  id: number;
+  slotId: number;
+};
+
+export type GroundControllerDeleteSlotError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerDeleteSlotVariables = {
+  pathParams: GroundControllerDeleteSlotPathParams;
+} & EducationApiContext["fetcherOptions"];
+
+export const fetchGroundControllerDeleteSlot = (
+  variables: GroundControllerDeleteSlotVariables,
+  signal?: AbortSignal,
+) =>
+  educationApiFetch<
+    undefined,
+    GroundControllerDeleteSlotError,
+    undefined,
+    {},
+    {},
+    GroundControllerDeleteSlotPathParams
+  >({
+    url: "/api/grounds/v1/{id}/slots/{slotId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useGroundControllerDeleteSlot = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerDeleteSlotError,
+      GroundControllerDeleteSlotVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useEducationApiContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerDeleteSlotError,
+    GroundControllerDeleteSlotVariables
+  >({
+    mutationFn: (variables: GroundControllerDeleteSlotVariables) =>
+      fetchGroundControllerDeleteSlot(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type MasterControllerGetSportsError = Fetcher.ErrorWrapper<undefined>;
 
 export type MasterControllerGetSportsVariables =
@@ -1387,6 +1777,16 @@ export const useMasterControllerGetSports = <TData = undefined,>(
 };
 
 export type QueryOperation =
+  | {
+      path: "/api/ai/nearby-grounds/{userId}";
+      operationId: "aiControllerGetNearbyGrounds";
+      variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/ai/player-stats/{userId}";
+      operationId: "aiControllerGetPlayerStats";
+      variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken;
+    }
   | {
       path: "/api/grounds/v1";
       operationId: "groundControllerGetPublicGrounds";

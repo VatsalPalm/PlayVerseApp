@@ -4,33 +4,33 @@ import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../utils/types';
+import { RootStackParamList, Sports } from '../../utils/types';
 import CTextInput from '../../Components/atoms/CTextInput';
 import CImage from '../../Components/atoms/CImage';
 import SizedBox from '../../Components/atoms/SizeBox';
 import { Icons } from '../../assets';
 import { useAuthControllerRegister, useUploadControllerUploadFile } from '../../Api/educationApiComponents';
+import { ProfileImageDto } from '../../Api/educationApiSchemas';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import DeviceInfo from 'react-native-device-info';
 import { getFcmPushToken } from '../../utils/helpers';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const SPORTS_LIST = [
-  { id: 1, name: 'Cricket', icon: '🏏' },
-  { id: 2, name: 'Pickleball', icon: '🏓' },
-  { id: 3, name: 'Football', icon: '⚽' },
-  { id: 4, name: 'Badminton', icon: '🏸' },
+  { id: Sports.CRICKET, name: 'Cricket', icon: '🏏' },
+  { id: Sports.FOOTBALL, name: 'Football', icon: '⚽' },
+  { id: Sports.BASKETBALL, name: 'Basketball', icon: '🏀' },
+  { id: Sports.TENNIS, name: 'Tennis', icon: '🎾' },
+  { id: Sports.PICKLEBALL, name: 'Pickleball', icon: '🏓' },
 ];
 
 const RegisterScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedSports, setSelectedSports] = useState<number[]>([]);
 
   const toggleSport = (sportId: number) => {
@@ -42,14 +42,16 @@ const RegisterScreen = () => {
   };
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<ProfileImageDto | null>(null);
 
   const { mutate: uploadFile, isPending: isUploading } = useUploadControllerUploadFile({
+
     onSuccess: (data: any) => {
       console.log('Upload success data:', data);
       const url = data?.result?.url || data?.url || data?.path;
+      const filename = data?.result?.filename || data?.filename || 'profile.jpg';
       if (url) {
-        setUploadedImageUrl(url);
+        setUploadedImage({ filename, url });
         showMessage({
           message: 'Profile Photo Uploaded',
           description: 'Your photo was uploaded successfully.',
@@ -105,9 +107,6 @@ const RegisterScreen = () => {
 
         uploadFile({
           body: formData as any,
-          queryParams: {
-            type: 'profile',
-          }
         });
       }
     } catch (e) {
@@ -159,19 +158,10 @@ const RegisterScreen = () => {
   });
 
   const handleRegister = async () => {
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (!fullName.trim() || !phone.trim()) {
       showMessage({
         message: 'Required Fields',
         description: 'Please fill in all standard details.',
-        type: 'warning',
-      });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showMessage({
-        message: 'Password Mismatch',
-        description: 'Passwords do not match.',
         type: 'warning',
       });
       return;
@@ -207,27 +197,28 @@ const RegisterScreen = () => {
       console.log('Failed to fetch device / fcm info:', e);
     }
 
+    const payload: any = {
+      display_name: fullName.trim(),
+      country_code: '+91',
+      mobile_number: phone.trim(),
+      role: 'PLAYER',
+      auth_type: 'Local',
+      app_type: 'App',
+      os,
+      brand,
+      model_no: model,
+      serial_number: uniqueId,
+      version_number: osVersion,
+      fcm_token: fcmToken,
+      sports: selectedSports,
+    };
+
+    if (uploadedImage) {
+      payload.profile_image = uploadedImage;
+    }
+
     register({
-      body: {
-        full_name: fullName.trim(),
-        display_name: fullName.trim(),
-        email: email.trim(),
-        country_code: '+91',
-        phone_number: phone.trim(),
-        mobile_number: phone.trim(),
-        password: password.trim(),
-        confirmPassword: confirmPassword.trim(),
-        profile_image: uploadedImageUrl || "https://example.com/profiles/rajesh.jpg",
-        auth_type: 'Local',
-        app_type: 'App',
-        os,
-        brand,
-        model_no: model,
-        serial_number: uniqueId,
-        version_number: osVersion,
-        fcm_token: fcmToken,
-        area_of_interest: selectedSports,
-      } as any
+      body: payload
     });
   };
 
@@ -263,8 +254,8 @@ const RegisterScreen = () => {
           <SizedBox height={20} />
 
           {/* Profile Image Picker */}
-          <TouchableOpacity 
-            style={styles.avatarContainer} 
+          <TouchableOpacity
+            style={[styles.avatarContainer, profileImage ? styles.avatarContainerActive : null]}
             activeOpacity={0.8}
             onPress={handlePickImage}
             disabled={isUploading}
@@ -273,11 +264,11 @@ const RegisterScreen = () => {
               <Image source={{ uri: profileImage }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarPlaceholderEmoji}>👤</Text>
+                <Ionicons name="person" size={32} color="#6C4DF6" style={styles.avatarPlaceholderIcon} />
                 <Text style={styles.avatarPlaceholderText}>Add Photo</Text>
               </View>
             )}
-            
+
             {isUploading && (
               <View style={styles.uploadSpinnerContainer}>
                 <ActivityIndicator size="small" color="#FFFFFF" />
@@ -285,7 +276,7 @@ const RegisterScreen = () => {
             )}
 
             <View style={styles.avatarBadge}>
-              <Text style={styles.avatarBadgeText}>📸</Text>
+              <Ionicons name="camera" size={14} color="#FFFFFF" />
             </View>
           </TouchableOpacity>
 
@@ -303,44 +294,11 @@ const RegisterScreen = () => {
             <SizedBox height={16} />
 
             <CTextInput
-              label="Email Address"
-              placeholder="Enter your email"
-              value={email}
-              onChangeTextValue={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-
-            <SizedBox height={16} />
-
-            <CTextInput
               label="Phone Number"
               placeholder="Enter 10-digit number"
               value={phone}
               onChangeTextValue={setPhone}
               keyboardType="phone-pad"
-            />
-
-            <SizedBox height={16} />
-
-            <CTextInput
-              label="Password"
-              placeholder="Min 8 characters, with capital & symbol"
-              value={password}
-              onChangeTextValue={setPassword}
-              secureTextEntry={true}
-              autoCapitalize="none"
-            />
-
-            <SizedBox height={16} />
-
-            <CTextInput
-              label="Confirm Password"
-              placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChangeTextValue={setConfirmPassword}
-              secureTextEntry={true}
-              autoCapitalize="none"
             />
 
             <SizedBox height={20} />
@@ -419,6 +377,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
   },
+  avatarContainerActive: {
+    borderStyle: 'solid',
+    borderColor: '#6C4DF6',
+  },
   avatarImage: {
     width: 96,
     height: 96,
@@ -428,9 +390,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarPlaceholderEmoji: {
-    fontSize: 32,
-    marginBottom: 2,
+  avatarPlaceholderIcon: {
+    marginBottom: 4,
   },
   avatarPlaceholderText: {
     color: '#9CA3AF',
@@ -450,9 +411,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#080612',
-  },
-  avatarBadgeText: {
-    fontSize: 14,
   },
   uploadSpinnerContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -482,7 +440,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingHorizontal: 10,
-    marginTop: 5,
+    marginTop: 25,
   },
   title: {
     color: '#FFFFFF',

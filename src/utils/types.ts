@@ -46,3 +46,12 @@ export enum METHODS {
     PATCH = 'Patch',
 }
 
+export enum Sports {
+    CRICKET = 1,
+    FOOTBALL = 2,
+    BASKETBALL = 3,
+    TENNIS = 4,
+    PICKLEBALL = 5,
+}
+
+
