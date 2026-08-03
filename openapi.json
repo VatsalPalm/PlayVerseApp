@@ -250,17 +250,7 @@
     "/api/upload/v1/file": {
       "post": {
         "operationId": "UploadController_uploadFile",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["profile", "files"],
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -288,17 +278,7 @@
     "/api/upload/v1/files": {
       "post": {
         "operationId": "UploadController_uploadFiles",
-        "parameters": [
-          {
-            "name": "type",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["profile", "files"],
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1174,6 +1154,16 @@
             "items": {
               "type": "string"
             }
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude coordinate of the user",
+            "example": 23.0225
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude coordinate of the user",
+            "example": 72.5714
           }
         },
         "required": [
@@ -1237,6 +1227,16 @@
             "type": "string",
             "example": "fcm_token_001",
             "description": "FCM token of the device"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude coordinate of the user",
+            "example": 23.0225
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude coordinate of the user",
+            "example": 72.5714
           }
         },
         "required": [

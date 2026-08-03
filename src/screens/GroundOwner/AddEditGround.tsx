@@ -23,7 +23,7 @@ import {
   useGroundControllerGetGroundDetails,
   useGroundControllerCreateGround,
   useGroundControllerUpdateGround,
-  useUploadControllerUploadFile,
+  useUploadControllerUploadFiles,
 } from "../../Api/playVerseComponents";
 import CTextInput from "../../Components/atoms/CTextInput";
 import SizedBox from "../../Components/atoms/SizeBox";
@@ -36,9 +36,9 @@ type AddEditGroundRouteProp = RouteProp<HomeStackParamList, "AddEditGround">;
 
 const DEFAULT_SPORTS = [
   { id: "1", name: "Cricket", icon: "🏏" },
-  { id: "2", name: "Pickleball", icon: "🏓" },
-  { id: "3", name: "Football", icon: "⚽" },
-  { id: "4", name: "Badminton", icon: "🏸" },
+  { id: "2", name: "Football", icon: "⚽" },
+  { id: "5", name: "Pickleball", icon: "🏓" },
+  { id: "6", name: "Badminton", icon: "🏸" },
 ];
 
 const AddEditGroundScreen = () => {
@@ -56,7 +56,7 @@ const AddEditGroundScreen = () => {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
-  const [groundImage, setGroundImage] = useState<string | null>(null);
+  const [groundImages, setGroundImages] = useState<string[]>([]);
   const [isMapVisible, setIsMapVisible] = useState(false);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ const AddEditGroundScreen = () => {
       if (isMapVisible && !latitude && !longitude) {
         try {
           const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status === 'granted') {
+          if (status === "granted") {
             const loc = await Location.getCurrentPositionAsync({});
             if (loc && loc.coords) {
               setLatitude(loc.coords.latitude.toString());
@@ -73,7 +73,8 @@ const AddEditGroundScreen = () => {
           } else {
             showMessage({
               message: "Permission Denied",
-              description: "Could not access location. Using default map center.",
+              description:
+                "Could not access location. Using default map center.",
               type: "warning",
             });
           }
@@ -347,24 +348,43 @@ const AddEditGroundScreen = () => {
       { enabled: isEdit },
     );
 
-  const { mutate: uploadFile, isPending: isUploading } =
-    useUploadControllerUploadFile({
+  const { mutate: uploadFiles, isPending: isUploading } =
+    useUploadControllerUploadFiles({
       onSuccess: (data: any) => {
-        const url = data?.url || data?.result?.url || data?.data?.url;
-        if (url) {
-          setGroundImage(url);
+        console.log("Upload response:", data);
+        const result = data?.result || data?.data || data;
+        let uploadedUrls: string[] = [];
+
+        if (Array.isArray(result)) {
+          uploadedUrls = result
+            .map((item: any) => item?.url || item)
+            .filter(Boolean);
+        } else if (result && typeof result === "object") {
+          const url = result.url || result.path;
+          if (url) {
+            uploadedUrls.push(url);
+          }
+        } else if (typeof result === "string") {
+          uploadedUrls.push(result);
+        }
+
+        if (uploadedUrls.length > 0) {
+          setGroundImages((prev) => {
+            const combined = [...prev, ...uploadedUrls];
+            return combined.slice(0, 5);
+          });
           showMessage({
             message: "Image Uploaded",
-            description: "Arena image was uploaded successfully.",
+            description: "Arena image(s) uploaded successfully.",
             type: "success",
           });
         }
       },
       onError: (error: any) => {
-        console.log("Failed to upload image:", error);
+        console.log("Failed to upload images:", error);
         showMessage({
           message: "Upload Failed",
-          description: "Failed to upload arena image. Please try again.",
+          description: "Failed to upload arena image(s). Please try again.",
           type: "danger",
         });
       },
@@ -430,17 +450,26 @@ const AddEditGroundScreen = () => {
 
       const imagesArray = ground.images || [];
       if (imagesArray.length > 0) {
-        setGroundImage(
-          typeof imagesArray[0] === "object"
-            ? imagesArray[0].url
-            : imagesArray[0],
-        );
+        const urls = imagesArray
+          .map((img: any) => (typeof img === "object" ? img?.url : img))
+          .filter(Boolean);
+        setGroundImages(urls);
       }
     }
   }, [isEdit, groundDetails]);
 
   // Handle Pick Image
   const handlePickImage = async () => {
+    const remainingSlots = 5 - groundImages.length;
+    if (remainingSlots <= 0) {
+      showMessage({
+        message: "Limit Reached",
+        description: "You can upload a maximum of 5 images.",
+        type: "warning",
+      });
+      return;
+    }
+
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -448,7 +477,7 @@ const AddEditGroundScreen = () => {
         showMessage({
           message: "Permission Denied",
           description:
-            "Sorry, we need camera roll permissions to upload arena image.",
+            "Sorry, we need camera roll permissions to upload arena images.",
           type: "warning",
         });
         return;
@@ -456,34 +485,44 @@ const AddEditGroundScreen = () => {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [16, 9],
+        allowsMultipleSelection: true,
         quality: 0.8,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const localUri = result.assets[0].uri;
+        const selectedAssets = result.assets.slice(0, remainingSlots);
+
+        if (result.assets.length > remainingSlots) {
+          showMessage({
+            message: "Limit Exceeded",
+            description: `Only the first ${remainingSlots} selected image(s) will be uploaded.`,
+            type: "info",
+          });
+        }
 
         const formData = new FormData();
-        formData.append("file", {
-          uri:
-            Platform.OS === "android"
-              ? localUri
-              : localUri.replace("file://", ""),
-          name: "ground.jpg",
-          type: "image/jpeg",
-        } as any);
+        selectedAssets.forEach((asset, index) => {
+          formData.append("files", {
+            uri:
+              Platform.OS === "android"
+                ? asset.uri
+                : asset.uri.replace("file://", ""),
+            name: `ground_${Date.now()}_${index}.jpg`,
+            type: "image/jpeg",
+          } as any);
+        });
 
-        uploadFile({
+        uploadFiles({
           body: formData as any,
-          queryParams: {
-            type: "files",
-          },
         });
       }
     } catch (e) {
       console.log("Image selection error:", e);
     }
+  };
+
+  const handleDeleteImage = (index: number) => {
+    setGroundImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleSport = (sportId: string) => {
@@ -520,8 +559,8 @@ const AddEditGroundScreen = () => {
       city: city.trim() || undefined,
       latitude: latitude ? parseFloat(latitude) : undefined,
       longitude: longitude ? parseFloat(longitude) : undefined,
-      sports: selectedSports,
-      images: groundImage ? [groundImage] : undefined,
+      sports: selectedSports.map((id) => parseInt(id, 10)),
+      images: groundImages.length > 0 ? groundImages : undefined,
     };
 
     if (isEdit) {
@@ -590,29 +629,44 @@ const AddEditGroundScreen = () => {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Main Photo picker */}
-          <TouchableOpacity
-            style={styles.photoContainer}
-            activeOpacity={0.8}
-            onPress={handlePickImage}
-            disabled={isUploading}
+          {/* Arena Photos List */}
+          <Text style={styles.sectionLabel}>Arena Photos (Max 5)</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.imagesScrollContainer}
           >
-            {groundImage ? (
-              <Image source={{ uri: groundImage }} style={styles.bannerImage} />
-            ) : (
-              <View style={styles.photoPlaceholder}>
-                <Text style={styles.photoPlaceholderIcon}>📸</Text>
-                <Text style={styles.photoPlaceholderText}>
-                  Add Arena Cover Photo
-                </Text>
+            {groundImages.map((img, index) => (
+              <View key={`img-${index}`} style={styles.imageCard}>
+                <Image source={{ uri: img }} style={styles.imagePreview} />
+                <TouchableOpacity
+                  style={styles.deleteBadge}
+                  activeOpacity={0.7}
+                  onPress={() => handleDeleteImage(index)}
+                >
+                  <Text style={styles.deleteBadgeText}>✕</Text>
+                </TouchableOpacity>
               </View>
+            ))}
+
+            {groundImages.length < 5 && (
+              <TouchableOpacity
+                style={[styles.imageCard, styles.addCard]}
+                activeOpacity={0.8}
+                onPress={handlePickImage}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <ActivityIndicator size="small" color="#6C4DF6" />
+                ) : (
+                  <>
+                    <Text style={styles.addIcon}>＋</Text>
+                    <Text style={styles.addText}>Add Photo</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             )}
-            {isUploading && (
-              <View style={styles.uploadOverlay}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              </View>
-            )}
-          </TouchableOpacity>
+          </ScrollView>
 
           <SizedBox height={20} />
 
@@ -662,15 +716,47 @@ const AddEditGroundScreen = () => {
             <TouchableOpacity
               style={styles.mapPickerBtn}
               activeOpacity={0.8}
-              onPress={() => setIsMapVisible(true)}
+              onPress={() => {
+                setLatitude("23.0225");
+                setLongitude("72.5714");
+                showMessage({
+                  message: "Static Location Set",
+                  description: "Set default coordinates (23.0225, 72.5714) to bypass map error.",
+                  type: "success",
+                });
+              }}
             >
               <Text style={styles.mapPickerBtnIcon}>📍</Text>
               <Text style={styles.mapPickerBtnText}>
                 {latitude && longitude
                   ? `Pinned: ${parseFloat(latitude).toFixed(4)}, ${parseFloat(longitude).toFixed(4)}`
-                  : "Pin Location on Map"}
+                  : "Set Auto-Default Location"}
               </Text>
             </TouchableOpacity>
+
+            <SizedBox height={12} />
+
+            {/* Manual Coordinate Inputs */}
+            <View style={styles.rowFields}>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <CTextInput
+                  label="Latitude"
+                  placeholder="e.g. 23.0225"
+                  value={latitude}
+                  onChangeTextValue={setLatitude}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <CTextInput
+                  label="Longitude"
+                  placeholder="e.g. 72.5714"
+                  value={longitude}
+                  onChangeTextValue={setLongitude}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
           </View>
           <SizedBox height={24} />
 
@@ -727,55 +813,6 @@ const AddEditGroundScreen = () => {
           <SizedBox height={40} />
         </ScrollView>
       </SafeAreaView>
-
-      {/* Location Picker Modal */}
-      <Modal
-        visible={isMapVisible}
-        animationType="slide"
-        onRequestClose={() => setIsMapVisible(false)}
-      >
-        <SafeAreaView style={styles.modalSafeArea}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity
-              style={styles.modalCloseBtn}
-              onPress={() => setIsMapVisible(false)}
-            >
-              <Text style={styles.modalCloseText}>◀ Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Choose Location</Text>
-            <View style={{ width: 60 }} />
-          </View>
-
-          <WebView
-            style={styles.mapWebView}
-            originWhitelist={["*"]}
-            source={{ html: getMapHtml() }}
-            onConsoleMessage={(event: any) => {
-              console.log(
-                "Google Maps WebView Console:",
-                event.nativeEvent.message,
-              );
-            }}
-            onMessage={(event) => {
-              try {
-                const data = JSON.parse(event.nativeEvent.data);
-                if (data.latitude && data.longitude) {
-                  setLatitude(data.latitude.toString());
-                  setLongitude(data.longitude.toString());
-                  setIsMapVisible(false);
-                  showMessage({
-                    message: "Location Selected",
-                    description: `Coordinates: ${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`,
-                    type: "success",
-                  });
-                }
-              } catch (e) {
-                console.log("Failed to parse map coordinates:", e);
-              }
-            }}
-          />
-        </SafeAreaView>
-      </Modal>
     </View>
   );
 };
@@ -969,5 +1006,65 @@ const styles = StyleSheet.create({
   },
   mapWebView: {
     flex: 1,
+  },
+  imagesScrollContainer: {
+    paddingVertical: 4,
+    gap: 12,
+  },
+  imageCard: {
+    width: 120,
+    height: 85,
+    borderRadius: 12,
+    overflow: "hidden",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    marginRight: 10,
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  deleteBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    backgroundColor: "rgba(239, 68, 68, 0.9)",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deleteBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  addCard: {
+    borderStyle: "dashed",
+    borderColor: "rgba(108, 77, 246, 0.5)",
+    backgroundColor: "rgba(108, 77, 246, 0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addIcon: {
+    fontSize: 20,
+    color: "#6C4DF6",
+    fontWeight: "bold",
+  },
+  addText: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    marginTop: 4,
+    fontWeight: "600",
+  },
+  sectionLabel: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+    opacity: 0.9,
+    marginBottom: 8,
   },
 });

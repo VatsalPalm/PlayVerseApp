@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, FlatList, ActivityIndicator, Alert, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, FlatList, ActivityIndicator, Alert, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -48,21 +48,10 @@ const GroundsListScreen = () => {
     setRefreshing(false);
   };
 
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+
   const handleDelete = (id: number, name: string) => {
-    Alert.alert(
-      'Delete Arena',
-      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteGround({ pathParams: { id } });
-          },
-        },
-      ]
-    );
+    setDeleteTarget({ id, name });
   };
 
   const renderGroundItem = ({ item }: { item: any }) => {
@@ -201,6 +190,47 @@ const GroundsListScreen = () => {
           <Text style={styles.fabText}>➕</Text>
         </TouchableOpacity>
       </SafeAreaView>
+
+      {/* Custom Delete Confirmation Modal */}
+      <Modal
+        visible={deleteTarget !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteTarget(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.deleteModalContent}>
+            <View style={styles.warningIconContainer}>
+              <Text style={styles.warningIcon}>⚠️</Text>
+            </View>
+            <Text style={styles.deleteModalTitle}>Delete Arena</Text>
+            <Text style={styles.deleteModalDescription}>
+              Are you sure you want to delete <Text style={styles.arenaHighlight}>"{deleteTarget?.name}"</Text>? This will permanently remove the arena and all its operational slots. This action cannot be undone.
+            </Text>
+            <View style={styles.modalActionsRow}>
+              <TouchableOpacity
+                style={[styles.modalActionBtn, styles.modalCancelBtn]}
+                activeOpacity={0.8}
+                onPress={() => setDeleteTarget(null)}
+              >
+                <Text style={styles.modalCancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalActionBtn, styles.modalConfirmBtn]}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (deleteTarget) {
+                    deleteGround({ pathParams: { id: deleteTarget.id } });
+                    setDeleteTarget(null);
+                  }
+                }}
+              >
+                <Text style={styles.modalConfirmBtnText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -398,6 +428,85 @@ const styles = StyleSheet.create({
   fabText: {
     color: '#FFFFFF',
     fontSize: 20,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  deleteModalContent: {
+    backgroundColor: '#120E2E',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+  warningIconContainer: {
+    backgroundColor: 'rgba(255, 62, 62, 0.1)',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 62, 62, 0.2)',
+    marginBottom: 16,
+  },
+  warningIcon: {
+    fontSize: 28,
+  },
+  deleteModalTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  deleteModalDescription: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  arenaHighlight: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  modalActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalActionBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCancelBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalCancelBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalConfirmBtn: {
+    backgroundColor: '#FF3B30',
+  },
+  modalConfirmBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '700',
   },
 });

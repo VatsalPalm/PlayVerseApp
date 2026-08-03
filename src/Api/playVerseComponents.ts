@@ -410,10 +410,6 @@ export const useAuthControllerRefreshToken = (
   });
 };
 
-export type UploadControllerUploadFileQueryParams = {
-  type?: "profile" | "files";
-};
-
 export type UploadControllerUploadFileError = Fetcher.ErrorWrapper<undefined>;
 
 export type UploadControllerUploadFileRequestBody = {
@@ -425,7 +421,6 @@ export type UploadControllerUploadFileRequestBody = {
 
 export type UploadControllerUploadFileVariables = {
   body?: UploadControllerUploadFileRequestBody;
-  queryParams?: UploadControllerUploadFileQueryParams;
 } & PlayVerseContext["fetcherOptions"];
 
 export const fetchUploadControllerUploadFile = (
@@ -437,7 +432,7 @@ export const fetchUploadControllerUploadFile = (
     UploadControllerUploadFileError,
     UploadControllerUploadFileRequestBody,
     {},
-    UploadControllerUploadFileQueryParams,
+    {},
     {}
   >({ url: "/api/upload/v1/file", method: "post", ...variables, signal });
 
@@ -463,10 +458,6 @@ export const useUploadControllerUploadFile = (
   });
 };
 
-export type UploadControllerUploadFilesQueryParams = {
-  type?: "profile" | "files";
-};
-
 export type UploadControllerUploadFilesError = Fetcher.ErrorWrapper<undefined>;
 
 export type UploadControllerUploadFilesRequestBody = {
@@ -475,7 +466,6 @@ export type UploadControllerUploadFilesRequestBody = {
 
 export type UploadControllerUploadFilesVariables = {
   body?: UploadControllerUploadFilesRequestBody;
-  queryParams?: UploadControllerUploadFilesQueryParams;
 } & PlayVerseContext["fetcherOptions"];
 
 export const fetchUploadControllerUploadFiles = (
@@ -487,7 +477,7 @@ export const fetchUploadControllerUploadFiles = (
     UploadControllerUploadFilesError,
     UploadControllerUploadFilesRequestBody,
     {},
-    UploadControllerUploadFilesQueryParams,
+    {},
     {}
   >({ url: "/api/upload/v1/files", method: "post", ...variables, signal });
 
@@ -585,7 +575,7 @@ export function aiControllerGetNearbyGroundsQuery(
   };
 }
 
-export const useSuspenseAiControllerGetNearbyGrounds = <TData = undefined>(
+export const useSuspenseAiControllerGetNearbyGrounds = <TData = undefined,>(
   variables: AiControllerGetNearbyGroundsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -608,7 +598,7 @@ export const useSuspenseAiControllerGetNearbyGrounds = <TData = undefined>(
   });
 };
 
-export const useAiControllerGetNearbyGrounds = <TData = undefined>(
+export const useAiControllerGetNearbyGrounds = <TData = undefined,>(
   variables: AiControllerGetNearbyGroundsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -699,7 +689,7 @@ export function aiControllerGetPlayerStatsQuery(
   };
 }
 
-export const useSuspenseAiControllerGetPlayerStats = <TData = undefined>(
+export const useSuspenseAiControllerGetPlayerStats = <TData = undefined,>(
   variables: AiControllerGetPlayerStatsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -722,7 +712,7 @@ export const useSuspenseAiControllerGetPlayerStats = <TData = undefined>(
   });
 };
 
-export const useAiControllerGetPlayerStats = <TData = undefined>(
+export const useAiControllerGetPlayerStats = <TData = undefined,>(
   variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -902,7 +892,7 @@ export function groundControllerGetPublicGroundsQuery(
   };
 }
 
-export const useSuspenseGroundControllerGetPublicGrounds = <TData = undefined>(
+export const useSuspenseGroundControllerGetPublicGrounds = <TData = undefined,>(
   variables: GroundControllerGetPublicGroundsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -927,7 +917,7 @@ export const useSuspenseGroundControllerGetPublicGrounds = <TData = undefined>(
   });
 };
 
-export const useGroundControllerGetPublicGrounds = <TData = undefined>(
+export const useGroundControllerGetPublicGrounds = <TData = undefined,>(
   variables: GroundControllerGetPublicGroundsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1045,7 +1035,7 @@ export function groundControllerGetMyGroundsQuery(
   };
 }
 
-export const useSuspenseGroundControllerGetMyGrounds = <TData = undefined>(
+export const useSuspenseGroundControllerGetMyGrounds = <TData = undefined,>(
   variables: GroundControllerGetMyGroundsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1068,7 +1058,7 @@ export const useSuspenseGroundControllerGetMyGrounds = <TData = undefined>(
   });
 };
 
-export const useGroundControllerGetMyGrounds = <TData = undefined>(
+export const useGroundControllerGetMyGrounds = <TData = undefined,>(
   variables: GroundControllerGetMyGroundsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1152,7 +1142,7 @@ export function groundControllerGetGroundDetailsQuery(
   };
 }
 
-export const useSuspenseGroundControllerGetGroundDetails = <TData = undefined>(
+export const useSuspenseGroundControllerGetGroundDetails = <TData = undefined,>(
   variables: GroundControllerGetGroundDetailsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1177,7 +1167,7 @@ export const useSuspenseGroundControllerGetGroundDetails = <TData = undefined>(
   });
 };
 
-export const useGroundControllerGetGroundDetails = <TData = undefined>(
+export const useGroundControllerGetGroundDetails = <TData = undefined,>(
   variables: GroundControllerGetGroundDetailsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1369,7 +1359,7 @@ export function groundControllerGetAvailabilityQuery(
   };
 }
 
-export const useSuspenseGroundControllerGetAvailability = <TData = undefined>(
+export const useSuspenseGroundControllerGetAvailability = <TData = undefined,>(
   variables: GroundControllerGetAvailabilityVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1394,7 +1384,7 @@ export const useSuspenseGroundControllerGetAvailability = <TData = undefined>(
   });
 };
 
-export const useGroundControllerGetAvailability = <TData = undefined>(
+export const useGroundControllerGetAvailability = <TData = undefined,>(
   variables: GroundControllerGetAvailabilityVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1730,7 +1720,7 @@ export function masterControllerGetSportsQuery(
   };
 }
 
-export const useSuspenseMasterControllerGetSports = <TData = undefined>(
+export const useSuspenseMasterControllerGetSports = <TData = undefined,>(
   variables: MasterControllerGetSportsVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -1753,7 +1743,7 @@ export const useSuspenseMasterControllerGetSports = <TData = undefined>(
   });
 };
 
-export const useMasterControllerGetSports = <TData = undefined>(
+export const useMasterControllerGetSports = <TData = undefined,>(
   variables: MasterControllerGetSportsVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<

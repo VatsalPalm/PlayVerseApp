@@ -11,7 +11,7 @@ import {
   useGroundControllerDeleteSlot 
 } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
-import { showMessage } from 'react-native-flash-message';
+import FlashMessage, { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -41,6 +41,8 @@ const ManageSlotsScreen = () => {
 
   const [selectedDay, setSelectedDay] = useState(1); // Default to Monday (1)
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<any | null>(null);
+  const [applyToAllDays, setApplyToAllDays] = useState(false);
 
   // Modal form states
   const [startTime, setStartTime] = useState('06:00');
@@ -73,13 +75,14 @@ const ManageSlotsScreen = () => {
     },
   });
 
-  const { mutate: updateSlot } = useGroundControllerUpdateSlot({
+  const { mutate: updateSlot, isPending: isUpdating } = useGroundControllerUpdateSlot({
     onSuccess: () => {
       showMessage({
         message: 'Slot Updated',
-        description: 'Status has been updated successfully.',
+        description: 'Booking slot updated successfully.',
         type: 'success',
       });
+      setModalVisible(false);
       refetch();
     },
     onError: (error: any) => {
@@ -111,27 +114,108 @@ const ManageSlotsScreen = () => {
     },
   });
 
-  const handleAddSlot = () => {
+  const handleSaveSlot = () => {
     if (!price.trim() || isNaN(Number(price))) {
       showMessage({
-        message: 'Validation Error',
+        message: 'Invalid Price',
         description: 'Please enter a valid numeric price.',
-        type: 'warning',
+        backgroundColor: '#FF9100',
+        titleStyle: { color: '#FFFFFF', fontWeight: 'bold' },
+        textStyle: { color: '#FFFFFF' },
+        type: 'default',
       });
       return;
     }
 
-    const payload = [{
-      dayOfWeek: selectedDay,
-      startTime,
-      endTime,
-      price: Number(price),
-    }];
+    // Validation 1: End Time must be greater than Start Time
+    if (startTime >= endTime) {
+      showMessage({
+        message: 'Invalid Time Range',
+        description: 'End time must be after start time.',
+        backgroundColor: '#FF9100',
+        titleStyle: { color: '#FFFFFF', fontWeight: 'bold' },
+        textStyle: { color: '#FFFFFF' },
+        type: 'default',
+      });
+      return;
+    }
 
-    addSlot({
-      pathParams: { id: groundId },
-      body: payload as any,
-    });
+    // Validation 2: Prevent duplicate slots
+    const daysToCheck = applyToAllDays && !editingSlot ? [0, 1, 2, 3, 4, 5, 6] : [selectedDay];
+    for (const day of daysToCheck) {
+      const hasDuplicate = rawSlots.some((slot: any) => {
+        if (editingSlot && slot.id === editingSlot.id) {
+          return false;
+        }
+        return Number(slot.dayOfWeek) === day && 
+               slot.startTime === startTime && 
+               slot.endTime === endTime;
+      });
+
+      if (hasDuplicate) {
+        const dayName = DAYS_OF_WEEK.find(d => d.value === day)?.name || 'the selected day';
+        showMessage({
+          message: 'Duplicate Slot',
+          description: `A slot for ${startTime} - ${endTime} already exists on ${dayName}.`,
+          backgroundColor: '#FF9100',
+          titleStyle: { color: '#FFFFFF', fontWeight: 'bold' },
+          textStyle: { color: '#FFFFFF' },
+          type: 'default',
+        });
+        return;
+      }
+    }
+
+    if (editingSlot) {
+      updateSlot({
+        pathParams: { id: groundId, slotId: editingSlot.id },
+        body: {
+          startTime,
+          endTime,
+          price: Number(price),
+          dayOfWeek: selectedDay,
+        },
+      });
+    } else {
+      const payload = applyToAllDays
+        ? [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+            dayOfWeek: day,
+            startTime,
+            endTime,
+            price: Number(price),
+          }))
+        : [
+            {
+              dayOfWeek: selectedDay,
+              startTime,
+              endTime,
+              price: Number(price),
+            },
+          ];
+
+      addSlot({
+        pathParams: { id: groundId },
+        body: payload as any,
+      });
+    }
+  };
+
+  const handleEditSlot = (slot: any) => {
+    setEditingSlot(slot);
+    setStartTime(slot.startTime);
+    setEndTime(slot.endTime);
+    setPrice(slot.price.toString());
+    setApplyToAllDays(false);
+    setModalVisible(true);
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingSlot(null);
+    setStartTime('06:00');
+    setEndTime('07:00');
+    setPrice('');
+    setApplyToAllDays(false);
+    setModalVisible(true);
   };
 
   const handleToggleStatus = (slotId: number, currentStatus: number) => {
@@ -259,7 +343,7 @@ const ManageSlotsScreen = () => {
                 <TouchableOpacity
                   style={styles.emptyAddBtn}
                   activeOpacity={0.8}
-                  onPress={() => setModalVisible(true)}
+                  onPress={handleOpenAddModal}
                 >
                   <Text style={styles.emptyAddBtnText}>➕ Create A Slot</Text>
                 </TouchableOpacity>
@@ -288,6 +372,15 @@ const ManageSlotsScreen = () => {
                       </Text>
                     </TouchableOpacity>
 
+                    {/* Edit Icon */}
+                    <TouchableOpacity
+                      style={styles.editBtn}
+                      activeOpacity={0.8}
+                      onPress={() => handleEditSlot(item)}
+                    >
+                      <Text style={styles.editBtnIcon}>✏️</Text>
+                    </TouchableOpacity>
+
                     {/* Delete Icon */}
                     <TouchableOpacity
                       style={styles.deleteBtn}
@@ -308,7 +401,7 @@ const ManageSlotsScreen = () => {
           <TouchableOpacity
             style={styles.fab}
             activeOpacity={0.9}
-            onPress={() => setModalVisible(true)}
+            onPress={handleOpenAddModal}
           >
             <Text style={styles.fabText}>➕</Text>
           </TouchableOpacity>
@@ -324,7 +417,9 @@ const ManageSlotsScreen = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Add Booking Slot</Text>
+                <Text style={styles.modalTitle}>
+                  {editingSlot ? 'Edit Booking Slot' : 'Add Booking Slot'}
+                </Text>
                 <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
                   <Text style={styles.closeBtnText}>✕</Text>
                 </TouchableOpacity>
@@ -392,21 +487,38 @@ const ManageSlotsScreen = () => {
                 keyboardType="numeric"
               />
 
+              {/* Apply to all days option (only shown when adding) */}
+              {!editingSlot && (
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  activeOpacity={0.8}
+                  onPress={() => setApplyToAllDays(!applyToAllDays)}
+                >
+                  <View style={[styles.checkbox, applyToAllDays && styles.checkboxChecked]}>
+                    {applyToAllDays && <Text style={styles.checkboxTick}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Apply to all days of the week</Text>
+                </TouchableOpacity>
+              )}
+
               <SizedBox height={24} />
 
               <TouchableOpacity
                 style={styles.modalSubmitBtn}
                 activeOpacity={0.8}
-                onPress={handleAddSlot}
-                disabled={isAdding}
+                onPress={handleSaveSlot}
+                disabled={isAdding || isUpdating}
               >
-                {isAdding ? (
+                {isAdding || isUpdating ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.modalSubmitBtnText}>Create Slot</Text>
+                  <Text style={styles.modalSubmitBtnText}>
+                    {editingSlot ? 'Save Changes' : 'Create Slot'}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
+            <FlashMessage position="top" />
           </View>
         </Modal>
       </SafeAreaView>
@@ -564,6 +676,51 @@ const styles = StyleSheet.create({
   },
   deleteBtnIcon: {
     fontSize: 12,
+  },
+  editBtn: {
+    backgroundColor: 'rgba(108, 77, 246, 0.1)',
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(108, 77, 246, 0.2)',
+    marginHorizontal: 8,
+  },
+  editBtnIcon: {
+    fontSize: 12,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: '#6C4DF6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    backgroundColor: 'transparent',
+  },
+  checkboxChecked: {
+    backgroundColor: '#6C4DF6',
+  },
+  checkboxTick: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    opacity: 0.9,
   },
   emptyContainer: {
     alignItems: 'center',

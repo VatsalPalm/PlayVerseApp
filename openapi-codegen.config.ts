@@ -9,7 +9,7 @@ export default defineConfig({
       relativePath: "./openapi.json",
       source: "file",
     },
-    outputDir: "/src/api",
+    outputDir: "/src/Api",
     to: async (context) => {
       const filenamePrefix = "playVerse";
       const { schemasFiles } = await generateSchemaTypes(context, {

@@ -103,6 +103,18 @@ export type CreateUserDto = {
    * @example 2
    */
   sports?: string[];
+  /**
+   * Latitude coordinate of the user
+   *
+   * @example 23.0225
+   */
+  latitude?: number;
+  /**
+   * Longitude coordinate of the user
+   *
+   * @example 72.5714
+   */
+  longitude?: number;
 };
 
 export type LoginUserDto = {
@@ -160,6 +172,18 @@ export type LoginUserDto = {
    * @example fcm_token_001
    */
   fcm_token?: string;
+  /**
+   * Latitude coordinate of the user
+   *
+   * @example 23.0225
+   */
+  latitude?: number;
+  /**
+   * Longitude coordinate of the user
+   *
+   * @example 72.5714
+   */
+  longitude?: number;
 };
 
 export type ForgotPasswordDto = {

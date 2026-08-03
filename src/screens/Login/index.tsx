@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,6 +22,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [phone, setPhone] = useState('');
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   const { mutate: login, isPending } = useAuthControllerLoginUser({
     onSuccess: (data: any) => {
@@ -106,15 +108,8 @@ const LoginScreen = () => {
     }
   });
 
-  const handleLogin = async () => {
-    if (!phone.trim()) {
-      showMessage({
-        message: 'Required Fields',
-        description: 'Please enter your phone number.',
-        type: 'warning',
-      });
-      return;
-    }
+  const proceedWithLogin = async (requestLocationPermission: boolean) => {
+    setShowLocationModal(false);
 
     let fcmToken = 'fcm_token_001';
     let brand = 'Generic';
@@ -140,17 +135,25 @@ const LoginScreen = () => {
     let lat: number | undefined;
     let lng: number | undefined;
 
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({});
-        if (loc && loc.coords) {
-          lat = loc.coords.latitude;
-          lng = loc.coords.longitude;
+    if (requestLocationPermission) {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const loc = await Location.getCurrentPositionAsync({});
+          if (loc && loc.coords) {
+            lat = loc.coords.latitude;
+            lng = loc.coords.longitude;
+          }
+        } else {
+          showMessage({
+            message: 'Permission Denied',
+            description: 'Continuing login without location access.',
+            type: 'info',
+          });
         }
+      } catch (e) {
+        console.log('Failed to fetch location on login:', e);
       }
-    } catch (e) {
-      console.log('Failed to fetch location on login:', e);
     }
 
     login({
@@ -170,9 +173,68 @@ const LoginScreen = () => {
     });
   };
 
+  const handleLogin = async () => {
+    if (!phone.trim()) {
+      showMessage({
+        message: 'Required Fields',
+        description: 'Please enter your phone number.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') {
+        proceedWithLogin(true);
+      } else {
+        setShowLocationModal(true);
+      }
+    } catch (e) {
+      console.log('Error checking location permission:', e);
+      setShowLocationModal(true);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+
+      {/* Location Permission Modal */}
+      <Modal
+        visible={showLocationModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.locationIconContainer}>
+              <Ionicons name="location" size={40} color="#6C4DF6" />
+            </View>
+            <Text style={styles.modalTitle}>Enable Location Services</Text>
+            <Text style={styles.modalDescription}>
+              PlayVerse uses your location to discover sports venues, matching teams, and ongoing events happening near you. This ensures a personalized local match experience.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.btnAllow}
+                activeOpacity={0.8}
+                onPress={() => proceedWithLogin(true)}
+              >
+                <Text style={styles.btnAllowText}>Allow Location</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.btnSkip}
+                activeOpacity={0.8}
+                onPress={() => proceedWithLogin(false)}
+              >
+                <Text style={styles.btnSkipText}>Skip for Now</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       
       {/* Background Gradient */}
       <View style={StyleSheet.absoluteFill}>
@@ -318,5 +380,80 @@ const styles = StyleSheet.create({
     color: '#00D2FF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(5, 3, 15, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#120E2E',
+    borderRadius: 24,
+    padding: 28,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(108, 77, 246, 0.2)',
+  },
+  locationIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(108, 77, 246, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  modalDescription: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    width: '100%',
+    gap: 12,
+  },
+  btnAllow: {
+    height: 50,
+    backgroundColor: '#6C4DF6',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#6C4DF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  btnAllowText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  btnSkip: {
+    height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  btnSkipText: {
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

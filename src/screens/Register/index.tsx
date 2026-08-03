@@ -24,12 +24,13 @@ import { Icons } from "../../assets";
 import {
   useAuthControllerRegister,
   useUploadControllerUploadFile,
-} from "../../Api/educationApiComponents";
+} from "../../Api/playVerseComponents";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import DeviceInfo from "react-native-device-info";
 import { getFcmPushToken } from "../../utils/helpers";
 import { Ionicons } from "@expo/vector-icons";
+import { ProfileImageDto } from "../../Api/playVerseSchemas";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -158,7 +159,20 @@ const RegisterScreen = () => {
     onError: (error: any) => {
       console.log("Registration error:", error);
       let errMsg = "Registration failed. Check parameters and try again.";
-      if (typeof error?.message === "string") {
+
+      if (Array.isArray(error?.messages)) {
+        const msgs = error.messages
+          .map((m: any) => {
+            if (Array.isArray(m.constraints)) {
+              return m.constraints.join(", ");
+            }
+            return typeof m.constraints === "string" ? m.constraints : "";
+          })
+          .filter(Boolean);
+        if (msgs.length > 0) {
+          errMsg = msgs.join("\n");
+        }
+      } else if (typeof error?.message === "string") {
         errMsg = error.message;
       } else if (error?.message && typeof error.message === "object") {
         const messages: string[] = [];
@@ -167,6 +181,18 @@ const RegisterScreen = () => {
             messages.push(...error.message[key]);
           } else if (typeof error.message[key] === "string") {
             messages.push(error.message[key]);
+          }
+        }
+        if (messages.length > 0) {
+          errMsg = messages.join("\n");
+        }
+      } else if (error?.error && typeof error.error === "object") {
+        const messages: string[] = [];
+        for (const key in error.error) {
+          if (Array.isArray(error.error[key])) {
+            messages.push(...error.error[key]);
+          } else if (typeof error.error[key] === "string") {
+            messages.push(error.error[key]);
           }
         }
         if (messages.length > 0) {
@@ -243,16 +269,11 @@ const RegisterScreen = () => {
 
     register({
       body: {
-        full_name: fullName.trim(),
         display_name: fullName.trim(),
-        email: email.trim(),
         country_code: "+91",
-        phone_number: phone.trim(),
         mobile_number: phone.trim(),
-        password: password.trim(),
-        confirmPassword: confirmPassword.trim(),
-        profile_image:
-          uploadedImageUrl || "https://example.com/profiles/rajesh.jpg",
+        role: "PLAYER",
+        profile_image: uploadedImage || undefined,
         auth_type: "Local",
         app_type: "App",
         os,
@@ -261,8 +282,8 @@ const RegisterScreen = () => {
         serial_number: uniqueId,
         version_number: osVersion,
         fcm_token: fcmToken,
-        area_of_interest: selectedSports,
-      } as any,
+        sports: selectedSports as any,
+      },
     });
   };
 
