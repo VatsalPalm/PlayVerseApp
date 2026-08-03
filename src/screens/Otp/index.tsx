@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,6 +8,7 @@ import { RootStackParamList } from '../../utils/types';
 import CTextInput from '../../Components/atoms/CTextInput';
 import SizedBox from '../../Components/atoms/SizeBox';
 import CImage from '../../Components/atoms/CImage';
+import CButton from '../../Components/atoms/CButton';
 import { Icons } from '../../assets';
 import { useAuthControllerVerifyOtp } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
@@ -134,7 +136,7 @@ const OtpScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backText}>← Back</Text>
+            <Ionicons name="chevron-back" size={24} color="#00D2FF" />
           </TouchableOpacity>
         </View>
 
@@ -163,18 +165,12 @@ const OtpScreen = () => {
 
             <SizedBox height={30} />
 
-            <TouchableOpacity 
-              style={styles.btnVerify} 
-              activeOpacity={0.8}
+            <CButton
+              title="Verify OTP"
               onPress={handleVerify}
+              loading={isPending}
               disabled={isPending}
-            >
-              {isPending ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.btnVerifyText}>Verify OTP</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
 
           <SizedBox height={40} />

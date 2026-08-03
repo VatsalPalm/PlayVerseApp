@@ -8,6 +8,7 @@ import { RootStackParamList } from '../../utils/types';
 import CTextInput from '../../Components/atoms/CTextInput';
 import CImage from '../../Components/atoms/CImage';
 import SizedBox from '../../Components/atoms/SizeBox';
+import CButton from '../../Components/atoms/CButton';
 import { Icons } from '../../assets';
 import { useAuthControllerLoginUser } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
@@ -110,6 +111,7 @@ const LoginScreen = () => {
 
   const proceedWithLogin = async (requestLocationPermission: boolean) => {
     setShowLocationModal(false);
+    storage.set('locationPromptDismissed', true);
 
     let fcmToken = 'fcm_token_001';
     let brand = 'Generic';
@@ -185,8 +187,12 @@ const LoginScreen = () => {
 
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
+      const hasDismissedPrompt = storage.getBoolean('locationPromptDismissed');
+
       if (status === 'granted') {
         proceedWithLogin(true);
+      } else if (hasDismissedPrompt) {
+        proceedWithLogin(false);
       } else {
         setShowLocationModal(true);
       }
@@ -277,18 +283,12 @@ const LoginScreen = () => {
             
             <SizedBox height={30} />
 
-            <TouchableOpacity 
-              style={styles.btnLogin} 
-              activeOpacity={0.8}
+            <CButton
+              title="Sign In"
               onPress={handleLogin}
+              loading={isPending}
               disabled={isPending}
-            >
-              {isPending ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.btnLoginText}>Sign In</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
 
           <SizedBox height={30} />

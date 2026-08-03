@@ -13,6 +13,7 @@ import {
   Modal,
 } from "react-native";
 import { WebView } from "react-native-webview";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,6 +28,7 @@ import {
 } from "../../Api/playVerseComponents";
 import CTextInput from "../../Components/atoms/CTextInput";
 import SizedBox from "../../Components/atoms/SizeBox";
+import CButton from "../../Components/atoms/CButton";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 
@@ -58,6 +60,7 @@ const AddEditGroundScreen = () => {
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [groundImages, setGroundImages] = useState<string[]>([]);
   const [isMapVisible, setIsMapVisible] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -348,47 +351,7 @@ const AddEditGroundScreen = () => {
       { enabled: isEdit },
     );
 
-  const { mutate: uploadFiles, isPending: isUploading } =
-    useUploadControllerUploadFiles({
-      onSuccess: (data: any) => {
-        console.log("Upload response:", data);
-        const result = data?.result || data?.data || data;
-        let uploadedUrls: string[] = [];
-
-        if (Array.isArray(result)) {
-          uploadedUrls = result
-            .map((item: any) => item?.url || item)
-            .filter(Boolean);
-        } else if (result && typeof result === "object") {
-          const url = result.url || result.path;
-          if (url) {
-            uploadedUrls.push(url);
-          }
-        } else if (typeof result === "string") {
-          uploadedUrls.push(result);
-        }
-
-        if (uploadedUrls.length > 0) {
-          setGroundImages((prev) => {
-            const combined = [...prev, ...uploadedUrls];
-            return combined.slice(0, 5);
-          });
-          showMessage({
-            message: "Image Uploaded",
-            description: "Arena image(s) uploaded successfully.",
-            type: "success",
-          });
-        }
-      },
-      onError: (error: any) => {
-        console.log("Failed to upload images:", error);
-        showMessage({
-          message: "Upload Failed",
-          description: "Failed to upload arena image(s). Please try again.",
-          type: "danger",
-        });
-      },
-    });
+  const { mutateAsync: uploadFiles } = useUploadControllerUploadFiles();
 
   const { mutate: createGround, isPending: isCreating } =
     useGroundControllerCreateGround({
@@ -500,20 +463,10 @@ const AddEditGroundScreen = () => {
           });
         }
 
-        const formData = new FormData();
-        selectedAssets.forEach((asset, index) => {
-          formData.append("files", {
-            uri:
-              Platform.OS === "android"
-                ? asset.uri
-                : asset.uri.replace("file://", ""),
-            name: `ground_${Date.now()}_${index}.jpg`,
-            type: "image/jpeg",
-          } as any);
-        });
-
-        uploadFiles({
-          body: formData as any,
+        const newUris = selectedAssets.map((asset) => asset.uri);
+        setGroundImages((prev) => {
+          const combined = [...prev, ...newUris];
+          return combined.slice(0, 5);
         });
       }
     } catch (e) {
@@ -533,7 +486,7 @@ const AddEditGroundScreen = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim()) {
       showMessage({
         message: "Validation Error",
@@ -552,28 +505,78 @@ const AddEditGroundScreen = () => {
       return;
     }
 
-    const payload: any = {
-      name: name.trim(),
-      description: description.trim() || undefined,
-      address: address.trim() || undefined,
-      city: city.trim() || undefined,
-      latitude: latitude ? parseFloat(latitude) : undefined,
-      longitude: longitude ? parseFloat(longitude) : undefined,
-      sports: selectedSports.map((id) => parseInt(id, 10)),
-      images: groundImages.length > 0 ? groundImages : undefined,
-    };
+    setIsUploading(true);
 
-    if (isEdit) {
-      updateGround({
-        pathParams: { id: groundId as number },
-        body: payload,
+    try {
+      // 1. Separate local file URIs from already uploaded HTTP(S) S3 URLs
+      const localUris = groundImages.filter((uri) => !uri.startsWith("http"));
+      const remoteUris = groundImages.filter((uri) => uri.startsWith("http"));
+      let uploadedUrls: string[] = [];
+
+      if (localUris.length > 0) {
+        const formData = new FormData();
+        localUris.forEach((uri, index) => {
+          formData.append("files", {
+            uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+            name: `ground_${Date.now()}_${index}.jpg`,
+            type: "image/jpeg",
+          } as any);
+        });
+
+        const uploadRes: any = await uploadFiles({
+          body: formData as any,
+        });
+
+        const result = uploadRes?.result || uploadRes?.data || uploadRes;
+        if (Array.isArray(result)) {
+          uploadedUrls = result
+            .map((item: any) => item?.url || item)
+            .filter(Boolean);
+        } else if (result && typeof result === "object") {
+          const url = result.url || result.path;
+          if (url) {
+            uploadedUrls.push(url);
+          }
+        } else if (typeof result === "string") {
+          uploadedUrls.push(result);
+        }
+      }
+
+      const finalImages = [...remoteUris, ...uploadedUrls];
+
+      const payload: any = {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        address: address.trim() || undefined,
+        city: city.trim() || undefined,
+        latitude: latitude ? parseFloat(latitude) : undefined,
+        longitude: longitude ? parseFloat(longitude) : undefined,
+        sports: selectedSports.map((id) => parseInt(id, 10)),
+        images: finalImages.length > 0 ? finalImages : undefined,
+      };
+
+      if (isEdit) {
+        updateGround({
+          pathParams: { id: groundId as number },
+          body: payload,
+        });
+      } else {
+        payload.slots = [];
+        createGround({
+          body: payload,
+        });
+      }
+    } catch (e: any) {
+      console.log("Submit error:", e);
+      showMessage({
+        message: "Failed to save arena",
+        description:
+          e?.message ||
+          "Something went wrong while uploading or saving details.",
+        type: "danger",
       });
-    } else {
-      // Create ground has slots as required array, we provide an empty array initially
-      payload.slots = [];
-      createGround({
-        body: payload,
-      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -617,7 +620,7 @@ const AddEditGroundScreen = () => {
             onPress={() => navigation.goBack()}
             activeOpacity={0.8}
           >
-            <Text style={styles.backBtnText}>◀ Back</Text>
+            <Ionicons name="chevron-back" size={24} color="#00D2FF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {isEdit ? "Edit Arena" : "Add Arena"}
@@ -636,19 +639,6 @@ const AddEditGroundScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.imagesScrollContainer}
           >
-            {groundImages.map((img, index) => (
-              <View key={`img-${index}`} style={styles.imageCard}>
-                <Image source={{ uri: img }} style={styles.imagePreview} />
-                <TouchableOpacity
-                  style={styles.deleteBadge}
-                  activeOpacity={0.7}
-                  onPress={() => handleDeleteImage(index)}
-                >
-                  <Text style={styles.deleteBadgeText}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
             {groundImages.length < 5 && (
               <TouchableOpacity
                 style={[styles.imageCard, styles.addCard]}
@@ -666,6 +656,19 @@ const AddEditGroundScreen = () => {
                 )}
               </TouchableOpacity>
             )}
+
+            {groundImages.map((img, index) => (
+              <View key={`img-${index}`} style={styles.imageCard}>
+                <Image source={{ uri: img }} style={styles.imagePreview} />
+                <TouchableOpacity
+                  style={styles.deleteBadge}
+                  activeOpacity={0.7}
+                  onPress={() => handleDeleteImage(index)}
+                >
+                  <Text style={styles.deleteBadgeText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
           </ScrollView>
 
           <SizedBox height={20} />
@@ -721,7 +724,8 @@ const AddEditGroundScreen = () => {
                 setLongitude("72.5714");
                 showMessage({
                   message: "Static Location Set",
-                  description: "Set default coordinates (23.0225, 72.5714) to bypass map error.",
+                  description:
+                    "Set default coordinates (23.0225, 72.5714) to bypass map error.",
                   type: "success",
                 });
               }}
@@ -795,20 +799,12 @@ const AddEditGroundScreen = () => {
           <SizedBox height={40} />
 
           {/* Submit button */}
-          <TouchableOpacity
-            style={styles.submitBtn}
-            activeOpacity={0.8}
+          <CButton
+            title={isEdit ? "Save Changes" : "Register Arena"}
             onPress={handleSubmit}
-            disabled={isCreating || isUpdating}
-          >
-            {isCreating || isUpdating ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.submitBtnText}>
-                {isEdit ? "Save Changes" : "Register Arena"}
-              </Text>
-            )}
-          </TouchableOpacity>
+            loading={isCreating || isUpdating || isUploading}
+            disabled={isCreating || isUpdating || isUploading}
+          />
 
           <SizedBox height={40} />
         </ScrollView>
@@ -847,9 +843,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   backBtnText: {
-    color: "#9CA3AF",
-    fontSize: 13,
-    fontWeight: "700",
+    color: "#00D2FF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   headerTitle: {
     color: "#FFFFFF",

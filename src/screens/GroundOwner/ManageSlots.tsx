@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, Modal, TextInput, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../utils/types';
@@ -11,6 +12,7 @@ import {
   useGroundControllerDeleteSlot 
 } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
+import CButton from '../../Components/atoms/CButton';
 import FlashMessage, { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 
@@ -289,7 +291,7 @@ const ManageSlotsScreen = () => {
             onPress={() => navigation.goBack()}
             activeOpacity={0.8}
           >
-            <Text style={styles.backBtnText}>◀ Back</Text>
+            <Ionicons name="chevron-back" size={24} color="#00D2FF" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>Manage Slots</Text>
@@ -340,13 +342,10 @@ const ManageSlotsScreen = () => {
                   You haven't defined any operational slot pricing for {DAYS_OF_WEEK.find(d => d.value === selectedDay)?.name}.
                 </Text>
                 <SizedBox height={20} />
-                <TouchableOpacity
-                  style={styles.emptyAddBtn}
-                  activeOpacity={0.8}
+                <CButton
+                  title="➕ Create A Slot"
                   onPress={handleOpenAddModal}
-                >
-                  <Text style={styles.emptyAddBtnText}>➕ Create A Slot</Text>
-                </TouchableOpacity>
+                />
               </View>
             }
             renderItem={({ item }) => {
@@ -503,20 +502,12 @@ const ManageSlotsScreen = () => {
 
               <SizedBox height={24} />
 
-              <TouchableOpacity
-                style={styles.modalSubmitBtn}
-                activeOpacity={0.8}
+              <CButton
+                title={editingSlot ? 'Save Changes' : 'Create Slot'}
                 onPress={handleSaveSlot}
+                loading={isAdding || isUpdating}
                 disabled={isAdding || isUpdating}
-              >
-                {isAdding || isUpdating ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.modalSubmitBtnText}>
-                    {editingSlot ? 'Save Changes' : 'Create Slot'}
-                  </Text>
-                )}
-              </TouchableOpacity>
+              />
             </View>
             <FlashMessage position="top" />
           </View>
@@ -552,9 +543,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   backBtnText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    fontWeight: '700',
+    color: '#00D2FF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   headerTitleContainer: {
     alignItems: 'center',

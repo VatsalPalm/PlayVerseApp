@@ -20,6 +20,7 @@ import { RootStackParamList, Sports } from "../../utils/types";
 import CTextInput from "../../Components/atoms/CTextInput";
 import CImage from "../../Components/atoms/CImage";
 import SizedBox from "../../Components/atoms/SizeBox";
+import CButton from "../../Components/atoms/CButton";
 import { Icons } from "../../assets";
 import {
   useAuthControllerRegister,
@@ -421,18 +422,12 @@ const RegisterScreen = () => {
 
             <SizedBox height={30} />
 
-            <TouchableOpacity
-              style={styles.btnRegister}
-              activeOpacity={0.8}
+            <CButton
+              title="Register"
               onPress={handleRegister}
+              loading={isPending}
               disabled={isPending}
-            >
-              {isPending ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Text style={styles.btnRegisterText}>Register</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
 
           <SizedBox height={20} />
