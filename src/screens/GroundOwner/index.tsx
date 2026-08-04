@@ -18,7 +18,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../utils/types";
 import { storage } from "../../services/mmkv";
@@ -75,19 +75,21 @@ const GroundOwnerHomeScreen = () => {
     }
   };
 
-  useEffect(() => {
-    try {
-      const stored = storage.getString("userProfile");
-      if (stored) {
-        const userObj = JSON.parse(stored);
-        if (userObj?.display_name) {
-          setUserName(userObj.display_name);
+  useFocusEffect(
+    React.useCallback(() => {
+      try {
+        const stored = storage.getString("userProfile");
+        if (stored) {
+          const userObj = JSON.parse(stored);
+          if (userObj?.display_name) {
+            setUserName(userObj.display_name);
+          }
         }
+      } catch (e) {
+        console.log("Failed to parse user profile:", e);
       }
-    } catch (e) {
-      console.log("Failed to parse user profile:", e);
-    }
-  }, []);
+    }, [])
+  );
 
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
   const orb1Y = useSharedValue(SCREEN_HEIGHT * 0.15);
@@ -216,7 +218,7 @@ const GroundOwnerHomeScreen = () => {
 
           {/* Quick Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Venue Quick Actions</Text>
+            <Text style={styles.sectionTitle}>Quick Actions</Text>
             <View style={styles.quickActionsGrid}>
               <TouchableOpacity
                 style={styles.actionCard}
@@ -233,6 +235,14 @@ const GroundOwnerHomeScreen = () => {
               >
                 <Text style={styles.actionIcon}>📅</Text>
                 <Text style={styles.actionTitle}>Manage Slots</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionCard}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("EditProfile")}
+              >
+                <Text style={styles.actionIcon}>👤</Text>
+                <Text style={styles.actionTitle}>Edit Profile</Text>
               </TouchableOpacity>
             </View>
           </View>

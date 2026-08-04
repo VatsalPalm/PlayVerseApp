@@ -110,6 +110,7 @@ const LoginScreen = () => {
   });
 
   const proceedWithLogin = async (requestLocationPermission: boolean) => {
+    console.log('[proceedWithLogin] starting, requestLocationPermission:', requestLocationPermission);
     setShowLocationModal(false);
     storage.set('locationPromptDismissed', true);
 
@@ -121,6 +122,7 @@ const LoginScreen = () => {
     let uniqueId = 'N/A';
 
     try {
+      console.log('[proceedWithLogin] fetching fcm token...');
       const tokenResult = await getFcmPushToken();
       if (tokenResult) {
         fcmToken = tokenResult;
@@ -130,6 +132,7 @@ const LoginScreen = () => {
       os = DeviceInfo.getSystemName() || os;
       osVersion = DeviceInfo.getSystemVersion() || osVersion;
       uniqueId = await DeviceInfo.getUniqueId() || uniqueId;
+      console.log('[proceedWithLogin] device info fetched:', { brand, model, os, osVersion, uniqueId, fcmToken });
     } catch (e) {
       console.log('Failed to fetch device / fcm info:', e);
     }
@@ -139,12 +142,22 @@ const LoginScreen = () => {
 
     if (requestLocationPermission) {
       try {
+        console.log('[proceedWithLogin] requesting location permission...');
         const { status } = await Location.requestForegroundPermissionsAsync();
+        console.log('[proceedWithLogin] location permission status:', status);
         if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({});
+          // Wait at most 3 seconds for position, otherwise time out and proceed without location
+          console.log('[proceedWithLogin] fetching current location...');
+          const loc = await Promise.race([
+            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+          ]);
           if (loc && loc.coords) {
             lat = loc.coords.latitude;
             lng = loc.coords.longitude;
+            console.log('[proceedWithLogin] location coordinates fetched:', { lat, lng });
+          } else {
+            console.log('[proceedWithLogin] location fetch timed out or returned null');
           }
         } else {
           showMessage({
@@ -158,24 +171,28 @@ const LoginScreen = () => {
       }
     }
 
+    const requestBody = {
+      mobile_number: phone.trim(),
+      country_code: '+91',
+      app_type: 'App',
+      os,
+      brand,
+      model_no: model,
+      serial_number: uniqueId,
+      version_number: osVersion,
+      fcm_token: fcmToken,
+      latitude: lat,
+      longitude: lng,
+    };
+    console.log('[proceedWithLogin] calling login API with body:', requestBody);
+
     login({
-      body: {
-        mobile_number: phone.trim(),
-        country_code: '+91',
-        app_type: 'App',
-        os,
-        brand,
-        model_no: model,
-        serial_number: uniqueId,
-        version_number: osVersion,
-        fcm_token: fcmToken,
-        latitude: lat,
-        longitude: lng,
-      } as any
+      body: requestBody as any
     });
   };
 
   const handleLogin = async () => {
+    console.log('[handleLogin] triggered, phone:', phone);
     if (!phone.trim()) {
       showMessage({
         message: 'Required Fields',
@@ -186,14 +203,18 @@ const LoginScreen = () => {
     }
 
     try {
+      console.log('[handleLogin] checking location permissions...');
       const { status } = await Location.getForegroundPermissionsAsync();
+      console.log('[handleLogin] current location status:', status);
       const hasDismissedPrompt = storage.getBoolean('locationPromptDismissed');
+      console.log('[handleLogin] locationPromptDismissed flag:', hasDismissedPrompt);
 
       if (status === 'granted') {
         proceedWithLogin(true);
       } else if (hasDismissedPrompt) {
         proceedWithLogin(false);
       } else {
+        console.log('[handleLogin] showing location permissions modal...');
         setShowLocationModal(true);
       }
     } catch (e) {

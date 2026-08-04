@@ -258,7 +258,10 @@ const RegisterScreen = () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === "granted") {
-        const loc = await Location.getCurrentPositionAsync({});
+        const loc = await Promise.race([
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+        ]);
         if (loc && loc.coords) {
           lat = loc.coords.latitude;
           lng = loc.coords.longitude;

@@ -247,6 +247,59 @@
         "tags": ["Auth"]
       }
     },
+    "/api/users/v1/profile": {
+      "get": {
+        "operationId": "UserController_getProfile",
+        "summary": "Get current user profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Profile retrieved successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": ["User"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "UserController_updateProfile",
+        "summary": "Update current user profile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "tags": ["User"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/upload/v1/file": {
       "post": {
         "operationId": "UploadController_uploadFile",
@@ -1328,6 +1381,64 @@
           }
         },
         "required": ["refreshToken"]
+      },
+      "UpdateUserProfileDto": {
+        "type": "object",
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "example": "Rajesh Kumar",
+            "description": "Display name of user"
+          },
+          "profile_image": {
+            "description": "Profile image upload object (filename and url), can also accept a plain URL string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileImageDto"
+              }
+            ]
+          },
+          "dob": {
+            "type": "string",
+            "example": "1995-05-15",
+            "description": "Date of birth (YYYY-MM-DD)"
+          },
+          "gender": {
+            "type": "string",
+            "example": "MALE",
+            "enum": ["MALE", "FEMALE", "OTHER"],
+            "description": "Gender"
+          },
+          "city": {
+            "type": "string",
+            "example": "Mumbai",
+            "description": "City"
+          },
+          "bio": {
+            "type": "string",
+            "example": "Sports enthusiast",
+            "description": "Bio"
+          },
+          "preferred_language": {
+            "type": "string",
+            "example": "English",
+            "description": "Preferred language"
+          },
+          "dominant_hand": {
+            "type": "string",
+            "example": "RIGHT",
+            "enum": ["LEFT", "RIGHT"],
+            "description": "Dominant hand"
+          },
+          "sports": {
+            "example": [1, 2],
+            "description": "List of sport IDs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       },
       "GroundSlotDto": {
         "type": "object",

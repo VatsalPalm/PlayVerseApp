@@ -254,6 +254,62 @@ export type RefreshTokenDto = {
   refreshToken: string;
 };
 
+export type UpdateUserProfileDto = {
+  /**
+   * Display name of user
+   *
+   * @example Rajesh Kumar
+   */
+  display_name?: string;
+  /**
+   * Profile image upload object (filename and url), can also accept a plain URL string
+   */
+  profile_image?: ProfileImageDto;
+  /**
+   * Date of birth (YYYY-MM-DD)
+   *
+   * @example 1995-05-15
+   */
+  dob?: string;
+  /**
+   * Gender
+   *
+   * @example MALE
+   */
+  gender?: "MALE" | "FEMALE" | "OTHER";
+  /**
+   * City
+   *
+   * @example Mumbai
+   */
+  city?: string;
+  /**
+   * Bio
+   *
+   * @example Sports enthusiast
+   */
+  bio?: string;
+  /**
+   * Preferred language
+   *
+   * @example English
+   */
+  preferred_language?: string;
+  /**
+   * Dominant hand
+   *
+   * @example RIGHT
+   */
+  dominant_hand?: "LEFT" | "RIGHT";
+  /**
+   * List of sport IDs
+   *
+   * @example 1
+   * @example 2
+   */
+  sports?: string[];
+};
+
 export type GroundSlotDto = {
   /**
    * Day of week: 0=Sunday … 6=Saturday

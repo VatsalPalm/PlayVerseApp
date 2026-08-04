@@ -410,6 +410,136 @@ export const useAuthControllerRefreshToken = (
   });
 };
 
+export type UserControllerGetProfileError = Fetcher.ErrorWrapper<undefined>;
+
+export type UserControllerGetProfileVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchUserControllerGetProfile = (
+  variables: UserControllerGetProfileVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    UserControllerGetProfileError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/users/v1/profile", method: "get", ...variables, signal });
+
+export function userControllerGetProfileQuery(
+  variables: UserControllerGetProfileVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function userControllerGetProfileQuery(
+  variables: UserControllerGetProfileVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function userControllerGetProfileQuery(
+  variables: UserControllerGetProfileVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/users/v1/profile",
+      operationId: "userControllerGetProfile",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchUserControllerGetProfile(variables, signal),
+  };
+}
+
+export const useSuspenseUserControllerGetProfile = <TData = undefined,>(
+  variables: UserControllerGetProfileVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<undefined, UserControllerGetProfileError, TData>,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    UserControllerGetProfileError,
+    TData
+  >({
+    ...userControllerGetProfileQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useUserControllerGetProfile = <TData = undefined,>(
+  variables: UserControllerGetProfileVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<undefined, UserControllerGetProfileError, TData>,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<undefined, UserControllerGetProfileError, TData>({
+    ...userControllerGetProfileQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type UserControllerUpdateProfileError = Fetcher.ErrorWrapper<undefined>;
+
+export type UserControllerUpdateProfileVariables = {
+  body?: Schemas.UpdateUserProfileDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchUserControllerUpdateProfile = (
+  variables: UserControllerUpdateProfileVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    UserControllerUpdateProfileError,
+    Schemas.UpdateUserProfileDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/users/v1/profile", method: "put", ...variables, signal });
+
+export const useUserControllerUpdateProfile = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      UserControllerUpdateProfileError,
+      UserControllerUpdateProfileVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    UserControllerUpdateProfileError,
+    UserControllerUpdateProfileVariables
+  >({
+    mutationFn: (variables: UserControllerUpdateProfileVariables) =>
+      fetchUserControllerUpdateProfile(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type UploadControllerUploadFileError = Fetcher.ErrorWrapper<undefined>;
 
 export type UploadControllerUploadFileRequestBody = {
@@ -1767,6 +1897,11 @@ export const useMasterControllerGetSports = <TData = undefined,>(
 };
 
 export type QueryOperation =
+  | {
+      path: "/api/users/v1/profile";
+      operationId: "userControllerGetProfile";
+      variables: UserControllerGetProfileVariables | reactQuery.SkipToken;
+    }
   | {
       path: "/api/ai/nearby-grounds/{userId}";
       operationId: "aiControllerGetNearbyGrounds";

@@ -10,6 +10,7 @@ import AdminHomeScreen from '../screens/Admin';
 import GroundsListScreen from '../screens/GroundOwner/GroundsList';
 import AddEditGroundScreen from '../screens/GroundOwner/AddEditGround';
 import ManageSlotsScreen from '../screens/GroundOwner/ManageSlots';
+import EditProfileScreen from '../screens/GroundOwner/EditProfile';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -39,6 +40,7 @@ const Home = () => {
             <Stack.Screen name="GroundsList" component={GroundsListScreen} />
             <Stack.Screen name="AddEditGround" component={AddEditGroundScreen} />
             <Stack.Screen name="ManageSlots" component={ManageSlotsScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         </Stack.Navigator>
     );
 };
