@@ -11,6 +11,7 @@ import {
   Image,
   Platform,
   Modal,
+  Alert,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { Ionicons } from "@expo/vector-icons";
@@ -69,8 +70,12 @@ const AddEditGroundScreen = () => {
           const { status } = await Location.requestForegroundPermissionsAsync();
           if (status === "granted") {
             const loc = await Promise.race([
-              Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-              new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+              Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+              }),
+              new Promise<null>((resolve) =>
+                setTimeout(() => resolve(null), 3000),
+              ),
             ]);
             if (loc && loc.coords) {
               setLatitude(loc.coords.latitude.toString());
@@ -396,7 +401,7 @@ const AddEditGroundScreen = () => {
       },
     });
 
-  // Populate data in edit mode
+  // Populate data in edit mode or reset in add mode
   useEffect(() => {
     if (isEdit && groundDetails) {
       const ground =
@@ -421,21 +426,48 @@ const AddEditGroundScreen = () => {
           .filter(Boolean);
         setGroundImages(urls);
       }
+    } else if (!isEdit) {
+      setName("");
+      setDescription("");
+      setAddress("");
+      setCity("");
+      setLatitude("");
+      setLongitude("");
+      setSelectedSports([]);
+      setGroundImages([]);
     }
-  }, [isEdit, groundDetails]);
+  }, [isEdit, groundDetails, groundId]);
 
-  // Handle Pick Image
-  const handlePickImage = async () => {
-    const remainingSlots = 5 - groundImages.length;
-    if (remainingSlots <= 0) {
-      showMessage({
-        message: "Limit Reached",
-        description: "You can upload a maximum of 5 images.",
-        type: "warning",
+  const handleLaunchCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        showMessage({
+          message: "Permission Denied",
+          description: "Sorry, we need camera permissions to take a photo.",
+          type: "warning",
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.8,
       });
-      return;
-    }
 
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const newUri = result.assets[0].uri;
+        setGroundImages((prev) => {
+          const combined = [...prev, newUri];
+          return combined.slice(0, 5);
+        });
+      }
+    } catch (e) {
+      console.log("Camera error:", e);
+    }
+  };
+
+  const handleLaunchLibrary = async (remainingSlots: number) => {
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -443,7 +475,7 @@ const AddEditGroundScreen = () => {
         showMessage({
           message: "Permission Denied",
           description:
-            "Sorry, we need camera roll permissions to upload arena images.",
+            "Sorry, we need gallery permissions to upload arena images.",
           type: "warning",
         });
         return;
@@ -475,6 +507,34 @@ const AddEditGroundScreen = () => {
     } catch (e) {
       console.log("Image selection error:", e);
     }
+  };
+
+  // Handle Pick Image
+  const handlePickImage = async () => {
+    const remainingSlots = 5 - groundImages.length;
+    if (remainingSlots <= 0) {
+      showMessage({
+        message: "Limit Reached",
+        description: "You can upload a maximum of 5 images.",
+        type: "warning",
+      });
+      return;
+    }
+
+    Alert.alert("Arena Photos", "Choose an option to add arena photos", [
+      {
+        text: "Take Photo (Camera)",
+        onPress: handleLaunchCamera,
+      },
+      {
+        text: "Choose from Gallery",
+        onPress: () => handleLaunchLibrary(remainingSlots),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
   };
 
   const handleDeleteImage = (index: number) => {
@@ -632,7 +692,8 @@ const AddEditGroundScreen = () => {
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
           keyboardShouldPersistTaps="handled"
         >
           {/* Arena Photos List */}

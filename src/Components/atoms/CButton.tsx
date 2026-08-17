@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
@@ -34,6 +35,7 @@ interface CButtonProps {
   color?: string;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  swipeable?: boolean;
 }
 
 const CButton: React.FC<CButtonProps> = ({
@@ -46,6 +48,7 @@ const CButton: React.FC<CButtonProps> = ({
   color = "#FFFFFF",
   style,
   textStyle,
+  swipeable = false,
 }) => {
   const [buttonWidth, setButtonWidth] = useState(0);
   const translateX = useSharedValue(0);
@@ -128,6 +131,29 @@ const CButton: React.FC<CButtonProps> = ({
     };
   });
 
+  if (!swipeable) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={onPress}
+        disabled={disabled || loading}
+        style={[
+          styles.standardButton,
+          { width, backgroundColor: disabled ? "rgba(255, 255, 255, 0.05)" : backgroundColor },
+          style,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={color} size="small" />
+        ) : (
+          <Text style={[styles.standardButtonText, { color }, textStyle]}>
+            {title}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <View
       style={[styles.container, { width }, style]}
@@ -171,7 +197,12 @@ const CButton: React.FC<CButtonProps> = ({
         </Animated.View>
 
         {/* Sliding Handle */}
-        <PanGestureHandler onGestureEvent={gestureHandler} enabled={!disabled && !loading}>
+        <PanGestureHandler
+          onGestureEvent={gestureHandler}
+          enabled={!disabled && !loading}
+          activeOffsetX={[-10, 10]}
+          failOffsetY={[-5, 5]}
+        >
           <Animated.View
             style={[
               styles.handle,
@@ -259,5 +290,23 @@ const styles = StyleSheet.create({
   handleIcon: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  standardButton: {
+    height: BUTTON_HEIGHT,
+    borderRadius: BUTTON_HEIGHT / 2,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginVertical: 10,
+    shadowColor: "#6C4DF6",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  standardButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
 });

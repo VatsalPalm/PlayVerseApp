@@ -24,9 +24,11 @@ const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [phone, setPhone] = useState('');
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
 
   const { mutate: login, isPending } = useAuthControllerLoginUser({
     onSuccess: (data: any) => {
+      setLocalLoading(false);
       const otpToken = data?.data?.token || data?.token;
       if (otpToken) {
         showMessage({
@@ -70,6 +72,7 @@ const LoginScreen = () => {
       }
     },
     onError: (error: any) => {
+      setLocalLoading(false);
       console.log('Login error details:', error);
       let errMsg = 'Invalid credentials. Please try again.';
       if (typeof error?.message === 'string') {
@@ -113,6 +116,7 @@ const LoginScreen = () => {
     console.log('[proceedWithLogin] starting, requestLocationPermission:', requestLocationPermission);
     setShowLocationModal(false);
     storage.set('locationPromptDismissed', true);
+    setLocalLoading(true);
 
     let fcmToken = 'fcm_token_001';
     let brand = 'Generic';
@@ -278,7 +282,7 @@ const LoginScreen = () => {
       </View>
 
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
           <SizedBox height={20} />
           
           {/* Top Logo */}
@@ -307,8 +311,9 @@ const LoginScreen = () => {
             <CButton
               title="Sign In"
               onPress={handleLogin}
-              loading={isPending}
-              disabled={isPending}
+              loading={isPending || localLoading}
+              disabled={isPending || localLoading}
+              swipeable={true}
             />
           </View>
 

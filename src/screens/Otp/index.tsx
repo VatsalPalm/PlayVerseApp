@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -140,7 +140,7 @@ const OtpScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.contentContainer}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
           <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
           
           <View style={styles.titleContainer}>
@@ -187,7 +187,7 @@ const OtpScreen = () => {
               <Text style={styles.resendLink}>Resend OTP</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );

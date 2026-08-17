@@ -10,6 +10,7 @@ import {
   StatusBar,
   Image,
   Platform,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -49,6 +50,7 @@ const RegisterScreen = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [selectedSports, setSelectedSports] = useState<number[]>([]);
+  const [localLoading, setLocalLoading] = useState(false);
 
   const toggleSport = (sportId: number) => {
     if (selectedSports.includes(sportId)) {
@@ -72,17 +74,6 @@ const RegisterScreen = () => {
           data?.result?.filename || data?.filename || "profile.jpg";
         if (url) {
           setUploadedImage({ filename, url });
-          showMessage({
-            message: "Profile Photo Uploaded",
-            description: "Your photo was uploaded successfully.",
-            type: "success",
-          });
-        } else {
-          showMessage({
-            message: "Upload Succeeded",
-            description: "Photo updated.",
-            type: "success",
-          });
         }
       },
       onError: (error: any) => {
@@ -95,15 +86,57 @@ const RegisterScreen = () => {
       },
     });
 
-  const handlePickImage = async () => {
+  const processPickedImage = (localUri: string) => {
+    setProfileImage(localUri);
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri:
+        Platform.OS === "android"
+          ? localUri
+          : localUri.replace("file://", ""),
+      name: "profile.jpg",
+      type: "image/jpeg",
+    } as any);
+
+    uploadFile({
+      body: formData as any,
+    });
+  };
+
+  const handleLaunchCamera = async () => {
     try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== "granted") {
         showMessage({
           message: "Permission Denied",
-          description:
-            "Sorry, we need camera roll permissions to upload profile picture.",
+          description: "Sorry, we need camera permissions to take a profile picture.",
+          type: "warning",
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        processPickedImage(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log("Camera launch error:", e);
+    }
+  };
+
+  const handleLaunchLibrary = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        showMessage({
+          message: "Permission Denied",
+          description: "Sorry, we need gallery permissions to upload a profile picture.",
           type: "warning",
         });
         return;
@@ -117,30 +150,37 @@ const RegisterScreen = () => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const localUri = result.assets[0].uri;
-        setProfileImage(localUri);
-
-        const formData = new FormData();
-        formData.append("file", {
-          uri:
-            Platform.OS === "android"
-              ? localUri
-              : localUri.replace("file://", ""),
-          name: "profile.jpg",
-          type: "image/jpeg",
-        } as any);
-
-        uploadFile({
-          body: formData as any,
-        });
+        processPickedImage(result.assets[0].uri);
       }
     } catch (e) {
       console.log("Image picker error:", e);
     }
   };
 
+  const handlePickImage = () => {
+    Alert.alert(
+      "Profile Photo",
+      "Select an option to choose your profile picture",
+      [
+        {
+          text: "Take Photo (Camera)",
+          onPress: handleLaunchCamera,
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: handleLaunchLibrary,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
+  };
+
   const { mutate: register, isPending } = useAuthControllerRegister({
     onSuccess: (data: any) => {
+      setLocalLoading(false);
       showMessage({
         message: "Registration Initiated",
         description:
@@ -158,6 +198,7 @@ const RegisterScreen = () => {
       });
     },
     onError: (error: any) => {
+      setLocalLoading(false);
       console.log("Registration error:", error);
       let errMsg = "Registration failed. Check parameters and try again.";
 
@@ -230,6 +271,8 @@ const RegisterScreen = () => {
       });
       return;
     }
+
+    setLocalLoading(true);
 
     let fcmToken = "fcm_token_001";
     let brand = "Generic";
@@ -315,7 +358,8 @@ const RegisterScreen = () => {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
-          contentContainerStyle={styles.scrollContainer}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]}
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo */}
@@ -428,8 +472,9 @@ const RegisterScreen = () => {
             <CButton
               title="Register"
               onPress={handleRegister}
-              loading={isPending}
-              disabled={isPending}
+              loading={isPending || localLoading}
+              disabled={isPending || localLoading}
+              swipeable={true}
             />
           </View>
 

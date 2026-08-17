@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
@@ -34,13 +35,26 @@ const GroundOwnerHomeScreen = () => {
   const [userName, setUserName] = useState("Owner");
 
   // Fetch grounds to get AI insights
-  const { data: myGroundsData, isLoading } =
+  const { data: myGroundsData, isLoading, refetch } =
     useGroundControllerGetMyGrounds<any>({
       queryParams: {
         page: 1,
         limit: 10,
       },
     });
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch (e) {
+      console.log("Failed to refresh grounds:", e);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
   const dashboardStats = myGroundsData?.dashboard_stats;
   const aiInsights =
@@ -88,7 +102,8 @@ const GroundOwnerHomeScreen = () => {
       } catch (e) {
         console.log("Failed to parse user profile:", e);
       }
-    }, [])
+      refetch();
+    }, [refetch])
   );
 
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
@@ -171,11 +186,11 @@ const GroundOwnerHomeScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Text style={styles.greeting} numberOfLines={1}>
               Hello, {userName.split(" ")[0]}! 🏟️
             </Text>
-            <Text style={styles.headerSubtitle}>
+            <Text style={styles.headerSubtitle} numberOfLines={1}>
               Manage your arenas and daily bookings
             </Text>
           </View>
@@ -191,6 +206,14 @@ const GroundOwnerHomeScreen = () => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#6C4DF6"
+              colors={["#6C4DF6"]}
+            />
+          }
         >
           {/* Quick Metrics */}
           <View style={styles.metricsContainer}>

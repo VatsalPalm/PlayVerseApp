@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions, TouchableOpacity, FlatList, ActivityIndicator, Alert, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../utils/types';
 import { useGroundControllerGetMyGrounds, useGroundControllerDeleteGround } from '../../Api/playVerseComponents';
@@ -23,6 +23,12 @@ const GroundsListScreen = () => {
       limit: 100,
     },
   });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const { mutate: deleteGround, isPending: isDeleting } = useGroundControllerDeleteGround({
     onSuccess: () => {

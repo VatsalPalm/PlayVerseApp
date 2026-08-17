@@ -10,6 +10,7 @@ import {
   StatusBar,
   Image,
   Platform,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -87,11 +88,6 @@ const EditProfileScreen = () => {
       if (url) {
         setUploadedImage({ filename, url });
         setProfileImageUri(getProfileImageUrl(url));
-        showMessage({
-          message: "Profile Photo Uploaded",
-          description: "Your photo was uploaded successfully.",
-          type: "success",
-        });
       }
     },
     onError: (error: any) => {
@@ -151,13 +147,54 @@ const EditProfileScreen = () => {
     },
   });
 
-  const handlePickImage = async () => {
+  const processPickedImage = (localUri: string) => {
+    setProfileImageUri(localUri);
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri: Platform.OS === "android" ? localUri : localUri.replace("file://", ""),
+      name: "profile.jpg",
+      type: "image/jpeg",
+    } as any);
+
+    uploadFile({
+      body: formData as any,
+    });
+  };
+
+  const handleLaunchCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        showMessage({
+          message: "Permission Denied",
+          description: "Sorry, we need camera permissions to take a profile picture.",
+          type: "warning",
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        processPickedImage(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log("Camera error:", e);
+    }
+  };
+
+  const handleLaunchLibrary = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         showMessage({
           message: "Permission Denied",
-          description: "Sorry, we need camera roll permissions to upload profile picture.",
+          description: "Sorry, we need gallery permissions to upload profile picture.",
           type: "warning",
         });
         return;
@@ -171,23 +208,32 @@ const EditProfileScreen = () => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const localUri = result.assets[0].uri;
-        setProfileImageUri(localUri);
-
-        const formData = new FormData();
-        formData.append("file", {
-          uri: Platform.OS === "android" ? localUri : localUri.replace("file://", ""),
-          name: "profile.jpg",
-          type: "image/jpeg",
-        } as any);
-
-        uploadFile({
-          body: formData as any,
-        });
+        processPickedImage(result.assets[0].uri);
       }
     } catch (e) {
       console.log("Image picker error:", e);
     }
+  };
+
+  const handlePickImage = () => {
+    Alert.alert(
+      "Profile Photo",
+      "Select an option to choose your profile picture",
+      [
+        {
+          text: "Take Photo (Camera)",
+          onPress: handleLaunchCamera,
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: handleLaunchLibrary,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   const handleSaveChanges = () => {
@@ -246,7 +292,7 @@ const EditProfileScreen = () => {
           <View style={{ width: 48 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
           
           {/* Avatar Section */}
           <View style={styles.avatarSection}>
