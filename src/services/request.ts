@@ -6,7 +6,7 @@ export const env = 3;
 
 export const getURL = (env: number) => {
   if (env === 3) return "https://8lqg2hx4-3339.inc1.devtunnels.ms/";
-  if (env == 2) return "https://0xsnvf4n-3320.inc1.devtunnels.ms/api";
+  if (env == 2) return "https://tv4p5m1t-3339.inc1.devtunnels.ms/";
   else return "http://192.168.29.234:3320/api";
 };
 

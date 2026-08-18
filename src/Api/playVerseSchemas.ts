@@ -494,3 +494,34 @@ export type GroundImageDto = {
    */
   url: string;
 };
+
+export type CreateBookingDto = {
+  /**
+   * Ground ID to book
+   *
+   * @example 1
+   */
+  groundId: number;
+  /**
+   * Slot ID to book
+   *
+   * @example 5
+   */
+  slotId: number;
+  /**
+   * Booking date (YYYY-MM-DD)
+   *
+   * @example 2026-08-20
+   */
+  bookingDate: string;
+  /**
+   * Sport ID (if ground supports multiple)
+   *
+   * @example 1
+   */
+  sportId?: number;
+  /**
+   * Optional notes for the booking
+   */
+  notes?: string;
+};

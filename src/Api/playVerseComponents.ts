@@ -1896,6 +1896,580 @@ export const useMasterControllerGetSports = <TData = undefined,>(
   });
 };
 
+export type BookingControllerCreateBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerCreateBookingVariables = {
+  body: Schemas.CreateBookingDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerCreateBooking = (
+  variables: BookingControllerCreateBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerCreateBookingError,
+    Schemas.CreateBookingDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/bookings/v1", method: "post", ...variables, signal });
+
+export const useBookingControllerCreateBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerCreateBookingError,
+      BookingControllerCreateBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerCreateBookingError,
+    BookingControllerCreateBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerCreateBookingVariables) =>
+      fetchBookingControllerCreateBooking(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type BookingControllerGetMyBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetMyBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetMyBookingsVariables = {
+  queryParams?: BookingControllerGetMyBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetMyBookings = (
+  variables: BookingControllerGetMyBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    undefined,
+    {},
+    BookingControllerGetMyBookingsQueryParams,
+    {}
+  >({ url: "/api/bookings/v1/my", method: "get", ...variables, signal });
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/my",
+      operationId: "bookingControllerGetMyBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetMyBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetMyBookings = <TData = undefined,>(
+  variables: BookingControllerGetMyBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetMyBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    TData
+  >({
+    ...bookingControllerGetMyBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetMyBookings = <TData = undefined,>(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetMyBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    TData
+  >({
+    ...bookingControllerGetMyBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerGetOwnerAllBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetOwnerAllBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetOwnerAllBookingsVariables = {
+  queryParams?: BookingControllerGetOwnerAllBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetOwnerAllBookings = (
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    undefined,
+    {},
+    BookingControllerGetOwnerAllBookingsQueryParams,
+    {}
+  >({ url: "/api/bookings/v1/owner", method: "get", ...variables, signal });
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/owner",
+      operationId: "bookingControllerGetOwnerAllBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetOwnerAllBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetOwnerAllBookings = <
+  TData = undefined,
+>(
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetOwnerAllBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    TData
+  >({
+    ...bookingControllerGetOwnerAllBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetOwnerAllBookings = <TData = undefined,>(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetOwnerAllBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    TData
+  >({
+    ...bookingControllerGetOwnerAllBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerGetGroundBookingsPathParams = {
+  groundId: number;
+};
+
+export type BookingControllerGetGroundBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetGroundBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetGroundBookingsVariables = {
+  pathParams: BookingControllerGetGroundBookingsPathParams;
+  queryParams?: BookingControllerGetGroundBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetGroundBookings = (
+  variables: BookingControllerGetGroundBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    undefined,
+    {},
+    BookingControllerGetGroundBookingsQueryParams,
+    BookingControllerGetGroundBookingsPathParams
+  >({
+    url: "/api/bookings/v1/ground/{groundId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/ground/{groundId}",
+      operationId: "bookingControllerGetGroundBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetGroundBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetGroundBookings = <
+  TData = undefined,
+>(
+  variables: BookingControllerGetGroundBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetGroundBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    TData
+  >({
+    ...bookingControllerGetGroundBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetGroundBookings = <TData = undefined,>(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetGroundBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    TData
+  >({
+    ...bookingControllerGetGroundBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerConfirmBookingPathParams = {
+  id: number;
+};
+
+export type BookingControllerConfirmBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerConfirmBookingVariables = {
+  pathParams: BookingControllerConfirmBookingPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerConfirmBooking = (
+  variables: BookingControllerConfirmBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerConfirmBookingError,
+    undefined,
+    {},
+    {},
+    BookingControllerConfirmBookingPathParams
+  >({
+    url: "/api/bookings/v1/{id}/confirm",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerConfirmBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerConfirmBookingError,
+      BookingControllerConfirmBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerConfirmBookingError,
+    BookingControllerConfirmBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerConfirmBookingVariables) =>
+      fetchBookingControllerConfirmBooking(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type BookingControllerCancelBookingPathParams = {
+  id: number;
+};
+
+export type BookingControllerCancelBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerCancelBookingVariables = {
+  pathParams: BookingControllerCancelBookingPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerCancelBooking = (
+  variables: BookingControllerCancelBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerCancelBookingError,
+    undefined,
+    {},
+    {},
+    BookingControllerCancelBookingPathParams
+  >({
+    url: "/api/bookings/v1/{id}/cancel",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerCancelBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerCancelBookingError,
+      BookingControllerCancelBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerCancelBookingError,
+    BookingControllerCancelBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerCancelBookingVariables) =>
+      fetchBookingControllerCancelBooking(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type QueryOperation =
   | {
       path: "/api/users/v1/profile";
@@ -1942,4 +2516,23 @@ export type QueryOperation =
       path: "/api/master/v1/sports";
       operationId: "masterControllerGetSports";
       variables: MasterControllerGetSportsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/my";
+      operationId: "bookingControllerGetMyBookings";
+      variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/owner";
+      operationId: "bookingControllerGetOwnerAllBookings";
+      variables:
+        | BookingControllerGetOwnerAllBookingsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/ground/{groundId}";
+      operationId: "bookingControllerGetGroundBookings";
+      variables:
+        | BookingControllerGetGroundBookingsVariables
+        | reactQuery.SkipToken;
     };

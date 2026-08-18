@@ -40,7 +40,6 @@ const SPORTS_LIST = [
   { id: Sports.CRICKET, name: "Cricket", icon: "🏏" },
   { id: Sports.FOOTBALL, name: "Football", icon: "⚽" },
   { id: Sports.BASKETBALL, name: "Basketball", icon: "🏀" },
-  { id: Sports.TENNIS, name: "Tennis", icon: "🎾" },
   { id: Sports.PICKLEBALL, name: "Pickleball", icon: "🏓" },
 ];
 
@@ -49,6 +48,9 @@ const RegisterScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"PLAYER" | "GROUND_OWNER">(
+    "PLAYER",
+  );
   const [selectedSports, setSelectedSports] = useState<number[]>([]);
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -64,44 +66,13 @@ const RegisterScreen = () => {
   const [uploadedImage, setUploadedImage] = useState<ProfileImageDto | null>(
     null,
   );
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { mutate: uploadFile, isPending: isUploading } =
-    useUploadControllerUploadFile({
-      onSuccess: (data: any) => {
-        console.log("Upload success data:", data);
-        const url = data?.result?.url || data?.url || data?.path;
-        const filename =
-          data?.result?.filename || data?.filename || "profile.jpg";
-        if (url) {
-          setUploadedImage({ filename, url });
-        }
-      },
-      onError: (error: any) => {
-        console.log("Upload error:", error);
-        showMessage({
-          message: "Upload Failed",
-          description: "Could not upload profile picture. Please try again.",
-          type: "danger",
-        });
-      },
-    });
+  const { mutateAsync: uploadFileAsync } = useUploadControllerUploadFile();
 
   const processPickedImage = (localUri: string) => {
     setProfileImage(localUri);
-
-    const formData = new FormData();
-    formData.append("file", {
-      uri:
-        Platform.OS === "android"
-          ? localUri
-          : localUri.replace("file://", ""),
-      name: "profile.jpg",
-      type: "image/jpeg",
-    } as any);
-
-    uploadFile({
-      body: formData as any,
-    });
+    setUploadedImage(null);
   };
 
   const handleLaunchCamera = async () => {
@@ -110,7 +81,8 @@ const RegisterScreen = () => {
       if (status !== "granted") {
         showMessage({
           message: "Permission Denied",
-          description: "Sorry, we need camera permissions to take a profile picture.",
+          description:
+            "Sorry, we need camera permissions to take a profile picture.",
           type: "warning",
         });
         return;
@@ -132,11 +104,13 @@ const RegisterScreen = () => {
 
   const handleLaunchLibrary = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         showMessage({
           message: "Permission Denied",
-          description: "Sorry, we need gallery permissions to upload a profile picture.",
+          description:
+            "Sorry, we need gallery permissions to upload a profile picture.",
           type: "warning",
         });
         return;
@@ -174,7 +148,7 @@ const RegisterScreen = () => {
           text: "Cancel",
           style: "cancel",
         },
-      ]
+      ],
     );
   };
 
@@ -302,8 +276,10 @@ const RegisterScreen = () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === "granted") {
         const loc = await Promise.race([
-          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+          Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          }),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
         ]);
         if (loc && loc.coords) {
           lat = loc.coords.latitude;
@@ -314,13 +290,57 @@ const RegisterScreen = () => {
       console.log("Failed to fetch location on register:", e);
     }
 
+    let uploadImgPayload: ProfileImageDto | undefined = undefined;
+
+    if (profileImage && !profileImage.startsWith("http")) {
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", {
+          uri:
+            Platform.OS === "android"
+              ? profileImage
+              : profileImage.replace("file://", ""),
+          name: "profile.jpg",
+          type: "image/jpeg",
+        } as any);
+
+        const uploadRes: any = await uploadFileAsync({
+          body: formData as any,
+        });
+
+        const res = uploadRes?.result || uploadRes?.data || uploadRes;
+        const url = res?.url || res?.path;
+        const filename = res?.filename || "profile.jpg";
+
+        if (url) {
+          uploadImgPayload = { filename, url };
+          setUploadedImage(uploadImgPayload);
+        }
+      } catch (err: any) {
+        console.log("Upload error:", err);
+        setIsUploading(false);
+        setLocalLoading(false);
+        showMessage({
+          message: "Upload Failed",
+          description: "Could not upload profile picture. Please try again.",
+          type: "danger",
+        });
+        return;
+      } finally {
+        setIsUploading(false);
+      }
+    } else if (profileImage && profileImage.startsWith("http")) {
+      uploadImgPayload = uploadedImage || undefined;
+    }
+
     register({
       body: {
         display_name: fullName.trim(),
         country_code: "+91",
         mobile_number: phone.trim(),
-        role: "PLAYER",
-        profile_image: uploadedImage || undefined,
+        role: selectedRole,
+        profile_image: uploadImgPayload || undefined,
         auth_type: "Local",
         app_type: "App",
         os,
@@ -436,6 +456,42 @@ const RegisterScreen = () => {
               onChangeTextValue={setPhone}
               keyboardType="phone-pad"
             />
+
+            <SizedBox height={16} />
+
+            {/* Choose Role Section */}
+            <View style={styles.roleSection}>
+              <Text style={styles.roleLabel}>Register As</Text>
+              <View style={styles.roleContainer}>
+                {[
+                  { id: "PLAYER", name: "Player", icon: "🏃" },
+                  { id: "GROUND_OWNER", name: "Ground Owner", icon: "🏟️" },
+                ].map((r) => {
+                  const isSelected = selectedRole === r.id;
+                  return (
+                    <TouchableOpacity
+                      key={r.id}
+                      activeOpacity={0.8}
+                      onPress={() => setSelectedRole(r.id as any)}
+                      style={[
+                        styles.roleChip,
+                        isSelected && styles.roleChipActive,
+                      ]}
+                    >
+                      <Text style={styles.roleChipEmoji}>{r.icon}</Text>
+                      <Text
+                        style={[
+                          styles.roleChipText,
+                          isSelected && styles.roleChipTextActive,
+                        ]}
+                      >
+                        {r.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
 
             <SizedBox height={20} />
 
@@ -632,6 +688,49 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   chipTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  roleSection: {
+    marginTop: 8,
+    width: "100%",
+  },
+  roleLabel: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "400",
+    marginBottom: 10,
+  },
+  roleContainer: {
+    flexDirection: "row",
+    gap: 8,
+    width: "100%",
+  },
+  roleChip: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 20,
+    paddingVertical: 10,
+  },
+  roleChipActive: {
+    backgroundColor: "rgba(108, 77, 246, 0.15)",
+    borderColor: "#6C4DF6",
+  },
+  roleChipEmoji: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  roleChipText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  roleChipTextActive: {
     color: "#FFFFFF",
     fontWeight: "700",
   },

@@ -191,7 +191,7 @@ const GroundOwnerHomeScreen = () => {
               Hello, {userName.split(" ")[0]}! 🏟️
             </Text>
             <Text style={styles.headerSubtitle} numberOfLines={1}>
-              Manage your arenas and daily bookings
+              Manage your grounds and daily bookings
             </Text>
           </View>
           <TouchableOpacity
@@ -256,8 +256,8 @@ const GroundOwnerHomeScreen = () => {
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate("GroundsList")}
               >
-                <Text style={styles.actionIcon}>📅</Text>
-                <Text style={styles.actionTitle}>Manage Slots</Text>
+                <Text style={styles.actionIcon}>🏟️</Text>
+                <Text style={styles.actionTitle}>My Grounds</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionCard}
@@ -294,7 +294,7 @@ const GroundOwnerHomeScreen = () => {
               <View style={styles.aiSummaryCard}>
                 <Text style={styles.aiSummaryText}>
                   {aiInsights.overall_summary ||
-                    "Your arena is ready for pricing recommendations."}
+                    "Your ground is ready for pricing recommendations."}
                 </Text>
               </View>
 
@@ -349,7 +349,7 @@ const GroundOwnerHomeScreen = () => {
                     <Text style={[styles.priceBlockVal, { color: "#FF9100" }]}>
                       ₹{marketPrice}
                     </Text>
-                    <Text style={styles.priceBlockSub}>nearby arenas</Text>
+                    <Text style={styles.priceBlockSub}>nearby grounds</Text>
                   </View>
                 </View>
 

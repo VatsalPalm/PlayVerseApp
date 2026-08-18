@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,8 +12,9 @@ import {
   Platform,
   Modal,
   Alert,
+  TextInput,
 } from "react-native";
-import { WebView } from "react-native-webview";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -59,9 +60,33 @@ const AddEditGroundScreen = () => {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const [sportsGroundTypes, setSportsGroundTypes] = useState<
+    Record<string, "BOX" | "OPEN" | "BOTH">
+  >({});
   const [groundImages, setGroundImages] = useState<string[]>([]);
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [locationName, setLocationName] = useState("");
+  const [selectedCoord, setSelectedCoord] = useState({
+    latitude: 23.0225,
+    longitude: 72.5714,
+  });
+  const mapRef = useRef<MapView | null>(null);
+
+  useEffect(() => {
+    if (isMapVisible) {
+      setSelectedCoord({
+        latitude: latitude ? parseFloat(latitude) : 23.0225,
+        longitude: longitude ? parseFloat(longitude) : 72.5714,
+      });
+      setSearchQuery("");
+      setSearchResults([]);
+    }
+  }, [isMapVisible, latitude, longitude]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -97,258 +122,151 @@ const AddEditGroundScreen = () => {
     fetchLocation();
   }, [isMapVisible]);
 
-  const getMapHtml = () => {
-    const lat = latitude ? parseFloat(latitude) : 23.0225;
-    const lng = longitude ? parseFloat(longitude) : 72.5714;
-    const shouldLocate = !latitude && !longitude;
-
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <style>
-    body { margin: 0; padding: 0; background-color: #080612; color: #FFFFFF; font-family: -apple-system, sans-serif; }
-    #map { height: 100vh; width: 100vw; }
-    .search-container {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      z-index: 1000;
-    }
-    #search-input {
-      width: 100%;
-      height: 48px;
-      background-color: #120E2E;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      color: #FFFFFF;
-      padding: 0 16px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      box-sizing: border-box;
-    }
-    #search-input::placeholder {
-      color: rgba(255, 255, 255, 0.4);
-    }
-    #search-input:focus {
-      outline: none;
-      border-color: #6C4DF6;
-    }
-    .confirm-btn {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #6C4DF6;
-      color: #FFFFFF;
-      padding: 14px 28px;
-      border: none;
-      border-radius: 28px;
-      font-size: 16px;
-      font-weight: 700;
-      box-shadow: 0 6px 20px rgba(108, 77, 246, 0.4);
-      z-index: 1000;
-      cursor: pointer;
-      width: 80%;
-      text-align: center;
-    }
-    .pac-container {
-      background-color: #120E2E;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      border-radius: 12px;
-      margin-top: 8px;
-      font-family: -apple-system, sans-serif;
-    }
-    .pac-item {
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 12px 16px;
-      color: #9CA3AF;
-      font-size: 13px;
-    }
-    .pac-item-query {
-      color: #FFFFFF;
-      font-size: 14px;
-    }
-    .pac-item:hover {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
-    .pac-matched {
-      color: #6C4DF6;
-    }
-    .pac-icon {
-      filter: invert(100%);
-    }
-  </style>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDY1UU7ewuL9EK2zemNvtzZoLx_9epbqIg&libraries=places"></script>
-</head>
-<body>
-  <div class="search-container">
-    <input type="text" id="search-input" placeholder="Search address or landmark..." />
-  </div>
-
-  <div id="map"></div>
-  <button class="confirm-btn" onclick="confirmLocation()">Confirm Location</button>
-
-  <script>
-    var map;
-    var marker;
-    var defaultLat = parseFloat('${lat}');
-    var defaultLng = parseFloat('${lng}');
-
-    function initMap() {
-      var darkMapStyle = [
-        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        {
-          featureType: "administrative.locality",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "poi",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "poi.park",
-          elementType: "geometry",
-          stylers: [{ color: "#263c3f" }],
-        },
-        {
-          featureType: "poi.park",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#6b9a76" }],
-        },
-        {
-          featureType: "road",
-          elementType: "geometry",
-          stylers: [{ color: "#38414e" }],
-        },
-        {
-          featureType: "road",
-          elementType: "geometry.stroke",
-          stylers: [{ color: "#212a37" }],
-        },
-        {
-          featureType: "road",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#9ca5b3" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "geometry",
-          stylers: [{ color: "#746855" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "geometry.stroke",
-          stylers: [{ color: "#1f2827" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#f3d19c" }],
-        },
-        {
-          featureType: "transit",
-          elementType: "geometry",
-          stylers: [{ color: "#2f3942" }],
-        },
-        {
-          featureType: "transit.station",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "water",
-          elementType: "geometry",
-          stylers: [{ color: "#17263c" }],
-        },
-        {
-          featureType: "water",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#515c6d" }],
-        },
-        {
-          featureType: "water",
-          elementType: "labels.text.stroke",
-          stylers: [{ color: "#17263c" }],
-        },
-      ];
-
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: defaultLat, lng: defaultLng },
-        zoom: 15,
-        styles: darkMapStyle,
-        disableDefaultUI: true,
-        zoomControl: true,
-      });
-
-      marker = new google.maps.Marker({
-        position: { lat: defaultLat, lng: defaultLng },
-        map: map,
-        draggable: true,
-      });
-
-      map.addListener("click", function (e) {
-        marker.setPosition(e.latLng);
-      });
-
-      var input = document.getElementById("search-input");
-      var autocomplete = new google.maps.places.Autocomplete(input);
-      autocomplete.bindTo("bounds", map);
-
-      autocomplete.addListener("place_changed", function () {
-        var place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) {
-          return;
+  const handleLocateMe = async () => {
+    if (isLocating) return;
+    setIsLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+        if (loc && loc.coords) {
+          const newCoord = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          };
+          setSelectedCoord(newCoord);
+          mapRef.current?.animateToRegion(
+            {
+              ...newCoord,
+              latitudeDelta: 0.015,
+              longitudeDelta: 0.015,
+            },
+            1000,
+          );
         }
+      } else {
+        showMessage({
+          message: "Permission Denied",
+          description: "Location permission is required to locate you.",
+          type: "warning",
+        });
+      }
+    } catch (e) {
+      console.log("Locate me error:", e);
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
-        if (place.geometry.viewport) {
-          map.fitBounds(place.geometry.viewport);
-        } else {
-          map.setCenter(place.geometry.location);
-          map.setZoom(17);
-        }
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    if (text.trim().length === 0) {
+      setSearchResults([]);
+    }
+  };
 
-        marker.setPosition(place.geometry.location);
-      });
+  const triggerSearch = async () => {
+    if (searchQuery.trim().length < 3) return;
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`,
+        {
+          headers: {
+            "User-Agent": "PlayVerseApp",
+            Accept: "application/json",
+          },
+        },
+      );
+      const text = await response.text();
+      if (text.trim().startsWith("[")) {
+        const data = JSON.parse(text);
+        setSearchResults(data);
+      } else {
+        console.log("OSM Search returned non-JSON response:", text);
+      }
+    } catch (e) {
+      console.log("Search error:", e);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
-      if (${shouldLocate}) {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function (position) {
-            var pos = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            };
-            map.setCenter(pos);
-            marker.setPosition(pos);
-          });
-        }
+  const handleSelectSearchResult = (item: any) => {
+    const lat = parseFloat(item.lat);
+    const lon = parseFloat(item.lon);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      const newCoord = { latitude: lat, longitude: lon };
+      setSelectedCoord(newCoord);
+      setSearchResults([]);
+      setSearchQuery(item.display_name);
+      mapRef.current?.animateToRegion(
+        {
+          ...newCoord,
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.015,
+        },
+        1000,
+      );
+    }
+  };
+
+  const getMarkerIcon = () => {
+    if (selectedSports.length > 0) {
+      const firstSportId = selectedSports[0];
+      const sportObj = DEFAULT_SPORTS.find((s) => s.id === firstSportId);
+      if (sportObj) {
+        return sportObj.icon;
       }
     }
+    return "🏟️";
+  };
 
-    function confirmLocation() {
-      var pos = marker.getPosition();
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          latitude: pos.lat(),
-          longitude: pos.lng()
-        }));
+  const performReverseGeocode = async (latVal: number, lngVal: number) => {
+    try {
+      const reverseGeo = await Location.reverseGeocodeAsync({
+        latitude: latVal,
+        longitude: lngVal,
+      });
+      if (reverseGeo && reverseGeo.length > 0) {
+        const first = reverseGeo[0];
+        const parts = [
+          first.name,
+          first.street,
+          first.district,
+          first.city,
+          first.subregion,
+          first.region,
+        ].filter(Boolean);
+        const readableAddress = parts.join(", ");
+        if (readableAddress) {
+          setLocationName(readableAddress);
+          return readableAddress;
+        }
       }
+    } catch (err) {
+      console.log("Reverse geocoding error:", err);
     }
+    return "";
+  };
 
-    google.maps.event.addDomListener(window, 'load', initMap);
-  </script>
-</body>
-</html>
-    `;
+  const handleConfirmLocation = async () => {
+    const latVal = selectedCoord.latitude;
+    const lngVal = selectedCoord.longitude;
+    setLatitude(latVal.toString());
+    setLongitude(lngVal.toString());
+    setIsMapVisible(false);
+    showMessage({
+      message: "Location Selected",
+      description: `Coordinates: ${latVal.toFixed(4)}, ${lngVal.toFixed(4)}`,
+      type: "success",
+    });
+    const resolvedAddr = await performReverseGeocode(latVal, lngVal);
+    if (resolvedAddr && !address.trim()) {
+      setAddress(resolvedAddr);
+    }
   };
 
   // Queries & Mutations
@@ -366,7 +284,7 @@ const AddEditGroundScreen = () => {
       onSuccess: () => {
         showMessage({
           message: "Success",
-          description: "Arena registered successfully.",
+          description: "Ground registered successfully.",
           type: "success",
         });
         navigation.navigate("GroundsList");
@@ -375,7 +293,7 @@ const AddEditGroundScreen = () => {
         console.log("Create error:", error);
         showMessage({
           message: "Registration Failed",
-          description: error?.message || "Could not register arena.",
+          description: error?.message || "Could not register ground.",
           type: "danger",
         });
       },
@@ -386,7 +304,7 @@ const AddEditGroundScreen = () => {
       onSuccess: () => {
         showMessage({
           message: "Success",
-          description: "Arena details updated successfully.",
+          description: "Ground details updated successfully.",
           type: "success",
         });
         navigation.navigate("GroundsList");
@@ -395,7 +313,7 @@ const AddEditGroundScreen = () => {
         console.log("Update error:", error);
         showMessage({
           message: "Update Failed",
-          description: error?.message || "Could not update arena details.",
+          description: error?.message || "Could not update ground details.",
           type: "danger",
         });
       },
@@ -413,16 +331,39 @@ const AddEditGroundScreen = () => {
       setLatitude(ground.latitude ? ground.latitude.toString() : "");
       setLongitude(ground.longitude ? ground.longitude.toString() : "");
 
+      if (ground.latitude && ground.longitude) {
+        const latVal = parseFloat(ground.latitude);
+        const lngVal = parseFloat(ground.longitude);
+        if (!isNaN(latVal) && !isNaN(lngVal)) {
+          performReverseGeocode(latVal, lngVal);
+        }
+      }
+
       const sportsArray = ground.sports || [];
-      const ids = sportsArray.map((s: any) =>
-        typeof s === "object" ? s.id?.toString() : s.toString(),
-      );
+      const ids: string[] = [];
+      const typeMap: Record<string, "BOX" | "OPEN" | "BOTH"> = {};
+      sportsArray.forEach((s: any) => {
+        const sId = typeof s === "object" ? s.id?.toString() : s.toString();
+        if (sId) {
+          ids.push(sId);
+          const gType =
+            typeof s === "object" && (s.groundType || s.ground_type)
+              ? (s.groundType || s.ground_type).toUpperCase()
+              : "BOX";
+          typeMap[sId] = (
+            ["BOX", "OPEN", "BOTH"].includes(gType) ? gType : "BOX"
+          ) as "BOX" | "OPEN" | "BOTH";
+        }
+      });
       setSelectedSports(ids);
+      setSportsGroundTypes(typeMap);
 
       const imagesArray = ground.images || [];
       if (imagesArray.length > 0) {
         const urls = imagesArray
-          .map((img: any) => (typeof img === "object" ? img?.url : img))
+          .map((img: any) =>
+            typeof img === "object" ? img?.imageUrl || img?.url : img,
+          )
           .filter(Boolean);
         setGroundImages(urls);
       }
@@ -433,7 +374,9 @@ const AddEditGroundScreen = () => {
       setCity("");
       setLatitude("");
       setLongitude("");
+      setLocationName("");
       setSelectedSports([]);
+      setSportsGroundTypes({});
       setGroundImages([]);
     }
   }, [isEdit, groundDetails, groundId]);
@@ -475,7 +418,7 @@ const AddEditGroundScreen = () => {
         showMessage({
           message: "Permission Denied",
           description:
-            "Sorry, we need gallery permissions to upload arena images.",
+            "Sorry, we need gallery permissions to upload ground images.",
           type: "warning",
         });
         return;
@@ -521,7 +464,7 @@ const AddEditGroundScreen = () => {
       return;
     }
 
-    Alert.alert("Arena Photos", "Choose an option to add arena photos", [
+    Alert.alert("Ground Photos", "Choose an option to add ground photos", [
       {
         text: "Take Photo (Camera)",
         onPress: handleLaunchCamera,
@@ -546,14 +489,24 @@ const AddEditGroundScreen = () => {
       setSelectedSports(selectedSports.filter((id) => id !== sportId));
     } else {
       setSelectedSports([...selectedSports, sportId]);
+      if (!sportsGroundTypes[sportId]) {
+        setSportsGroundTypes((prev) => ({ ...prev, [sportId]: "BOX" }));
+      }
     }
+  };
+
+  const setGroundTypeForSport = (
+    sportId: string,
+    type: "BOX" | "OPEN" | "BOTH",
+  ) => {
+    setSportsGroundTypes((prev) => ({ ...prev, [sportId]: type }));
   };
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       showMessage({
         message: "Validation Error",
-        description: "Please enter arena name.",
+        description: "Please enter ground name.",
         type: "warning",
       });
       return;
@@ -614,7 +567,10 @@ const AddEditGroundScreen = () => {
         city: city.trim() || undefined,
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
-        sports: selectedSports.map((id) => parseInt(id, 10)),
+        sports: selectedSports.map((id) => ({
+          sportId: parseInt(id, 10),
+          groundType: sportsGroundTypes[id] || "BOX",
+        })),
         images: finalImages.length > 0 ? finalImages : undefined,
       };
 
@@ -632,7 +588,7 @@ const AddEditGroundScreen = () => {
     } catch (e: any) {
       console.log("Submit error:", e);
       showMessage({
-        message: "Failed to save arena",
+        message: "Failed to save ground",
         description:
           e?.message ||
           "Something went wrong while uploading or saving details.",
@@ -661,6 +617,134 @@ const AddEditGroundScreen = () => {
         backgroundColor="transparent"
       />
 
+      {/* Map Selection Modal */}
+      <Modal
+        visible={isMapVisible}
+        animationType="slide"
+        onRequestClose={() => setIsMapVisible(false)}
+      >
+        <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Pin Venue Location</Text>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setIsMapVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1, position: "relative" }}>
+            <MapView
+              ref={mapRef}
+              provider={PROVIDER_GOOGLE}
+              style={styles.mapView}
+              initialRegion={{
+                latitude: selectedCoord.latitude,
+                longitude: selectedCoord.longitude,
+                latitudeDelta: 0.015,
+                longitudeDelta: 0.015,
+              }}
+              onPress={(e) => {
+                setSelectedCoord(e.nativeEvent.coordinate);
+                setSearchResults([]);
+              }}
+            >
+              <Marker
+                coordinate={selectedCoord}
+                draggable
+                onDragEnd={(e) => setSelectedCoord(e.nativeEvent.coordinate)}
+                title="Venue Location"
+                description="Drag or tap to adjust location"
+              >
+                <View style={styles.customMarkerContainer}>
+                  <View style={styles.customMarkerBubble}>
+                    <Text style={styles.customMarkerText}>
+                      {getMarkerIcon()}
+                    </Text>
+                  </View>
+                  <View style={styles.customMarkerArrow} />
+                </View>
+              </Marker>
+            </MapView>
+
+            {/* Search Input Container */}
+            <View style={styles.searchBarContainer}>
+              <View style={styles.searchInputRow}>
+                <TextInput
+                  style={styles.searchInputField}
+                  placeholder="Search address or landmark..."
+                  placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                  value={searchQuery}
+                  onChangeText={handleSearch}
+                  onSubmitEditing={triggerSearch}
+                  returnKeyType="search"
+                  autoCorrect={false}
+                  clearButtonMode="while-editing"
+                />
+                <TouchableOpacity
+                  onPress={triggerSearch}
+                  activeOpacity={0.7}
+                  style={{ padding: 4 }}
+                >
+                  {isSearching ? (
+                    <ActivityIndicator size="small" color="#6C4DF6" />
+                  ) : (
+                    <Ionicons name="search" size={20} color="#6C4DF6" />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Search Results List */}
+              {searchResults.length > 0 && (
+                <View style={styles.searchResultsList}>
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    style={{ maxHeight: 200 }}
+                  >
+                    {searchResults.map((item, idx) => (
+                      <TouchableOpacity
+                        key={`res-${idx}`}
+                        style={styles.searchResultItem}
+                        onPress={() => handleSelectSearchResult(item)}
+                      >
+                        <Text
+                          style={styles.searchResultItemText}
+                          numberOfLines={2}
+                        >
+                          📍 {item.display_name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.locateBtn}
+              activeOpacity={0.8}
+              onPress={handleLocateMe}
+              disabled={isLocating}
+            >
+              {isLocating ? (
+                <ActivityIndicator size="small" color="#6C4DF6" />
+              ) : (
+                <Text style={styles.locateBtnIcon}>🎯</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+          <View style={styles.confirmBtnContainer}>
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              activeOpacity={0.8}
+              onPress={handleConfirmLocation}
+            >
+              <Text style={styles.confirmBtnText}>Confirm Location</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
       {/* Background Gradient */}
       <View style={StyleSheet.absoluteFill}>
         <Svg height="100%" width="100%">
@@ -686,7 +770,7 @@ const AddEditGroundScreen = () => {
             <Ionicons name="chevron-back" size={24} color="#00D2FF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {isEdit ? "Edit Arena" : "Add Arena"}
+            {isEdit ? "Edit Ground" : "Add Ground"}
           </Text>
           <View style={{ width: 60 }} />
         </View>
@@ -697,7 +781,7 @@ const AddEditGroundScreen = () => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Arena Photos List */}
-          <Text style={styles.sectionLabel}>Arena Photos (Max 5)</Text>
+          <Text style={styles.sectionLabel}>Ground Photos (Max 5)</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -739,8 +823,8 @@ const AddEditGroundScreen = () => {
 
           {/* Form */}
           <CTextInput
-            label="Arena Name *"
-            placeholder="e.g. Green Field Arena"
+            label="Ground Name *"
+            placeholder="e.g. Green Field Ground"
             value={name}
             onChangeTextValue={setName}
           />
@@ -776,58 +860,6 @@ const AddEditGroundScreen = () => {
           </View>
           <SizedBox height={16} />
 
-          {/* Map Location Selector */}
-          <View>
-            <Text style={styles.label}>Venue Location *</Text>
-            <SizedBox height={8} />
-            <TouchableOpacity
-              style={styles.mapPickerBtn}
-              activeOpacity={0.8}
-              onPress={() => {
-                setLatitude("23.0225");
-                setLongitude("72.5714");
-                showMessage({
-                  message: "Static Location Set",
-                  description:
-                    "Set default coordinates (23.0225, 72.5714) to bypass map error.",
-                  type: "success",
-                });
-              }}
-            >
-              <Text style={styles.mapPickerBtnIcon}>📍</Text>
-              <Text style={styles.mapPickerBtnText}>
-                {latitude && longitude
-                  ? `Pinned: ${parseFloat(latitude).toFixed(4)}, ${parseFloat(longitude).toFixed(4)}`
-                  : "Set Auto-Default Location"}
-              </Text>
-            </TouchableOpacity>
-
-            <SizedBox height={12} />
-
-            {/* Manual Coordinate Inputs */}
-            <View style={styles.rowFields}>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <CTextInput
-                  label="Latitude"
-                  placeholder="e.g. 23.0225"
-                  value={latitude}
-                  onChangeTextValue={setLatitude}
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <CTextInput
-                  label="Longitude"
-                  placeholder="e.g. 72.5714"
-                  value={longitude}
-                  onChangeTextValue={setLongitude}
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-          </View>
-          <SizedBox height={24} />
-
           {/* Sports Selector */}
           <View>
             <Text style={styles.label}>Supported Sports *</Text>
@@ -858,16 +890,140 @@ const AddEditGroundScreen = () => {
                 );
               })}
             </View>
+
+            {/* Ground Type Options for Selected Sports (Cricket and Football only) */}
+            {selectedSports.filter((id) => id === "1" || id === "2").length >
+              0 && (
+              <View style={styles.groundTypeSection}>
+                <SizedBox height={14} />
+                <Text style={styles.groundTypeHeader}>Ground Type Options</Text>
+                <Text style={styles.groundTypeSubHeader}>
+                  Choose ground format (Box vs Open Ground) for each selected
+                  sport:
+                </Text>
+                <SizedBox height={12} />
+                {selectedSports
+                  .filter((id) => id === "1" || id === "2")
+                  .map((sportId) => {
+                    const sportObj = sportsToShow.find(
+                      (s) => s.id === sportId,
+                    ) || {
+                      name: `Sport #${sportId}`,
+                      icon: "⚽",
+                    };
+                    const currentType = sportsGroundTypes[sportId] || "BOX";
+                    return (
+                      <View key={`gt-${sportId}`} style={styles.sportTypeCard}>
+                        <View style={styles.sportTypeCardHeader}>
+                          <Text style={styles.sportTypeCardIcon}>
+                            {sportObj.icon}
+                          </Text>
+                          <Text style={styles.sportTypeCardTitle}>
+                            {sportObj.name}
+                          </Text>
+                        </View>
+                        <View style={styles.typeButtonsRow}>
+                          <TouchableOpacity
+                            style={[
+                              styles.typeBtn,
+                              currentType === "BOX" && styles.typeBtnSelected,
+                            ]}
+                            activeOpacity={0.8}
+                            onPress={() =>
+                              setGroundTypeForSport(sportId, "BOX")
+                            }
+                          >
+                            <Text
+                              style={[
+                                styles.typeBtnText,
+                                currentType === "BOX" &&
+                                  styles.typeBtnTextSelected,
+                              ]}
+                            >
+                              📦 Box Ground
+                            </Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.typeBtn,
+                              currentType === "OPEN" && styles.typeBtnSelected,
+                            ]}
+                            activeOpacity={0.8}
+                            onPress={() =>
+                              setGroundTypeForSport(sportId, "OPEN")
+                            }
+                          >
+                            <Text
+                              style={[
+                                styles.typeBtnText,
+                                currentType === "OPEN" &&
+                                  styles.typeBtnTextSelected,
+                              ]}
+                            >
+                              🏞️ Open Ground
+                            </Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.typeBtn,
+                              currentType === "BOTH" && styles.typeBtnSelected,
+                            ]}
+                            activeOpacity={0.8}
+                            onPress={() =>
+                              setGroundTypeForSport(sportId, "BOTH")
+                            }
+                          >
+                            <Text
+                              style={[
+                                styles.typeBtnText,
+                                currentType === "BOTH" &&
+                                  styles.typeBtnTextSelected,
+                              ]}
+                            >
+                              🏟️ Both
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+              </View>
+            )}
+          </View>
+
+          <SizedBox height={24} />
+
+          {/* Map Location Selector */}
+          <View>
+            <Text style={styles.label}>Venue Location *</Text>
+            <SizedBox height={8} />
+            <TouchableOpacity
+              style={styles.mapPickerBtn}
+              activeOpacity={0.8}
+              onPress={() => setIsMapVisible(true)}
+            >
+              <Text style={styles.mapPickerBtnIcon}>📍</Text>
+              <Text style={styles.mapPickerBtnText} numberOfLines={2}>
+                {locationName
+                  ? locationName
+                  : latitude && longitude
+                    ? `Pinned: ${parseFloat(latitude).toFixed(4)}, ${parseFloat(longitude).toFixed(4)}`
+                    : "Choose on Map"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <SizedBox height={40} />
 
           {/* Submit button */}
           <CButton
-            title={isEdit ? "Save Changes" : "Register Arena"}
+            title={isEdit ? "Save Changes" : "Register Ground"}
             onPress={handleSubmit}
             loading={isCreating || isUpdating || isUploading}
             disabled={isCreating || isUpdating || isUploading}
+            style={styles.submitBtn}
           />
 
           <SizedBox height={40} />
@@ -966,11 +1122,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     opacity: 0.9,
+    marginHorizontal: Dimensions.get("window").width * 0.043,
   },
   sportsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    marginHorizontal: Dimensions.get("window").width * 0.043,
   },
   sportChip: {
     flexDirection: "row",
@@ -1009,6 +1167,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 6,
+    marginHorizontal: Dimensions.get("window").width * 0.043,
   },
   submitBtnText: {
     color: "#FFFFFF",
@@ -1023,8 +1182,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.08)",
     borderRadius: 14,
-    height: 52,
+    minHeight: 52,
+    paddingVertical: 12,
     paddingHorizontal: 16,
+    marginHorizontal: Dimensions.get("window").width * 0.043,
   },
   mapPickerBtnIcon: {
     fontSize: 18,
@@ -1034,6 +1195,7 @@ const styles = StyleSheet.create({
     color: "#a594ff",
     fontSize: 14,
     fontWeight: "700",
+    flex: 1,
   },
   modalSafeArea: {
     flex: 1,
@@ -1064,12 +1226,146 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.05)",
   },
-  mapWebView: {
+  mapView: {
     flex: 1,
+  },
+  locateBtn: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#120E2E",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  locateBtnIcon: {
+    fontSize: 20,
+  },
+  confirmBtnContainer: {
+    padding: 20,
+    backgroundColor: "#080612",
+  },
+  confirmBtn: {
+    backgroundColor: "#6C4DF6",
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#6C4DF6",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  confirmBtnText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  customMarkerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 36,
+    height: 42,
+  },
+  customMarkerBubble: {
+    backgroundColor: "#120E2E",
+    borderWidth: 1.5,
+    borderColor: "#6C4DF6",
+    borderRadius: 18,
+    width: 34,
+    height: 34,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  customMarkerText: {
+    fontSize: 16,
+    textAlign: "center",
+    textAlignVertical: "center",
+    includeFontPadding: false,
+    lineHeight: 22,
+  },
+  customMarkerArrow: {
+    width: 0,
+    height: 0,
+    backgroundColor: "transparent",
+    borderStyle: "solid",
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 6,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "#6C4DF6",
+    marginTop: -1,
+    zIndex: 2,
+  },
+  searchBarContainer: {
+    position: "absolute",
+    top: 16,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  searchInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#120E2E",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: 12,
+    height: 48,
+    paddingHorizontal: 16,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  searchInputField: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+    padding: 0,
+  },
+  searchResultsList: {
+    backgroundColor: "#120E2E",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: "hidden",
+  },
+  searchResultItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.05)",
+  },
+  searchResultItemText: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    lineHeight: 18,
   },
   imagesScrollContainer: {
     paddingVertical: 4,
     gap: 12,
+    paddingHorizontal: Dimensions.get("window").width * 0.043,
   },
   imageCard: {
     width: 120,
@@ -1126,5 +1422,75 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     opacity: 0.9,
     marginBottom: 8,
+    marginHorizontal: Dimensions.get("window").width * 0.043,
+  },
+  groundTypeSection: {
+    marginTop: 14,
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.07)",
+    marginHorizontal: Dimensions.get("window").width * 0.043,
+  },
+  groundTypeHeader: {
+    color: "#00D2FF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  groundTypeSubHeader: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  sportTypeCard: {
+    backgroundColor: "#120E2E",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+  },
+  sportTypeCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sportTypeCardIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  sportTypeCardTitle: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  typeButtonsRow: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  typeBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  typeBtnSelected: {
+    backgroundColor: "#6C4DF6",
+    borderColor: "#6C4DF6",
+  },
+  typeBtnText: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  typeBtnTextSelected: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 });

@@ -17,6 +17,9 @@ export type HomeStackParamList = {
     AddEditGround: { groundId?: number };
     ManageSlots: { groundId: number };
     EditProfile: undefined;
+    GroundBookings: { groundId?: number };
+    BookGround: { groundId: number; groundName: string };
+    MyBookings: undefined;
 }
 
 export type RootStackParamList = {
