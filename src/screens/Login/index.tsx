@@ -113,7 +113,6 @@ const LoginScreen = () => {
   });
 
   const proceedWithLogin = async (requestLocationPermission: boolean) => {
-    console.log('[proceedWithLogin] starting, requestLocationPermission:', requestLocationPermission);
     setShowLocationModal(false);
     storage.set('locationPromptDismissed', true);
     setLocalLoading(true);
@@ -126,7 +125,6 @@ const LoginScreen = () => {
     let uniqueId = 'N/A';
 
     try {
-      console.log('[proceedWithLogin] fetching fcm token...');
       const tokenResult = await getFcmPushToken();
       if (tokenResult) {
         fcmToken = tokenResult;
@@ -136,7 +134,6 @@ const LoginScreen = () => {
       os = DeviceInfo.getSystemName() || os;
       osVersion = DeviceInfo.getSystemVersion() || osVersion;
       uniqueId = await DeviceInfo.getUniqueId() || uniqueId;
-      console.log('[proceedWithLogin] device info fetched:', { brand, model, os, osVersion, uniqueId, fcmToken });
     } catch (e) {
       console.log('Failed to fetch device / fcm info:', e);
     }
@@ -146,22 +143,39 @@ const LoginScreen = () => {
 
     if (requestLocationPermission) {
       try {
-        console.log('[proceedWithLogin] requesting location permission...');
         const { status } = await Location.requestForegroundPermissionsAsync();
-        console.log('[proceedWithLogin] location permission status:', status);
+        
         if (status === 'granted') {
-          // Wait at most 3 seconds for position, otherwise time out and proceed without location
-          console.log('[proceedWithLogin] fetching current location...');
-          const loc = await Promise.race([
-            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
-          ]);
+          // Check if Location Services are enabled on the device
+          try {
+            await Location.hasServicesEnabledAsync();
+          } catch (err: any) {
+            console.log('Failed to check location services:', err?.message || err);
+          }
+
+          let loc: Location.LocationObject | null = null;
+          
+          try {
+            loc = await Promise.race([
+              Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+              new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)) // 5 second timeout
+            ]);
+          } catch (err: any) {
+            console.log('getCurrentPositionAsync failed with error:', err?.message || err);
+          }
+
+          // Fallback to getLastKnownPositionAsync if getCurrentPositionAsync failed, timed out, or returned null
+          if (!loc) {
+            try {
+              loc = await Location.getLastKnownPositionAsync();
+            } catch (err: any) {
+              console.log('getLastKnownPositionAsync failed with error:', err?.message || err);
+            }
+          }
+
           if (loc && loc.coords) {
             lat = loc.coords.latitude;
             lng = loc.coords.longitude;
-            console.log('[proceedWithLogin] location coordinates fetched:', { lat, lng });
-          } else {
-            console.log('[proceedWithLogin] location fetch timed out or returned null');
           }
         } else {
           showMessage({
@@ -170,8 +184,8 @@ const LoginScreen = () => {
             type: 'info',
           });
         }
-      } catch (e) {
-        console.log('Failed to fetch location on login:', e);
+      } catch (e: any) {
+        console.log('Failed to fetch location on login:', e?.message || e);
       }
     }
 
@@ -188,7 +202,6 @@ const LoginScreen = () => {
       latitude: lat,
       longitude: lng,
     };
-    console.log('[proceedWithLogin] calling login API with body:', requestBody);
 
     login({
       body: requestBody as any

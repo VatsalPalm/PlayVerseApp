@@ -10,7 +10,7 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { showMessage } from 'react-native-flash-message';
 import {
   useBookingControllerGetMyBookings,
-  useBookingControllerCancel,
+  useBookingControllerCancelBooking,
 } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
 
@@ -20,13 +20,68 @@ const STATUS_FILTERS = ['ALL', 'CONFIRMED', 'PENDING', 'CANCELLED'];
 
 const statusColor: Record<string, string> = {
   CONFIRMED: '#22c55e',
-  PENDING: '#f59e0b',
+  PENDING:   '#f59e0b',
   CANCELLED: '#ef4444',
+  COMPLETED: '#6C4DF6',
 };
 const statusBg: Record<string, string> = {
   CONFIRMED: 'rgba(34,197,94,0.12)',
-  PENDING: 'rgba(245,158,11,0.12)',
+  PENDING:   'rgba(245,158,11,0.12)',
   CANCELLED: 'rgba(239,68,68,0.12)',
+  COMPLETED: 'rgba(108,77,246,0.12)',
+};
+const statusEmoji: Record<string, string> = {
+  CONFIRMED: '✅',
+  PENDING:   '🕐',
+  CANCELLED: '❌',
+  COMPLETED: '🏆',
+};
+
+const sportEmojis: Record<string, string> = {
+  cricket:    '🏏',
+  football:   '⚽',
+  basketball: '🏀',
+  tennis:     '🎾',
+  badminton:  '🏸',
+  volleyball: '🏐',
+  hockey:     '🏑',
+  swimming:   '🏊',
+};
+
+/** Format ISO date string → "Tue, 19 Aug 2026" */
+const formatDate = (raw: string): string => {
+  if (!raw) return '—';
+  // raw may be "2026-08-19" or "2026-08-19T18:30:00.000Z"
+  const clean = raw.split('T')[0]; // "2026-08-19"
+  const [y, m, d] = clean.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${days[date.getDay()]}, ${d} ${months[m - 1]} ${y}`;
+};
+
+/** Convert "06:00" → "6:00 AM" style */
+const formatTime = (t: string): string => {
+  if (!t) return '';
+  const [hStr, mStr] = t.split(':');
+  let h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  return `${h}:${mStr} ${ampm}`;
+};
+
+/** Strip ".png", ".jpg" etc from icon filenames, return clean name */
+const cleanSportName = (name: string): string => {
+  if (!name) return '';
+  // e.g. "cricket.png" → "Cricket"
+  const stripped = name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, '');
+  return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+};
+
+const getSportEmoji = (name: string): string => {
+  const key = name.toLowerCase().replace(/\.(png|jpg|jpeg|svg|webp)$/i, '').trim();
+  return sportEmojis[key] || '🏟️';
 };
 
 const MyBookingsScreen = () => {
@@ -45,7 +100,7 @@ const MyBookingsScreen = () => {
 
   useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
 
-  const { mutate: cancelBooking, isPending: isCancelling } = useBookingControllerCancel({
+  const { mutate: cancelBooking, isPending: isCancelling } = useBookingControllerCancelBooking({
     onSuccess: () => {
       showMessage({ message: 'Booking Cancelled', type: 'warning' });
       setCancelTarget(null);
@@ -61,69 +116,94 @@ const MyBookingsScreen = () => {
   };
 
   const bookings: any[] = data?.data || [];
-  const today = new Date().toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
 
   const renderCard = ({ item }: { item: any }) => {
-    const statusCol = statusColor[item.booking_status] || '#9CA3AF';
-    const statusBgCol = statusBg[item.booking_status] || 'rgba(0,0,0,0.1)';
-    const isUpcoming = item.booking_date >= today && item.booking_status !== 'CANCELLED';
-    const canCancel = item.booking_status !== 'CANCELLED';
+    const st = item.booking_status || 'PENDING';
+    const statusCol = statusColor[st] || '#9CA3AF';
+    const statusBgCol = statusBg[st] || 'rgba(0,0,0,0.1)';
+    const emoji = statusEmoji[st] || '📋';
+    // Compare just the date portion
+    const bookingDateStr = (item.booking_date || '').split('T')[0];
+    const isUpcoming = bookingDateStr >= todayStr && st !== 'CANCELLED';
+    const canCancel = st === 'PENDING' || st === 'CONFIRMED';
+
+    const sportName = cleanSportName(item.sport_name || '');
+    const sportEmoji = getSportEmoji(item.sport_name || '');
+
+    const timeStart = formatTime(item.slot_start);
+    const timeEnd = formatTime(item.slot_end);
 
     return (
-      <View style={styles.card}>
-        {/* Top: ground + status */}
-        <View style={styles.cardTop}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.groundName}>{item.ground_name}</Text>
-            <Text style={styles.groundAddress}>{item.ground_address || ''}{item.ground_city ? `, ${item.ground_city}` : ''}</Text>
+      <View style={[styles.card, isUpcoming && styles.cardUpcoming]}>
+
+        {/* Left accent bar */}
+        <View style={[styles.accentBar, { backgroundColor: statusCol }]} />
+
+        <View style={styles.cardInner}>
+          {/* Top row: name + badge */}
+          <View style={styles.cardTop}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.groundName} numberOfLines={1}>{item.ground_name}</Text>
+              <Text style={styles.groundAddress} numberOfLines={1}>
+                📍 {item.ground_address || ''}{item.ground_city ? `, ${item.ground_city}` : ''}
+              </Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: statusBgCol, borderColor: statusCol }]}>
+              <Text style={styles.statusEmoji}>{emoji}</Text>
+              <Text style={[styles.statusText, { color: statusCol }]}>{st}</Text>
+            </View>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusBgCol, borderColor: statusCol }]}>
-            <Text style={[styles.statusText, { color: statusCol }]}>{item.booking_status}</Text>
+
+          <View style={styles.divider} />
+
+          {/* Date row */}
+          <View style={styles.dateRow}>
+            <Ionicons name="calendar-outline" size={14} color="#6C4DF6" />
+            <Text style={styles.dateText}>{formatDate(item.booking_date)}</Text>
+            {isUpcoming && (
+              <View style={styles.upcomingPill}>
+                <Text style={styles.upcomingPillText}>⚡ Upcoming</Text>
+              </View>
+            )}
           </View>
+
+          {/* Time + Amount row */}
+          <View style={styles.timeAmountRow}>
+            <View style={styles.timeBlock}>
+              <Text style={styles.timeLabel}>TIME</Text>
+              <View style={styles.timeValueRow}>
+                <Text style={styles.timeValue}>{timeStart}</Text>
+                <Ionicons name="arrow-forward" size={12} color="#6C4DF6" style={{ marginHorizontal: 4 }} />
+                <Text style={styles.timeValue}>{timeEnd}</Text>
+              </View>
+            </View>
+            <View style={styles.amountBlock}>
+              <Text style={styles.amountLabel}>AMOUNT</Text>
+              <Text style={styles.amountValue}>₹{parseFloat(item.amount || '0').toFixed(0)}</Text>
+            </View>
+          </View>
+
+          {/* Sport chip */}
+          {sportName ? (
+            <View style={styles.sportChip}>
+              <Text style={styles.sportChipEmoji}>{sportEmoji}</Text>
+              <Text style={styles.sportChipText}>{sportName}</Text>
+            </View>
+          ) : null}
+
+          {/* Cancel button */}
+          {canCancel && (
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              activeOpacity={0.8}
+              onPress={() => setCancelTarget(item)}
+            >
+              <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+              <Text style={styles.cancelBtnText}>Cancel Booking</Text>
+            </TouchableOpacity>
+          )}
         </View>
-
-        <View style={styles.divider} />
-
-        {/* Date / Time row */}
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>📅 Date</Text>
-            <Text style={styles.infoValue}>{item.booking_date}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>🕐 Time</Text>
-            <Text style={styles.infoValue}>{item.slot_start} – {item.slot_end}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>💰 Amount</Text>
-            <Text style={[styles.infoValue, { color: '#00D2FF' }]}>₹{item.amount}</Text>
-          </View>
-        </View>
-
-        {/* Sport */}
-        {item.sport_name && (
-          <View style={styles.sportChip}>
-            <Text style={styles.sportChipText}>{item.sport_icon || '🏟️'} {item.sport_name}</Text>
-          </View>
-        )}
-
-        {/* Upcoming label */}
-        {isUpcoming && (
-          <View style={styles.upcomingBadge}>
-            <Text style={styles.upcomingText}>⚡ Upcoming</Text>
-          </View>
-        )}
-
-        {/* Cancel button */}
-        {canCancel && (
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            activeOpacity={0.8}
-            onPress={() => setCancelTarget(item)}
-          >
-            <Text style={styles.cancelBtnText}>Cancel Booking</Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
@@ -152,11 +232,14 @@ const MyBookingsScreen = () => {
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
             <Ionicons name="chevron-back" size={24} color="#00D2FF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Bookings</Text>
-          <View style={{ width: 60 }} />
+          <View>
+            <Text style={styles.headerTitle}>My Bookings</Text>
+            <Text style={styles.headerSub}>{bookings.length} booking{bookings.length !== 1 ? 's' : ''}</Text>
+          </View>
+          <View style={{ width: 44 }} />
         </View>
 
-        {/* Filter */}
+        {/* Filter tabs */}
         <View style={styles.filterRow}>
           {STATUS_FILTERS.map((f) => (
             <TouchableOpacity
@@ -165,7 +248,9 @@ const MyBookingsScreen = () => {
               onPress={() => setActiveFilter(f)}
               activeOpacity={0.8}
             >
-              <Text style={[styles.filterTabText, activeFilter === f && styles.filterTabTextActive]}>{f}</Text>
+              <Text style={[styles.filterTabText, activeFilter === f && styles.filterTabTextActive]}>
+                {f === 'ALL' ? 'All' : f.charAt(0) + f.slice(1).toLowerCase()}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -173,6 +258,8 @@ const MyBookingsScreen = () => {
         {isLoading ? (
           <View style={styles.loaderBox}>
             <ActivityIndicator size="large" color="#6C4DF6" />
+            <SizedBox height={12} />
+            <Text style={{ color: '#9CA3AF', fontSize: 13 }}>Loading your bookings...</Text>
           </View>
         ) : (
           <FlatList
@@ -188,7 +275,7 @@ const MyBookingsScreen = () => {
                 <Text style={styles.emptyTitle}>No Bookings Yet</Text>
                 <Text style={styles.emptySubtitle}>
                   {activeFilter !== 'ALL'
-                    ? `No ${activeFilter.toLowerCase()} bookings.`
+                    ? `No ${activeFilter.toLowerCase()} bookings found.`
                     : "You haven't booked any ground slots yet."}
                 </Text>
               </View>
@@ -197,15 +284,19 @@ const MyBookingsScreen = () => {
         )}
       </SafeAreaView>
 
-      {/* Cancel modal */}
+      {/* Cancel confirmation modal */}
       <Modal visible={!!cancelTarget} transparent animationType="fade" onRequestClose={() => setCancelTarget(null)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalIcon}>⚠️</Text>
             <Text style={styles.modalTitle}>Cancel Booking?</Text>
             <Text style={styles.modalDesc}>
-              Cancel your booking at <Text style={styles.bold}>{cancelTarget?.ground_name}</Text> on{' '}
-              <Text style={styles.bold}>{cancelTarget?.booking_date}</Text> ({cancelTarget?.slot_start} – {cancelTarget?.slot_end})?
+              Cancel your slot at{' '}
+              <Text style={styles.bold}>{cancelTarget?.ground_name}</Text>
+              {'\n'}
+              <Text style={styles.bold}>{formatDate(cancelTarget?.booking_date)}</Text>
+              {' · '}
+              {formatTime(cancelTarget?.slot_start)} → {formatTime(cancelTarget?.slot_end)}
             </Text>
             <View style={styles.modalBtns}>
               <TouchableOpacity style={[styles.modalBtn, styles.modalBtnKeep]} onPress={() => setCancelTarget(null)} activeOpacity={0.8}>
@@ -217,7 +308,9 @@ const MyBookingsScreen = () => {
                 disabled={isCancelling}
                 onPress={() => { if (cancelTarget) cancelBooking({ pathParams: { id: cancelTarget.id } }); }}
               >
-                {isCancelling ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.modalBtnCancelText}>Yes, Cancel</Text>}
+                {isCancelling
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Text style={styles.modalBtnCancelText}>Yes, Cancel</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -231,76 +324,132 @@ export default MyBookingsScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#080612' },
+
+  // Header
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingVertical: 12,
+    paddingHorizontal: 20, paddingVertical: 14,
     borderBottomWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
-  backBtn: { paddingVertical: 6, paddingHorizontal: 12, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12 },
-  headerTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  filterRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  backBtn: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  headerTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  headerSub: { color: '#9CA3AF', fontSize: 12, textAlign: 'center', marginTop: 1 },
+
+  // Filters
+  filterRow: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   filterTab: {
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   filterTabActive: { backgroundColor: '#6C4DF6', borderColor: '#6C4DF6' },
   filterTabText: { color: '#9CA3AF', fontSize: 12, fontWeight: '600' },
   filterTabTextActive: { color: '#FFFFFF' },
+
+  // List
   loaderBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   listContent: { padding: 16, paddingBottom: 100 },
+
+  // Card
   card: {
-    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    padding: 16, marginBottom: 16,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 20,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    marginBottom: 14,
+    overflow: 'hidden',
   },
+  cardUpcoming: {
+    borderColor: 'rgba(108,77,246,0.25)',
+    backgroundColor: 'rgba(108,77,246,0.04)',
+  },
+  accentBar: {
+    width: 4,
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  cardInner: { flex: 1, padding: 14 },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start' },
-  groundName: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  groundAddress: { color: '#9CA3AF', fontSize: 12, marginTop: 3 },
-  statusBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, marginLeft: 8 },
-  statusText: { fontSize: 11, fontWeight: '700' },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 12 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  infoItem: {},
-  infoLabel: { color: '#9CA3AF', fontSize: 11, fontWeight: '600', marginBottom: 4 },
-  infoValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  sportChip: {
-    alignSelf: 'flex-start', marginTop: 10,
-    backgroundColor: 'rgba(108,77,246,0.12)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 4,
-    borderWidth: 1, borderColor: 'rgba(108,77,246,0.25)',
+  groundName: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', flex: 1 },
+  groundAddress: { color: '#9CA3AF', fontSize: 11, marginTop: 3 },
+  statusBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 1, marginLeft: 8,
   },
-  sportChipText: { color: '#a594ff', fontSize: 12, fontWeight: '600' },
-  upcomingBadge: {
-    alignSelf: 'flex-start', marginTop: 10,
-    backgroundColor: 'rgba(0,210,255,0.08)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 4,
+  statusEmoji: { fontSize: 11 },
+  statusText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 10 },
+
+  // Date
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  dateText: { color: '#E2E8F0', fontSize: 13, fontWeight: '600', flex: 1 },
+  upcomingPill: {
+    backgroundColor: 'rgba(0,210,255,0.1)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: 'rgba(0,210,255,0.2)',
   },
-  upcomingText: { color: '#00D2FF', fontSize: 11, fontWeight: '700' },
+  upcomingPillText: { color: '#00D2FF', fontSize: 10, fontWeight: '700' },
+
+  // Time + Amount
+  timeAmountRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 12, padding: 12, gap: 0,
+  },
+  timeBlock: { flex: 1 },
+  timeLabel: { color: '#6B7280', fontSize: 9, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  timeValueRow: { flexDirection: 'row', alignItems: 'center' },
+  timeValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+
+  amountBlock: { alignItems: 'flex-end', paddingLeft: 12, borderLeftWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  amountLabel: { color: '#6B7280', fontSize: 9, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  amountValue: { color: '#00D2FF', fontSize: 18, fontWeight: '900' },
+
+  // Sport chip
+  sportChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    alignSelf: 'flex-start', marginTop: 10,
+    backgroundColor: 'rgba(108,77,246,0.1)', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(108,77,246,0.22)',
+  },
+  sportChipEmoji: { fontSize: 14 },
+  sportChipText: { color: '#a594ff', fontSize: 12, fontWeight: '700' },
+
+  // Cancel button
   cancelBtn: {
-    marginTop: 14, height: 38, borderRadius: 12,
-    backgroundColor: 'rgba(239,68,68,0.08)',
-    borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)',
-    justifyContent: 'center', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    marginTop: 12, height: 40, borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.07)',
+    borderWidth: 1, borderColor: 'rgba(239,68,68,0.18)',
   },
   cancelBtnText: { color: '#ef4444', fontSize: 13, fontWeight: '700' },
+
+  // Empty state
   emptyBox: { alignItems: 'center', paddingVertical: 80, paddingHorizontal: 24 },
   emptyIcon: { fontSize: 56, marginBottom: 16 },
   emptyTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  emptySubtitle: { color: '#9CA3AF', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  emptySubtitle: { color: '#9CA3AF', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+
+  // Cancel Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalContent: {
     backgroundColor: '#120E2E', borderRadius: 24,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
     padding: 24, width: '100%', maxWidth: 340, alignItems: 'center',
   },
-  modalIcon: { fontSize: 32, marginBottom: 12 },
+  modalIcon: { fontSize: 36, marginBottom: 12 },
   modalTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '800', marginBottom: 10 },
-  modalDesc: { color: '#9CA3AF', fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 24 },
+  modalDesc: { color: '#9CA3AF', fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 24 },
   bold: { color: '#FFFFFF', fontWeight: '700' },
   modalBtns: { flexDirection: 'row', gap: 12, width: '100%' },
-  modalBtn: { flex: 1, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  modalBtn: { flex: 1, height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   modalBtnKeep: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   modalBtnKeepText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   modalBtnCancel: { backgroundColor: '#ef4444' },

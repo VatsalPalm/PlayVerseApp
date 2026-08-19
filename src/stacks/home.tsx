@@ -14,6 +14,7 @@ import EditProfileScreen from '../screens/GroundOwner/EditProfile';
 import GroundBookingsScreen from '../screens/GroundOwner/GroundBookings';
 import BookGroundScreen from '../screens/Player/BookGround';
 import MyBookingsScreen from '../screens/Player/MyBookings';
+import GroundDetailsScreen from '../screens/Player/GroundDetails';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -47,6 +48,7 @@ const Home = () => {
             <Stack.Screen name="GroundBookings" component={GroundBookingsScreen} />
             <Stack.Screen name="BookGround" component={BookGroundScreen} />
             <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
+            <Stack.Screen name="GroundDetails" component={GroundDetailsScreen} />
         </Stack.Navigator>
     );
 };

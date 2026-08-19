@@ -70,7 +70,6 @@ const CButton: React.FC<CButtonProps> = ({
   }, [loading, maxDragDistance]);
 
   const onTriggerAction = () => {
-    console.log('[CButton] onTriggerAction called');
     if (onPress) {
       // Defer the onPress call to the next tick of the event loop.
       // This prevents deadlocks/hangs when onPress triggers native UI/permission prompts.
@@ -82,7 +81,6 @@ const CButton: React.FC<CButtonProps> = ({
     // Auto reset if parent does not enter loading state within 300ms (covers sync warnings/validation errors)
     setTimeout(() => {
       if (!loading && isCompleted.value) {
-        console.log('[CButton] auto resetting handle position since loading is false');
         translateX.value = withTiming(0, { duration: 350 });
         isCompleted.value = false;
       }
@@ -91,7 +89,6 @@ const CButton: React.FC<CButtonProps> = ({
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, ctx: any) => {
-      console.log('[CButton] gestureHandler.onStart');
       ctx.startX = translateX.value;
     },
     onActive: (event, ctx: any) => {
@@ -100,17 +97,14 @@ const CButton: React.FC<CButtonProps> = ({
       translateX.value = Math.min(Math.max(0, nextX), maxDragDistance);
     },
     onEnd: () => {
-      console.log('[CButton] gestureHandler.onEnd. translateX:', translateX.value, 'maxDragDistance:', maxDragDistance);
       if (isCompleted.value || disabled || loading || !maxDragDistance) return;
 
       // Swipe past 85% to confirm
       if (translateX.value > maxDragDistance * 0.85) {
-        console.log('[CButton] swipe confirmed');
         translateX.value = withSpring(maxDragDistance, { damping: 15 });
         isCompleted.value = true;
         runOnJS(onTriggerAction)();
       } else {
-        console.log('[CButton] swipe reset');
         translateX.value = withSpring(0, { damping: 15 });
       }
     },

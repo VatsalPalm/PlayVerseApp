@@ -1,33 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withRepeat, 
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
   withSequence,
-  Easing
-} from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../utils/types';
-import { storage } from '../../services/mmkv';
-import { showMessage } from 'react-native-flash-message';
-import SizedBox from '../../Components/atoms/SizeBox';
+  Easing,
+} from "react-native-reanimated";
+import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import { useNavigation, useFocusEffect, CompositeNavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList, HomeStackParamList } from "../../utils/types";
+import { storage } from "../../services/mmkv";
+import { showMessage } from "react-native-flash-message";
+import SizedBox from "../../Components/atoms/SizeBox";
+import { useBookingControllerGetMyBookings } from "../../Api/playVerseComponents";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+const statusColor: Record<string, string> = {
+  CONFIRMED: "#22c55e",
+  PENDING: "#f59e0b",
+  CANCELLED: "#ef4444",
+};
+
+const statusBg: Record<string, string> = {
+  CONFIRMED: "rgba(34,197,94,0.12)",
+  PENDING: "rgba(245,158,11,0.12)",
+  CANCELLED: "rgba(239,68,68,0.12)",
+};
 
 const PlayerHomeScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [userName, setUserName] = useState('User');
-  const [selectedSport, setSelectedSport] = useState('Cricket');
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const [userName, setUserName] = useState("User");
+  const [selectedSport, setSelectedSport] = useState("Cricket");
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Fetch actual recent bookings
+  const {
+    data: myBookingsData,
+    isLoading: bookingsLoading,
+    refetch: refetchBookings,
+  } = useBookingControllerGetMyBookings<any>(
+    { queryParams: { limit: 5 } },
+    { retry: false },
+  );
+
+  // Refetch when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      refetchBookings();
+    }, [refetchBookings]),
+  );
 
   // Load user name from stored profile
   useEffect(() => {
     try {
-      const stored = storage.getString('userProfile');
+      const stored = storage.getString("userProfile");
       if (stored) {
         const userObj = JSON.parse(stored);
         if (userObj?.display_name) {
@@ -37,7 +77,7 @@ const PlayerHomeScreen = () => {
         }
       }
     } catch (e) {
-      console.log('Failed to parse user profile:', e);
+      console.log("Failed to parse user profile:", e);
     }
   }, []);
 
@@ -49,35 +89,47 @@ const PlayerHomeScreen = () => {
     // Orb animations
     orb1X.value = withRepeat(
       withSequence(
-        withTiming(SCREEN_WIDTH * 0.35, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(SCREEN_WIDTH * 0.15, { duration: 10000, easing: Easing.inOut(Easing.ease) })
+        withTiming(SCREEN_WIDTH * 0.35, {
+          duration: 8000,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        withTiming(SCREEN_WIDTH * 0.15, {
+          duration: 10000,
+          easing: Easing.inOut(Easing.ease),
+        }),
       ),
       -1,
-      true
+      true,
     );
     orb1Y.value = withRepeat(
       withSequence(
-        withTiming(SCREEN_HEIGHT * 0.1, { duration: 9000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(SCREEN_HEIGHT * 0.25, { duration: 9000, easing: Easing.inOut(Easing.ease) })
+        withTiming(SCREEN_HEIGHT * 0.1, {
+          duration: 9000,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        withTiming(SCREEN_HEIGHT * 0.25, {
+          duration: 9000,
+          easing: Easing.inOut(Easing.ease),
+        }),
       ),
       -1,
-      true
+      true,
     );
   }, []);
 
   const handleLocalLogout = () => {
-    storage.delete('accessToken');
-    storage.delete('refreshToken');
-    storage.delete('userProfile');
-    storage.delete('userRole');
+    storage.delete("accessToken");
+    storage.delete("refreshToken");
+    storage.delete("userProfile");
+    storage.delete("userRole");
     showMessage({
-      message: 'Signed Out',
-      description: 'You have logged out successfully.',
-      type: 'info',
+      message: "Signed Out",
+      description: "You have logged out successfully.",
+      type: "info",
     });
-    navigation.reset({
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.reset({
       index: 0,
-      routes: [{ name: 'Welcome' }],
+      routes: [{ name: "Welcome" }],
     });
   };
 
@@ -87,8 +139,12 @@ const PlayerHomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
+
       {/* Background Gradient */}
       <View style={StyleSheet.absoluteFill}>
         <Svg height="100%" width="100%">
@@ -110,10 +166,14 @@ const PlayerHomeScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hello, {userName.split(' ')[0]}! 👋</Text>
-            <Text style={styles.headerSubtitle}>Ready to lead your team to victory?</Text>
+            <Text style={styles.greeting}>
+              Hello, {userName.split(" ")[0]}! 👋
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              Ready to lead your team to victory?
+            </Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleLocalLogout}
             style={styles.logoutBtn}
@@ -122,28 +182,56 @@ const PlayerHomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Choose Your Sport Filter */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Choose Your Sport</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sportsScroll}>
-              {['Cricket', 'Football', 'Basketball', 'Tennis', 'Pickleball'].map((sport) => {
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.sportsScroll}
+            >
+              {[
+                "Cricket",
+                "Football",
+                "Basketball",
+                "Tennis",
+                "Pickleball",
+              ].map((sport) => {
                 const isSelected = selectedSport === sport;
-                const emoji = 
-                  sport === 'Cricket' ? '🏏' : 
-                  sport === 'Football' ? '⚽' : 
-                  sport === 'Basketball' ? '🏀' : 
-                  sport === 'Tennis' ? '🎾' : '🏓';
+                const emoji =
+                  sport === "Cricket"
+                    ? "🏏"
+                    : sport === "Football"
+                      ? "⚽"
+                      : sport === "Basketball"
+                        ? "🏀"
+                        : sport === "Tennis"
+                          ? "🎾"
+                          : "🏓";
                 return (
                   <TouchableOpacity
                     key={sport}
                     activeOpacity={0.8}
                     onPress={() => setSelectedSport(sport)}
-                    style={[styles.sportTab, isSelected && styles.sportTabActive]}
+                    style={[
+                      styles.sportTab,
+                      isSelected && styles.sportTabActive,
+                    ]}
                   >
                     <Text style={styles.sportEmoji}>{emoji}</Text>
-                    <Text style={[styles.sportText, isSelected && styles.sportTextActive]}>{sport}</Text>
+                    <Text
+                      style={[
+                        styles.sportText,
+                        isSelected && styles.sportTextActive,
+                      ]}
+                    >
+                      {sport}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -162,7 +250,7 @@ const PlayerHomeScreen = () => {
 
             <View style={styles.glassCard}>
               <Text style={styles.matchSub}>T20 League • Today, 8:00 PM</Text>
-              
+
               <View style={styles.teamsRow}>
                 <View style={styles.teamContainer}>
                   <Text style={styles.teamName}>Warriors</Text>
@@ -195,7 +283,10 @@ const PlayerHomeScreen = () => {
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.matchCenterBtn} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.matchCenterBtn}
+                activeOpacity={0.8}
+              >
                 <Text style={styles.matchCenterText}>Match Center</Text>
               </TouchableOpacity>
             </View>
@@ -206,12 +297,26 @@ const PlayerHomeScreen = () => {
             <Text style={styles.sectionTitle}>Quick Actions</Text>
             <View style={styles.actionsGrid}>
               {[
-                { title: 'Live Scoring', icon: '⚡' },
-                { title: 'Book Ground', icon: '🏟️' },
-                { title: 'My Teams', icon: '👥' },
-                { title: 'AI Insights', icon: '🧠' }
+                { title: "Live Scoring", icon: "⚡" },
+                { title: "Book Ground", icon: "🏟️" },
+                { title: "My Teams", icon: "👥" },
+                { title: "AI Insights", icon: "🧠" },
               ].map((action, index) => (
-                <TouchableOpacity key={index} style={styles.actionCard} activeOpacity={0.8}>
+                <TouchableOpacity
+                  key={index}
+                  style={styles.actionCard}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (action.title === "Book Ground") {
+                      navigation.navigate("GroundsList");
+                    } else {
+                      showMessage({
+                        message: `${action.title} coming soon!`,
+                        type: "info",
+                      });
+                    }
+                  }}
+                >
                   <Text style={styles.actionIcon}>{action.icon}</Text>
                   <Text style={styles.actionTitle}>{action.title}</Text>
                 </TouchableOpacity>
@@ -221,28 +326,78 @@ const PlayerHomeScreen = () => {
 
           {/* Recent Bookings */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recent Bookings</Text>
-            <View style={styles.bookingItem}>
-              <View style={styles.bookingLeft}>
-                <Text style={styles.bookingGround}>Green Field Arena</Text>
-                <Text style={styles.bookingDate}>18 May • 6:00 PM</Text>
-              </View>
-              <View style={[styles.statusBadge, styles.statusConfirmed]}>
-                <Text style={styles.statusTextConfirmed}>Confirmed</Text>
-              </View>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent Bookings</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate("MyBookings")}
+              >
+                <Text
+                  style={{ color: "#6C4DF6", fontSize: 13, fontWeight: "600" }}
+                >
+                  View All
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.bookingItem}>
-              <View style={styles.bookingLeft}>
-                <Text style={styles.bookingGround}>Smash Pickle Club</Text>
-                <Text style={styles.bookingDate}>19 May • 8:00 AM</Text>
+            {bookingsLoading ? (
+              <ActivityIndicator
+                size="small"
+                color="#6C4DF6"
+                style={{ marginVertical: 12 }}
+              />
+            ) : !myBookingsData?.data || myBookingsData.data.length === 0 ? (
+              <View style={styles.emptyBookingsBox}>
+                <Text style={styles.emptyBookingsText}>
+                  No bookings found. Try booking a slot below!
+                </Text>
               </View>
-              <View style={[styles.statusBadge, styles.statusPending]}>
-                <Text style={styles.statusTextPending}>Pending</Text>
-              </View>
-            </View>
+            ) : (
+              myBookingsData.data.slice(0, 3).map((item: any, idx: number) => {
+                const statusCol = statusColor[item.booking_status] || "#9CA3AF";
+                const statusBgCol =
+                  statusBg[item.booking_status] || "rgba(0,0,0,0.1)";
+                return (
+                  <TouchableOpacity
+                    key={item.id || idx}
+                    style={styles.bookingItem}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate("MyBookings")}
+                  >
+                    <View style={styles.bookingLeft}>
+                      <Text style={styles.bookingGround}>
+                        {item.ground_name}
+                      </Text>
+                      <Text style={styles.bookingDate}>
+                        {item.booking_date} • {item.slot_start} –{" "}
+                        {item.slot_end}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        {
+                          backgroundColor: statusBgCol,
+                          borderColor: statusCol,
+                          borderWidth: 1,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: statusCol, fontSize: 10, fontWeight: "700" },
+                        ]}
+                      >
+                        {item.booking_status}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
-          
+
           <SizedBox height={30} />
         </ScrollView>
       </SafeAreaView>
@@ -253,55 +408,55 @@ const PlayerHomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#080612',
+    backgroundColor: "#080612",
   },
   safeArea: {
     flex: 1,
   },
   floatingOrb: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: 9999,
     width: 250,
     height: 250,
     opacity: 0.15,
   },
   orb1: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
     top: -50,
     left: -50,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: "rgba(255, 255, 255, 0.06)",
   },
   greeting: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   headerSubtitle: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 12,
     marginTop: 2,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   logoutBtn: {
-    backgroundColor: 'rgba(255, 62, 62, 0.12)',
+    backgroundColor: "rgba(255, 62, 62, 0.12)",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 62, 62, 0.25)',
+    borderColor: "rgba(255, 62, 62, 0.25)",
   },
   logoutBtnText: {
-    color: '#FF3E3E',
+    color: "#FF3E3E",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -311,21 +466,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 12,
   },
   liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 62, 62, 0.15)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 62, 62, 0.15)",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -334,13 +489,13 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FF3E3E',
+    backgroundColor: "#FF3E3E",
     marginRight: 5,
   },
   liveBadgeText: {
-    color: '#FF3E3E',
+    color: "#FF3E3E",
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 0.5,
   },
   sportsScroll: {
@@ -348,166 +503,166 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   sportTab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
   sportTabActive: {
-    backgroundColor: 'rgba(108, 77, 246, 0.15)',
-    borderColor: '#6C4DF6',
+    backgroundColor: "rgba(108, 77, 246, 0.15)",
+    borderColor: "#6C4DF6",
   },
   sportEmoji: {
     fontSize: 14,
     marginRight: 6,
   },
   sportText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   sportTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
   glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     padding: 16,
   },
   matchSub: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 12,
   },
   teamsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 10,
   },
   teamContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   teamName: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   teamScore: {
-    color: '#00D2FF',
+    color: "#00D2FF",
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: "900",
     marginTop: 4,
   },
   teamOvers: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 10,
     marginTop: 2,
   },
   vsText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     marginHorizontal: 10,
   },
   targetContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 15,
-    backgroundColor: 'rgba(108, 77, 246, 0.08)',
+    backgroundColor: "rgba(108, 77, 246, 0.08)",
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(108, 77, 246, 0.15)',
+    borderColor: "rgba(108, 77, 246, 0.15)",
   },
   targetText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 1,
   },
   ballsText: {
-    color: '#D2C4FF',
+    color: "#D2C4FF",
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 2,
     letterSpacing: 0.5,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
     marginVertical: 14,
   },
   playerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   playerRole: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   playerName: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 4,
   },
   alignRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   matchCenterBtn: {
     height: 44,
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 16,
   },
   matchCenterText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   actionsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
   actionCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     borderRadius: 16,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   actionIcon: {
     fontSize: 22,
     marginBottom: 6,
   },
   actionTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   bookingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
@@ -516,12 +671,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bookingGround: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   bookingDate: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 11,
     marginTop: 3,
   },
@@ -531,24 +686,101 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusConfirmed: {
-    backgroundColor: 'rgba(0, 230, 118, 0.12)',
+    backgroundColor: "rgba(0, 230, 118, 0.12)",
     borderWidth: 1,
-    borderColor: 'rgba(0, 230, 118, 0.25)',
+    borderColor: "rgba(0, 230, 118, 0.25)",
   },
   statusPending: {
-    backgroundColor: 'rgba(255, 145, 0, 0.12)',
+    backgroundColor: "rgba(255, 145, 0, 0.12)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 145, 0, 0.25)',
+    borderColor: "rgba(255, 145, 0, 0.25)",
   },
   statusTextConfirmed: {
-    color: '#00E676',
+    color: "#00E676",
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   statusTextPending: {
-    color: '#FF9100',
+    color: "#FF9100",
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
+  },
+
+  statusText: {
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  emptyBookingsBox: {
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+  },
+  emptyBookingsText: {
+    color: "#9CA3AF",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  groundCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+  },
+  groundCardHeader: {
+    marginBottom: 10,
+  },
+  groundCardName: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  groundCardLocation: {
+    color: "#00D2FF",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  groundCardDesc: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  sportsChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 16,
+  },
+  sportCardChip: {
+    backgroundColor: "rgba(108, 77, 246, 0.12)",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: "rgba(108, 77, 246, 0.25)",
+  },
+  sportCardChipText: {
+    color: "#D2C4FF",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  bookNowBtn: {
+    backgroundColor: "#6C4DF6",
+    borderRadius: 14,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bookNowText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
   },
 });
 

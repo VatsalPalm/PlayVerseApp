@@ -18,8 +18,9 @@ export type HomeStackParamList = {
     ManageSlots: { groundId: number };
     EditProfile: undefined;
     GroundBookings: { groundId?: number };
-    BookGround: { groundId: number; groundName: string };
+    BookGround: { groundId: number; groundName: string; sportId?: number; sportName?: string };
     MyBookings: undefined;
+    GroundDetails: { groundId: number; groundName: string };
 }
 
 export type RootStackParamList = {

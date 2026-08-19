@@ -15,7 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -70,6 +70,7 @@ const ManageSlotsScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const route = useRoute<ManageSlotsRouteProp>();
+  const insets = useSafeAreaInsets();
   const groundId = route.params.groundId;
 
   const [selectedDay, setSelectedDay] = useState(1); // Default to Monday (1)
@@ -462,7 +463,7 @@ const ManageSlotsScreen = () => {
         {/* FAB to Add Slot */}
         {!isLoading && filteredSlots.length > 0 && (
           <TouchableOpacity
-            style={styles.fab}
+            style={[styles.fab, { bottom: Math.max(insets.bottom, 16) + 16 }]}
             activeOpacity={0.9}
             onPress={handleOpenAddModal}
           >

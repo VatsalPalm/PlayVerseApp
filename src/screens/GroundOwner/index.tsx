@@ -262,10 +262,18 @@ const GroundOwnerHomeScreen = () => {
               <TouchableOpacity
                 style={styles.actionCard}
                 activeOpacity={0.8}
+                onPress={() => navigation.navigate("GroundBookings")}
+              >
+                <Text style={styles.actionIcon}>📅</Text>
+                <Text style={styles.actionTitle}>Bookings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionCard}
+                activeOpacity={0.8}
                 onPress={() => navigation.navigate("EditProfile")}
               >
                 <Text style={styles.actionIcon}>👤</Text>
-                <Text style={styles.actionTitle}>Edit Profile</Text>
+                <Text style={styles.actionTitle}>Profile</Text>
               </TouchableOpacity>
             </View>
           </View>
