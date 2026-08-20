@@ -228,10 +228,33 @@ const RegisterScreen = () => {
   });
 
   const handleRegister = async () => {
-    if (!fullName.trim() || !phone.trim()) {
+    const trimmedName = fullName.trim();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedName || !trimmedPhone) {
       showMessage({
         message: "Required Fields",
-        description: "Please fill in all standard details.",
+        description: "Please fill in all details.",
+        type: "warning",
+      });
+      return;
+    }
+
+    const nameRegex = /^[A-Za-z\s'.]{3,50}$/;
+    if (!nameRegex.test(trimmedName)) {
+      showMessage({
+        message: "Validation Error",
+        description: "Please enter a valid full name (alphabets and spaces only, 3 to 50 characters).",
+        type: "warning",
+      });
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(trimmedPhone)) {
+      showMessage({
+        message: "Validation Error",
+        description: "Please enter a valid 10-digit mobile number.",
         type: "warning",
       });
       return;

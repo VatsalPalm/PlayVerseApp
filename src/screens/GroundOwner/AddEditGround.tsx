@@ -503,13 +503,50 @@ const AddEditGroundScreen = () => {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    const trimmedCity = city.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedName) {
       showMessage({
         message: "Validation Error",
         description: "Please enter ground name.",
         type: "warning",
       });
       return;
+    }
+
+    const groundNameRegex = /^[A-Za-z0-9\s\-',.()&]{3,100}$/;
+    if (!groundNameRegex.test(trimmedName)) {
+      showMessage({
+        message: "Validation Error",
+        description: "Please enter a valid ground name (minimum 3 characters, alphanumeric & spaces only).",
+        type: "warning",
+      });
+      return;
+    }
+
+    if (trimmedCity) {
+      const cityRegex = /^[A-Za-z\s]{3,30}$/;
+      if (!cityRegex.test(trimmedCity)) {
+        showMessage({
+          message: "Validation Error",
+          description: "Please enter a valid city name (minimum 3 characters, letters only).",
+          type: "warning",
+        });
+        return;
+      }
+    }
+
+    if (trimmedAddress) {
+      if (trimmedAddress.length < 5 || trimmedAddress.length > 150) {
+        showMessage({
+          message: "Validation Error",
+          description: "Please enter a valid address (between 5 and 150 characters).",
+          type: "warning",
+        });
+        return;
+      }
     }
 
     if (selectedSports.length === 0) {
@@ -561,10 +598,10 @@ const AddEditGroundScreen = () => {
       const finalImages = [...remoteUris, ...uploadedUrls];
 
       const payload: any = {
-        name: name.trim(),
+        name: trimmedName,
         description: description.trim() || undefined,
-        address: address.trim() || undefined,
-        city: city.trim() || undefined,
+        address: trimmedAddress || undefined,
+        city: trimmedCity || undefined,
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
         sports: selectedSports.map((id) => ({

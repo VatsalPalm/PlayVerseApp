@@ -210,10 +210,21 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     console.log('[handleLogin] triggered, phone:', phone);
-    if (!phone.trim()) {
+    const trimmedPhone = phone.trim();
+    if (!trimmedPhone) {
       showMessage({
         message: 'Required Fields',
         description: 'Please enter your phone number.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(trimmedPhone)) {
+      showMessage({
+        message: 'Validation Error',
+        description: 'Please enter a valid 10-digit mobile number.',
         type: 'warning',
       });
       return;

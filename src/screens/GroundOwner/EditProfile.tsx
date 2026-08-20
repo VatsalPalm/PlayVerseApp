@@ -237,7 +237,10 @@ const EditProfileScreen = () => {
   };
 
   const handleSaveChanges = () => {
-    if (!displayName.trim()) {
+    const trimmedName = displayName.trim();
+    const trimmedCity = city.trim();
+
+    if (!trimmedName) {
       showMessage({
         message: "Validation Error",
         description: "Display name cannot be empty.",
@@ -246,11 +249,33 @@ const EditProfileScreen = () => {
       return;
     }
 
+    const nameRegex = /^[A-Za-z\s'.]{3,50}$/;
+    if (!nameRegex.test(trimmedName)) {
+      showMessage({
+        message: "Validation Error",
+        description: "Please enter a valid display name (alphabets and spaces only, 3 to 50 characters).",
+        type: "warning",
+      });
+      return;
+    }
+
+    if (trimmedCity) {
+      const cityRegex = /^[A-Za-z\s]{3,30}$/;
+      if (!cityRegex.test(trimmedCity)) {
+        showMessage({
+          message: "Validation Error",
+          description: "Please enter a valid city name (alphabets only, 3 to 30 characters).",
+          type: "warning",
+        });
+        return;
+      }
+    }
+
     updateProfile({
       body: {
-        display_name: displayName.trim(),
+        display_name: trimmedName,
         bio: bio.trim() || undefined,
-        city: city.trim() || undefined,
+        city: trimmedCity || undefined,
         profile_image: uploadedImage || undefined,
       },
     });

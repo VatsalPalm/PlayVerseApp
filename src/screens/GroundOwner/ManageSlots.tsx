@@ -155,10 +155,12 @@ const ManageSlotsScreen = () => {
   });
 
   const handleSaveSlot = () => {
-    if (!price.trim() || isNaN(Number(price))) {
+    const trimmedPrice = price.trim();
+    const priceRegex = /^[1-9]\d*$/;
+    if (!trimmedPrice || !priceRegex.test(trimmedPrice)) {
       showMessage({
         message: "Invalid Price",
-        description: "Please enter a valid numeric price.",
+        description: "Please enter a valid positive whole number price.",
         backgroundColor: "#FF9100",
         titleStyle: { color: "#FFFFFF", fontWeight: "bold" },
         textStyle: { color: "#FFFFFF" },
@@ -216,7 +218,7 @@ const ManageSlotsScreen = () => {
         body: {
           startTime,
           endTime,
-          price: Number(price),
+          price: Number(trimmedPrice),
           dayOfWeek: selectedDay,
         },
       });
@@ -226,14 +228,14 @@ const ManageSlotsScreen = () => {
             dayOfWeek: day,
             startTime,
             endTime,
-            price: Number(price),
+            price: Number(trimmedPrice),
           }))
         : [
             {
               dayOfWeek: selectedDay,
               startTime,
               endTime,
-              price: Number(price),
+              price: Number(trimmedPrice),
             },
           ];
 

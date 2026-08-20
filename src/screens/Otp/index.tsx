@@ -96,10 +96,21 @@ const OtpScreen = () => {
   });
 
   const handleVerify = () => {
-    if (!otp.trim()) {
+    const trimmedOtp = otp.trim();
+    if (!trimmedOtp) {
       showMessage({
         message: 'Enter OTP',
         description: 'Please enter the verification code sent to your mobile number.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    const otpRegex = /^[0-9]{6}$/;
+    if (!otpRegex.test(trimmedOtp)) {
+      showMessage({
+        message: 'Validation Error',
+        description: 'Please enter a valid 6-digit verification code.',
         type: 'warning',
       });
       return;
@@ -109,7 +120,7 @@ const OtpScreen = () => {
       body: {
         mobile_number: mobileNumber,
         country_code: '+91',
-        otp: otp.trim(),
+        otp: trimmedOtp,
         token: initialToken || '00000000-0000-0000-0000-000000000000',
       }
     });
