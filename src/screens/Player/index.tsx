@@ -41,6 +41,19 @@ const statusBg: Record<string, string> = {
   CANCELLED: "rgba(239,68,68,0.12)",
 };
 
+const formatDate = (raw: string): string => {
+  if (!raw) return '—';
+  let date: Date;
+  if (raw.includes('T')) {
+    date = new Date(raw);
+  } else {
+    const [y, m, d] = raw.split('-').map(Number);
+    date = new Date(y, m - 1, d);
+  }
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+};
+
 const PlayerHomeScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [userName, setUserName] = useState("User");
@@ -198,9 +211,8 @@ const PlayerHomeScreen = () => {
               {[
                 "Cricket",
                 "Football",
-                "Basketball",
-                "Tennis",
                 "Pickleball",
+                "Badminton",
               ].map((sport) => {
                 const isSelected = selectedSport === sport;
                 const emoji =
@@ -208,11 +220,9 @@ const PlayerHomeScreen = () => {
                     ? "🏏"
                     : sport === "Football"
                       ? "⚽"
-                      : sport === "Basketball"
-                        ? "🏀"
-                        : sport === "Tennis"
-                          ? "🎾"
-                          : "🏓";
+                      : sport === "Pickleball"
+                        ? "🏓"
+                        : "🏸";
                 return (
                   <TouchableOpacity
                     key={sport}
@@ -353,7 +363,15 @@ const PlayerHomeScreen = () => {
                 </Text>
               </View>
             ) : (
-              myBookingsData.data.slice(0, 3).map((item: any, idx: number) => {
+              [...myBookingsData.data]
+                .sort((a, b) => {
+                  const dateA = new Date(a.booking_date || 0).getTime();
+                  const dateB = new Date(b.booking_date || 0).getTime();
+                  if (dateB !== dateA) return dateB - dateA;
+                  return (b.id || 0) - (a.id || 0);
+                })
+                .slice(0, 3)
+                .map((item: any, idx: number) => {
                 const statusCol = statusColor[item.booking_status] || "#9CA3AF";
                 const statusBgCol =
                   statusBg[item.booking_status] || "rgba(0,0,0,0.1)";
@@ -369,7 +387,7 @@ const PlayerHomeScreen = () => {
                         {item.ground_name}
                       </Text>
                       <Text style={styles.bookingDate}>
-                        {item.booking_date} • {item.slot_start} –{" "}
+                        {formatDate(item.booking_date)} • {item.slot_start} –{" "}
                         {item.slot_end}
                       </Text>
                     </View>

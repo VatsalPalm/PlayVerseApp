@@ -60,6 +60,7 @@ export enum Sports {
     BASKETBALL = 3,
     TENNIS = 4,
     PICKLEBALL = 5,
+    BADMINTON = 6,
 }
 
 

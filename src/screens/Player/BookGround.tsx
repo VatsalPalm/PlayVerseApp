@@ -11,7 +11,10 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
@@ -27,21 +30,25 @@ import * as Location from "expo-location";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const getImageUrl = (url?: string, groundName?: string) => {
-  if (!url || url.includes('example.com')) {
-    const nameLower = (groundName || '').toLowerCase();
-    if (nameLower.includes('cricket') || nameLower.includes('stadium')) {
-      return 'https://images.unsplash.com/photo-1589487390574-13e4a3e75112?auto=format&fit=crop&w=600&q=80';
+  if (!url || url.includes("example.com")) {
+    const nameLower = (groundName || "").toLowerCase();
+    if (nameLower.includes("cricket") || nameLower.includes("stadium")) {
+      return "https://images.unsplash.com/photo-1589487390574-13e4a3e75112?auto=format&fit=crop&w=600&q=80";
     }
-    if (nameLower.includes('basket') || nameLower.includes('court') || nameLower.includes('arena')) {
-      return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80';
+    if (
+      nameLower.includes("basket") ||
+      nameLower.includes("court") ||
+      nameLower.includes("arena")
+    ) {
+      return "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80";
     }
-    if (nameLower.includes('tennis') || nameLower.includes('complex')) {
-      return 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80';
+    if (nameLower.includes("tennis") || nameLower.includes("complex")) {
+      return "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80";
     }
-    if (nameLower.includes('football') || nameLower.includes('pitch')) {
-      return 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80';
+    if (nameLower.includes("football") || nameLower.includes("pitch")) {
+      return "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80";
     }
-    return 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=80';
+    return "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=80";
   }
   return url;
 };
@@ -89,8 +96,16 @@ const BookGroundScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
-  const { groundId: routeGroundId, groundName: routeGroundName, sportId: routeSportId } =
-    (route.params || {}) as { groundId?: number; groundName?: string; sportId?: number; sportName?: string };
+  const {
+    groundId: routeGroundId,
+    groundName: routeGroundName,
+    sportId: routeSportId,
+  } = (route.params || {}) as {
+    groundId?: number;
+    groundName?: string;
+    sportId?: number;
+    sportName?: string;
+  };
 
   const [activeGroundId, setActiveGroundId] = useState<number | undefined>(
     routeGroundId,
@@ -138,14 +153,17 @@ const BookGroundScreen = () => {
   }, []);
 
   // Fetch Public Grounds
-  const queryParams = useMemo(() => ({
-    page,
-    limit: 10,
-    search: submittedQuery || undefined,
-    latitude: userCoords?.latitude ?? undefined,
-    longitude: userCoords?.longitude ?? undefined,
-    radius: 10,
-  }), [page, submittedQuery, userCoords]);
+  const queryParams = useMemo(
+    () => ({
+      page,
+      limit: 10,
+      search: submittedQuery || undefined,
+      latitude: userCoords?.latitude ?? undefined,
+      longitude: userCoords?.longitude ?? undefined,
+      radius: 10,
+    }),
+    [page, submittedQuery, userCoords],
+  );
 
   const {
     data: publicGroundsData,
@@ -201,7 +219,13 @@ const BookGroundScreen = () => {
   }, [submittedQuery, activeGroundId]);
 
   const loadMoreGrounds = () => {
-    if (!activeGroundId && hasMore && !groundsLoading && !isGroundsFetching && publicGrounds.length > 0) {
+    if (
+      !activeGroundId &&
+      hasMore &&
+      !groundsLoading &&
+      !isGroundsFetching &&
+      publicGrounds.length > 0
+    ) {
       setPage((prev) => prev + 1);
     }
   };
@@ -219,7 +243,7 @@ const BookGroundScreen = () => {
     if (activeGroundId && !routeGroundId) {
       setActiveGroundId(undefined);
       setActiveGroundName(undefined);
-      setSelectedSlot(null);
+      setSelectedSlots([]);
     } else {
       navigation.goBack();
     }
@@ -227,9 +251,21 @@ const BookGroundScreen = () => {
 
   const dates = useMemo(() => buildDates(), []);
   const [selectedDate, setSelectedDate] = useState<Date>(dates[0]);
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
   const [notes, setNotes] = useState("");
   const [isConfirmVisible, setConfirmVisible] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+
+  const toggleSlotSelection = (item: any) => {
+    setSelectedSlots((prev) => {
+      const exists = prev.some((s) => s.id === item.id);
+      if (exists) {
+        return prev.filter((s) => s.id !== item.id);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
 
   const dateStr = toYMD(selectedDate);
 
@@ -244,66 +280,84 @@ const BookGroundScreen = () => {
     if (Array.isArray(availData)) return availData;
     if (availData.data) {
       if (Array.isArray(availData.data)) return availData.data;
-      if (Array.isArray(availData.data.availableSlots)) return availData.data.availableSlots;
+      if (Array.isArray(availData.data.availableSlots))
+        return availData.data.availableSlots;
       if (Array.isArray(availData.data.slots)) return availData.data.slots;
     }
     if (Array.isArray(availData.slots)) return availData.slots;
-    if (Array.isArray(availData.availableSlots)) return availData.availableSlots;
+    if (Array.isArray(availData.availableSlots))
+      return availData.availableSlots;
     return [];
   }, [availData]);
 
-  const { mutate: createBooking, isPending: isBooking } =
-    useBookingControllerCreateBooking({
-      onSuccess: (res: any) => {
-        showMessage({
-          message: "Booking Confirmed! 🎉",
-          description: `Your slot on ${dateStr} (${selectedSlot?.startTime}–${selectedSlot?.endTime}) is booked.`,
-          type: "success",
-          duration: 4000,
-        });
-        setConfirmVisible(false);
-        navigation.navigate("MyBookings");
-      },
-      onError: (e: any) => {
-        showMessage({
-          message: e?.payload?.message || "Booking failed. Try again.",
-          type: "danger",
-        });
-        setConfirmVisible(false);
-      },
-    });
+  const { mutateAsync: createBookingAsync } =
+    useBookingControllerCreateBooking();
 
-  const handleConfirmBooking = () => {
-    if (!selectedSlot || !activeGroundId) return;
-    createBooking({
-      body: {
-        groundId: activeGroundId,
-        slotId: selectedSlot.id,
-        bookingDate: dateStr,
-        sportId: routeSportId,
-        notes: notes.trim() || undefined,
-      },
-    });
+  const handleConfirmBooking = async () => {
+    if (selectedSlots.length === 0 || !activeGroundId) return;
+    setIsBooking(true);
+    try {
+      for (const slot of selectedSlots) {
+        await createBookingAsync({
+          body: {
+            groundId: activeGroundId,
+            slotId: slot.id,
+            bookingDate: dateStr,
+            sportId: routeSportId,
+            notes: notes.trim() || undefined,
+          },
+        });
+      }
+      showMessage({
+        message: "Bookings Confirmed! 🎉",
+        description: `Successfully booked ${selectedSlots.length} slot(s) for ${dateStr}.`,
+        type: "success",
+        duration: 4000,
+      });
+      setSelectedSlots([]);
+      navigation.navigate("MyBookings");
+    } catch (e: any) {
+      showMessage({
+        message: e?.payload?.message || "Booking failed. Try again.",
+        type: "danger",
+      });
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   const renderSlot = ({ item }: { item: any }) => {
-    const isSelected = selectedSlot?.id === item.id;
+    const isBooked = !!item.isBooked;
+    const isSelected = selectedSlots.some((s) => s.id === item.id);
     return (
       <TouchableOpacity
-        style={[styles.slotCard, isSelected && styles.slotCardSelected]}
-        activeOpacity={0.8}
-        onPress={() => setSelectedSlot(isSelected ? null : item)}
+        style={[
+          styles.slotCard,
+          isSelected && styles.slotCardSelected,
+          isBooked && styles.slotCardBooked,
+        ]}
+        activeOpacity={isBooked ? 1 : 0.8}
+        disabled={isBooked}
+        onPress={() => toggleSlotSelection(item)}
       >
         <View style={styles.slotTimeRow}>
-          <Text style={styles.slotTime}>
+          <Text style={[styles.slotTime, isBooked && styles.slotTextDisabled]}>
             {item.startTime} – {item.endTime}
           </Text>
-          {isSelected && (
-            <Ionicons name="checkmark-circle" size={20} color="#6C4DF6" />
+          {isBooked ? (
+            <View style={styles.bookedTag}>
+              <Text style={styles.bookedTagText}>Booked</Text>
+            </View>
+          ) : (
+            isSelected && (
+              <Ionicons name="checkmark-circle" size={20} color="#6C4DF6" />
+            )
           )}
         </View>
-        <Text style={styles.slotPrice}>₹{item.price}</Text>
-        <Text style={styles.slotDay}>
+        <Text style={[styles.slotPrice, isBooked && styles.slotTextDisabled]}>
+          ₹{item.price}
+        </Text>
+        <Text style={[styles.slotDay, isBooked && styles.slotTextDisabled]}>
           Day {item.dayOfWeek !== undefined ? DAY_NAMES[item.dayOfWeek] : ""}
         </Text>
       </TouchableOpacity>
@@ -503,7 +557,7 @@ const BookGroundScreen = () => {
                   style={[styles.dateChip, isSel && styles.dateChipSelected]}
                   onPress={() => {
                     setSelectedDate(d);
-                    setSelectedSlot(null);
+                    setSelectedSlots([]);
                   }}
                   activeOpacity={0.8}
                 >
@@ -562,7 +616,7 @@ const BookGroundScreen = () => {
           )}
 
           {/* Notes */}
-          {selectedSlot && (
+          {selectedSlots.length > 0 && (
             <>
               <Text style={styles.sectionLabel}>📝 Notes (optional)</Text>
               <View style={styles.notesBox}>
@@ -581,11 +635,18 @@ const BookGroundScreen = () => {
         </ScrollView>
 
         {/* Bottom confirm bar */}
-        {selectedSlot && (
-          <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        {selectedSlots.length > 0 && (
+          <View
+            style={[
+              styles.bottomBar,
+              { paddingBottom: Math.max(insets.bottom, 16) },
+            ]}
+          >
             <View>
               <Text style={styles.bottomSlotTime}>
-                {selectedSlot.startTime} – {selectedSlot.endTime}
+                {selectedSlots.length === 1
+                  ? `${selectedSlots[0].startTime} – ${selectedSlots[0].endTime}`
+                  : `${selectedSlots.length} Slots Selected`}
               </Text>
               <Text style={styles.bottomDate}>
                 {formatDateLabel(selectedDate)}
@@ -601,7 +662,11 @@ const BookGroundScreen = () => {
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text style={styles.bookBtnText}>
-                  Book ₹{selectedSlot.price}
+                  Book {selectedSlots.length} Slot
+                  {selectedSlots.length !== 1 ? "s" : ""} • ₹
+                  {selectedSlots
+                    .reduce((sum, s) => sum + parseFloat(s.price || "0"), 0)
+                    .toFixed(0)}
                 </Text>
               )}
             </TouchableOpacity>
@@ -726,6 +791,28 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   slotDay: { color: "#9CA3AF", fontSize: 11, marginTop: 4 },
+  slotCardBooked: {
+    borderColor: "rgba(255,255,255,0.03)",
+    backgroundColor: "rgba(255,255,255,0.01)",
+    opacity: 0.4,
+  },
+  slotTextDisabled: {
+    color: "#6B7280",
+  },
+  bookedTag: {
+    backgroundColor: "rgba(239,68,68,0.12)",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: "rgba(239,68,68,0.3)",
+  },
+  bookedTagText: {
+    color: "#EF4444",
+    fontSize: 9,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
   notesBox: {
     marginHorizontal: 20,
     backgroundColor: "rgba(255,255,255,0.04)",

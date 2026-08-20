@@ -39,8 +39,8 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SPORTS_LIST = [
   { id: Sports.CRICKET, name: "Cricket", icon: "🏏" },
   { id: Sports.FOOTBALL, name: "Football", icon: "⚽" },
-  { id: Sports.BASKETBALL, name: "Basketball", icon: "🏀" },
   { id: Sports.PICKLEBALL, name: "Pickleball", icon: "🏓" },
+  { id: Sports.BADMINTON, name: "Badminton", icon: "🏸" },
 ];
 
 const RegisterScreen = () => {
@@ -476,8 +476,9 @@ const RegisterScreen = () => {
               label="Phone Number"
               placeholder="Enter 10-digit number"
               value={phone}
-              onChangeTextValue={setPhone}
+              onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
               keyboardType="phone-pad"
+              maxLength={10}
             />
 
             <SizedBox height={16} />

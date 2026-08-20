@@ -18,7 +18,7 @@ import SizedBox from '../../Components/atoms/SizeBox';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const STATUS_FILTERS = ['ALL', 'PENDING', 'CONFIRMED', 'CANCELLED'];
+const STATUS_FILTERS = ['ALL', 'PENDING', 'CONFIRMED', 'CANCELLED', 'CLOSED'];
 
 const statusColor: Record<string, string> = {
   CONFIRMED: '#22c55e',
@@ -48,17 +48,22 @@ const sportEmojis: Record<string, string> = {
   volleyball: '🏐',
   hockey:     '🏑',
   swimming:   '🏊',
+  pickleball: '🏓',
 };
 
-/** Format ISO date string → "Tue, 19 Aug 2026" */
+/** Format ISO date string → "Tue, 20 Aug 2026" adjusting for timezone */
 const formatDate = (raw: string): string => {
   if (!raw) return '—';
-  const clean = raw.split('T')[0];
-  const [y, m, d] = clean.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
+  let date: Date;
+  if (raw.includes('T')) {
+    date = new Date(raw);
+  } else {
+    const [y, m, d] = raw.split('-').map(Number);
+    date = new Date(y, m - 1, d);
+  }
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${days[date.getDay()]}, ${d} ${months[m - 1]} ${y}`;
+  return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 };
 
 /** Convert "06:00" → "6:00 AM" */
@@ -83,6 +88,31 @@ const getSportEmoji = (name: string): string => {
   return sportEmojis[key] || '🏟️';
 };
 
+const isPastBooking = (item: any) => {
+  if (!item || !item.booking_date) return false;
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+  
+  const bookingDateStr = item.booking_date.split('T')[0];
+  
+  if (bookingDateStr < todayStr) {
+    return true;
+  }
+  
+  if (bookingDateStr === todayStr) {
+    if (!item.slot_end) return false;
+    const currentHours = today.getHours();
+    const currentMinutes = today.getMinutes();
+    const currentTimeStr = `${String(currentHours).padStart(2, '0')}:${String(currentMinutes).padStart(2, '0')}`;
+    return item.slot_end <= currentTimeStr;
+  }
+  
+  return false;
+};
+
 const GroundBookingsScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -93,7 +123,6 @@ const GroundBookingsScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const queryParams: any = { limit: 100 };
-  if (activeFilter !== 'ALL') queryParams.status = activeFilter;
 
   const { data: ownerData, isLoading: ownerLoading, refetch: refetchOwner } = useBookingControllerGetOwnerAllBookings<any>(
     { queryParams },
@@ -140,7 +169,25 @@ const GroundBookingsScreen = () => {
     setRefreshing(false);
   };
 
-  const allBookings: any[] = data?.data || [];
+  const rawBookings: any[] = data?.data || [];
+  const allBookings = rawBookings.filter((item: any) => {
+    const isPast = isPastBooking(item);
+    const status = item.booking_status || 'PENDING';
+    
+    if (activeFilter === 'PENDING') {
+      return !isPast && status === 'PENDING';
+    }
+    if (activeFilter === 'CONFIRMED') {
+      return !isPast && status === 'CONFIRMED';
+    }
+    if (activeFilter === 'CANCELLED') {
+      return status === 'CANCELLED';
+    }
+    if (activeFilter === 'CLOSED') {
+      return isPast && status !== 'CANCELLED';
+    }
+    return true;
+  });
 
   const renderBookingCard = ({ item }: { item: any }) => {
     const st = item.booking_status || 'PENDING';
@@ -148,7 +195,7 @@ const GroundBookingsScreen = () => {
     const statusBgCol = statusBg[st] || 'rgba(156,163,175,0.1)';
     const emoji = statusEmoji[st] || '📋';
     const isPending = st === 'PENDING';
-    const isActive = st !== 'CANCELLED';
+    const isActive = st !== 'CANCELLED' && !isPastBooking(item);
 
     const sportName = cleanSportName(item.sport_name || '');
     const sportEmoji = getSportEmoji(item.sport_name || '');

@@ -325,9 +325,10 @@ const LoginScreen = () => {
               label="Phone Number" 
               placeholder="Enter 10-digit number" 
               value={phone}
-              onChangeTextValue={setPhone}
+              onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
               keyboardType="phone-pad"
               autoCapitalize="none"
+              maxLength={10}
             />
             
             <SizedBox height={30} />

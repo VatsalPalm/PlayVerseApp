@@ -315,6 +315,7 @@ const GroundDetailsScreen = () => {
                         tennis: "🎾",
                         badminton: "🏸",
                         volleyball: "🏐",
+                        pickleball: "🏓",
                       };
                       const emoji =
                         sportEmojis[(sport.name || "").toLowerCase()] || "🏟️";

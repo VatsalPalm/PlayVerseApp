@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   StyleSheet, Text, View, Dimensions, TouchableOpacity,
   FlatList, ActivityIndicator, StatusBar, Modal,
@@ -16,7 +16,7 @@ import SizedBox from '../../Components/atoms/SizeBox';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const STATUS_FILTERS = ['ALL', 'CONFIRMED', 'PENDING', 'CANCELLED'];
+const STATUS_FILTERS = ['ALL', 'CONFIRMED', 'CANCELLED'];
 
 const statusColor: Record<string, string> = {
   CONFIRMED: '#22c55e',
@@ -46,18 +46,22 @@ const sportEmojis: Record<string, string> = {
   volleyball: '🏐',
   hockey:     '🏑',
   swimming:   '🏊',
+  pickleball: '🏓',
 };
 
-/** Format ISO date string → "Tue, 19 Aug 2026" */
+/** Format ISO date string → "Tue, 20 Aug 2026" adjusting for timezone */
 const formatDate = (raw: string): string => {
   if (!raw) return '—';
-  // raw may be "2026-08-19" or "2026-08-19T18:30:00.000Z"
-  const clean = raw.split('T')[0]; // "2026-08-19"
-  const [y, m, d] = clean.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
+  let date: Date;
+  if (raw.includes('T')) {
+    date = new Date(raw);
+  } else {
+    const [y, m, d] = raw.split('-').map(Number);
+    date = new Date(y, m - 1, d);
+  }
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${days[date.getDay()]}, ${d} ${months[m - 1]} ${y}`;
+  return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 };
 
 /** Convert "06:00" → "6:00 AM" style */
@@ -115,7 +119,17 @@ const MyBookingsScreen = () => {
     setRefreshing(false);
   };
 
-  const bookings: any[] = data?.data || [];
+  const bookings: any[] = useMemo(() => {
+    const raw = data?.data || [];
+    return [...raw].sort((a, b) => {
+      const dateA = new Date(a.booking_date || 0).getTime();
+      const dateB = new Date(b.booking_date || 0).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA;
+      }
+      return (b.id || 0) - (a.id || 0);
+    });
+  }, [data?.data]);
   const todayStr = new Date().toISOString().split('T')[0];
 
   const renderCard = ({ item }: { item: any }) => {
