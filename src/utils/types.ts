@@ -21,6 +21,9 @@ export type HomeStackParamList = {
     BookGround: { groundId: number; groundName: string; sportId?: number; sportName?: string };
     MyBookings: undefined;
     GroundDetails: { groundId: number; groundName: string };
+    MatchHistory: undefined;
+    CreateMatch: undefined;
+    LiveScoring: { matchId: number };
 }
 
 export type RootStackParamList = {

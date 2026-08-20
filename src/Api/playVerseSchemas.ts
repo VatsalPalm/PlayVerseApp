@@ -525,3 +525,127 @@ export type CreateBookingDto = {
    */
   notes?: string;
 };
+
+export type CreateTeamDto = {
+  /**
+   * @example 1
+   */
+  sportId: number;
+  /**
+   * @example Mumbai Mavericks
+   */
+  name: string;
+  /**
+   * @example MUM
+   */
+  shortName?: string;
+  /**
+   * @example https://example.com/logo.png
+   */
+  logo?: string;
+  /**
+   * @example Mumbai
+   */
+  city?: string;
+  /**
+   * @example We love to play!
+   */
+  description?: string;
+};
+
+export type TeamInvitationDto = {
+  /**
+   * @example 12
+   */
+  playerId: number;
+};
+
+export type ChallengeDto = {
+  /**
+   * @example 2
+   */
+  opponentTeamId: number;
+  /**
+   * @example 1
+   */
+  sportId: number;
+  /**
+   * @example 2026-08-25T10:00:00
+   */
+  scheduledAt: string;
+};
+
+export type CreateMatchDto = {
+  /**
+   * The ID of the sport
+   *
+   * @example 1
+   */
+  sportId: number;
+  /**
+   * Tournament ID, if applicable
+   *
+   * @example null
+   */
+  tournamentId?: number;
+  /**
+   * Ground ID, if applicable
+   *
+   * @example null
+   */
+  groundId?: number;
+  /**
+   * Home Team ID, if already created
+   *
+   * @example null
+   */
+  homeTeamId?: number;
+  /**
+   * Away Team ID, if already created
+   *
+   * @example null
+   */
+  awayTeamId?: number;
+  /**
+   * List of Home Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 1
+   */
+  homePlayerIds: string[];
+  /**
+   * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 2
+   */
+  awayPlayerIds: string[];
+  /**
+   * Match type: SINGLES or DOUBLES
+   *
+   * @example SINGLES
+   */
+  matchType: string;
+  /**
+   * Scheduled time
+   *
+   * @example 2026-08-25T18:00:00Z
+   */
+  scheduledAt?: string;
+  /**
+   * Points required to win a game (default 11)
+   *
+   * @example 11
+   */
+  pointsPerGame?: number;
+  /**
+   * Whether team must win by 2 points (default true)
+   *
+   * @example true
+   */
+  winByTwo?: boolean;
+  /**
+   * Number of games/periods needed to win the match (default 2)
+   *
+   * @example 2
+   */
+  gamesToWin?: number;
+};

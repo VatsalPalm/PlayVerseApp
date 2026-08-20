@@ -15,6 +15,9 @@ import GroundBookingsScreen from '../screens/GroundOwner/GroundBookings';
 import BookGroundScreen from '../screens/Player/BookGround';
 import MyBookingsScreen from '../screens/Player/MyBookings';
 import GroundDetailsScreen from '../screens/Player/GroundDetails';
+import MatchHistoryScreen from '../screens/Player/MatchHistory';
+import CreateMatchScreen from '../screens/Player/CreateMatch';
+import LiveScoringScreen from '../screens/Player/LiveScoring';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -49,6 +52,9 @@ const Home = () => {
             <Stack.Screen name="BookGround" component={BookGroundScreen} />
             <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
             <Stack.Screen name="GroundDetails" component={GroundDetailsScreen} />
+            <Stack.Screen name="MatchHistory" component={MatchHistoryScreen} />
+            <Stack.Screen name="CreateMatch" component={CreateMatchScreen} />
+            <Stack.Screen name="LiveScoring" component={LiveScoringScreen} />
         </Stack.Navigator>
     );
 };

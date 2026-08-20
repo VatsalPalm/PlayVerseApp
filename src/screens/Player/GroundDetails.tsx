@@ -22,6 +22,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { useGroundControllerGetGroundDetails } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
+import { storage } from "../../services/mmkv";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -58,6 +59,9 @@ const GroundDetailsScreen = () => {
   };
   const insets = useSafeAreaInsets();
 
+  const userRole = storage.getString("userRole") || "PLAYER";
+  const isOwnerOrAdmin = userRole === "GROUND_OWNER" || userRole === "ADMIN";
+
   const { data: groundDetailsData, isLoading } =
     useGroundControllerGetGroundDetails<any>(
       { pathParams: { id: groundId } },
@@ -70,7 +74,7 @@ const GroundDetailsScreen = () => {
     if (!groundDetails) return [];
     const list = groundDetails.images || [];
     return list.length > 0
-      ? list.map((img: any) => getImageUrl(img.image_url, groundDetails.name))
+      ? list.map((img: any) => getImageUrl(img.imageUrl || img.image_url, groundDetails.name))
       : [getImageUrl(groundDetails.thumbnail, groundDetails.name)];
   }, [groundDetails]);
 
@@ -251,6 +255,17 @@ const GroundDetailsScreen = () => {
                           Authorized Ground Manager
                         </Text>
                       </View>
+                    </View>
+                  </>
+                )}
+
+                {isOwnerOrAdmin && groundDetails.totalRevenue !== undefined && (
+                  <>
+                    <View style={styles.divider} />
+                    <Text style={styles.sectionTitle}>💼 Business Metrics</Text>
+                    <View style={styles.ownerRevenueCard}>
+                      <Text style={styles.ownerRevenueTitle}>Total Revenue</Text>
+                      <Text style={styles.ownerRevenueValue}>₹{groundDetails.totalRevenue.toLocaleString("en-IN")}</Text>
                     </View>
                   </>
                 )}
@@ -515,6 +530,27 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     fontSize: 12,
     marginTop: 2,
+  },
+  ownerRevenueCard: {
+    backgroundColor: "rgba(0, 230, 118, 0.08)",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(0, 230, 118, 0.2)",
+  },
+  ownerRevenueTitle: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  ownerRevenueValue: {
+    color: "#00E676",
+    fontSize: 22,
+    fontWeight: "800",
+    marginTop: 4,
   },
   bottomBar: {
     position: "absolute",

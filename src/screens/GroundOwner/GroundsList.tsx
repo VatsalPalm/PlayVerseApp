@@ -387,7 +387,7 @@ const GroundsListScreen = () => {
     // Get all image URLs (or curated fallback placeholders)
     const imagesList = item.images || [];
     const imagesToShow = imagesList.length > 0 
-      ? imagesList.map((img: any) => getImageUrl(img.image_url, item.name))
+      ? imagesList.map((img: any) => getImageUrl(img.imageUrl || img.image_url, item.name))
       : [getImageUrl(item.thumbnail, item.name)];
 
     return (

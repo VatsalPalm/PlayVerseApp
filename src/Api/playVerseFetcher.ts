@@ -1,8 +1,9 @@
 import type { PlayVerseContext } from "./playVerseContext";
 import axios from "axios";
 import { storage } from "../services/mmkv";
+import { getURL, env } from "../services/request";
 
-const baseUrl = "https://8lqg2hx4-3339.inc1.devtunnels.ms";
+const baseUrl = getURL(env).replace(/\/$/, "");
 const localInstance = axios.create();
 
 export type ErrorWrapper<TError> =

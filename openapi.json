@@ -1071,6 +1071,223 @@
         ]
       }
     },
+    "/api/grounds/v1/ai-search": {
+      "post": {
+        "operationId": "GroundController_searchGroundsAi",
+        "summary": "AI Ground Search via Natural Language",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"]
+      }
+    },
+    "/api/grounds/v1/ai-recommendation/user/{userId}": {
+      "get": {
+        "operationId": "GroundController_getPersonalizedRecommendations",
+        "summary": "Get personalized ground recommendations for a user",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/analytics": {
+      "get": {
+        "operationId": "GroundController_getAnalytics",
+        "summary": "Get analytics for a ground (Owner only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/owner-insights": {
+      "get": {
+        "operationId": "GroundController_getOwnerInsights",
+        "summary": "Get detailed owner insights (Occupancy, Cancellations)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/revenue-insights": {
+      "get": {
+        "operationId": "GroundController_getRevenueInsights",
+        "summary": "Get revenue insights and trends",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/demand-prediction": {
+      "get": {
+        "operationId": "GroundController_getDemandPrediction",
+        "summary": "Get demand prediction for a ground",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/pricing-recommendation": {
+      "get": {
+        "operationId": "GroundController_getPricingRecommendation",
+        "summary": "Get pricing recommendation for a ground",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/grounds/v1/{id}/ai-recommendation": {
+      "get": {
+        "operationId": "GroundController_getAiRecommendation",
+        "summary": "Get AI recommendation for a ground",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Grounds"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/master/v1/sports": {
       "get": {
         "operationId": "MasterController_getSports",
@@ -1403,6 +1620,698 @@
             "bearer": []
           }
         ]
+      }
+    },
+    "/api/bookings/v1/ai-assistant": {
+      "post": {
+        "operationId": "BookingController_aiAssistant",
+        "summary": "Conversational AI Booking Assistant",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/statistics": {
+      "get": {
+        "operationId": "PlayerProfileController_getStatistics",
+        "summary": "Get player statistics (matches, wins, win %)",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/sport-statistics/{sportId}": {
+      "get": {
+        "operationId": "PlayerProfileController_getSportStatistics",
+        "summary": "Get sport-specific statistics",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sportId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/performance-history": {
+      "get": {
+        "operationId": "PlayerProfileController_getPerformanceHistory",
+        "summary": "Get player performance history and trends",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/form": {
+      "get": {
+        "operationId": "PlayerProfileController_getForm",
+        "summary": "Get player recent form and streaks",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/skill-rating": {
+      "get": {
+        "operationId": "PlayerProfileController_getSkillRating",
+        "summary": "Get player skill ratings",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/achievements": {
+      "get": {
+        "operationId": "PlayerProfileController_getAchievements",
+        "summary": "Get player achievements",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/rankings": {
+      "get": {
+        "operationId": "PlayerProfileController_getRankings",
+        "summary": "Get player rankings",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/head-to-head/{opponentId}": {
+      "get": {
+        "operationId": "PlayerProfileController_getHeadToHead",
+        "summary": "Get head-to-head stats against an opponent",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "opponentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/dashboard/mobile": {
+      "get": {
+        "operationId": "PlayerProfileController_getMobileDashboard",
+        "summary": "Get comprehensive player dashboard for mobile",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/dashboard/admin": {
+      "get": {
+        "operationId": "PlayerProfileController_getAdminDashboard",
+        "summary": "Get detailed administrative dashboard",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/player-profile/v1/{playerId}/ai-insights": {
+      "get": {
+        "operationId": "PlayerProfileController_getAiInsights",
+        "summary": "Get AI insights for a player",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Player Profile Enhancements"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1": {
+      "post": {
+        "operationId": "TeamController_createTeam",
+        "summary": "Create a new team (8.4)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/invitations": {
+      "post": {
+        "operationId": "TeamController_invitePlayer",
+        "summary": "Invite player to team (8.5)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/invitations/{invitationId}/accept": {
+      "put": {
+        "operationId": "TeamController_acceptInvitation",
+        "summary": "Accept team invitation (8.5)",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/invitations/{invitationId}/decline": {
+      "put": {
+        "operationId": "TeamController_declineInvitation",
+        "summary": "Decline team invitation (8.5)",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/matches": {
+      "get": {
+        "operationId": "TeamController_getTeamMatches",
+        "summary": "Get team matches (8.6)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/members": {
+      "get": {
+        "operationId": "TeamController_getTeamMembers",
+        "summary": "Get team members",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/community/v1/activity": {
+      "get": {
+        "operationId": "CommunityController_getCommunityActivity",
+        "summary": "Global community activity feed (8.8)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Community (Phase 8)"]
+      }
+    },
+    "/api/community/v1/challenge/{teamId}": {
+      "post": {
+        "operationId": "CommunityController_challengePlayer",
+        "summary": "Issue a challenge to another team (8.3)",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of YOUR team issuing the challenge",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Community (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/create": {
+      "post": {
+        "operationId": "MatchController_createMatch",
+        "summary": "Create/Schedule a sport match (Singles or Doubles) with team resolution",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/{matchId}/start": {
+      "post": {
+        "operationId": "MatchController_startMatch",
+        "summary": "Start a scheduled match (makes it LIVE)",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the match to start",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/history": {
+      "get": {
+        "operationId": "MatchController_getMatchHistory",
+        "summary": "Get match history with filters",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by Player ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by Team ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status (SCHEDULED, LIVE, COMPLETED)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Pagination limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"]
+      }
+    },
+    "/api/match/v1/{matchId}": {
+      "get": {
+        "operationId": "MatchController_getMatchDetail",
+        "summary": "Get complete match details including periods and events",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"]
       }
     }
   },
@@ -1989,6 +2898,136 @@
           }
         },
         "required": ["groundId", "slotId", "bookingDate"]
+      },
+      "CreateTeamDto": {
+        "type": "object",
+        "properties": {
+          "sportId": {
+            "type": "number",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Mumbai Mavericks"
+          },
+          "shortName": {
+            "type": "string",
+            "example": "MUM"
+          },
+          "logo": {
+            "type": "string",
+            "example": "https://example.com/logo.png"
+          },
+          "city": {
+            "type": "string",
+            "example": "Mumbai"
+          },
+          "description": {
+            "type": "string",
+            "example": "We love to play!"
+          }
+        },
+        "required": ["sportId", "name"]
+      },
+      "TeamInvitationDto": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "number",
+            "example": 12
+          }
+        },
+        "required": ["playerId"]
+      },
+      "ChallengeDto": {
+        "type": "object",
+        "properties": {
+          "opponentTeamId": {
+            "type": "number",
+            "example": 2
+          },
+          "sportId": {
+            "type": "number",
+            "example": 1
+          },
+          "scheduledAt": {
+            "type": "string",
+            "example": "2026-08-25T10:00:00"
+          }
+        },
+        "required": ["opponentTeamId", "sportId", "scheduledAt"]
+      },
+      "CreateMatchDto": {
+        "type": "object",
+        "properties": {
+          "sportId": {
+            "type": "number",
+            "example": 1,
+            "description": "The ID of the sport"
+          },
+          "tournamentId": {
+            "type": "number",
+            "example": null,
+            "description": "Tournament ID, if applicable"
+          },
+          "groundId": {
+            "type": "number",
+            "example": null,
+            "description": "Ground ID, if applicable"
+          },
+          "homeTeamId": {
+            "type": "number",
+            "example": null,
+            "description": "Home Team ID, if already created"
+          },
+          "awayTeamId": {
+            "type": "number",
+            "example": null,
+            "description": "Away Team ID, if already created"
+          },
+          "homePlayerIds": {
+            "example": [1],
+            "description": "List of Home Team Player User IDs (1 for Singles, 2 for Doubles)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "awayPlayerIds": {
+            "example": [2],
+            "description": "List of Away Team Player User IDs (1 for Singles, 2 for Doubles)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "matchType": {
+            "type": "string",
+            "example": "SINGLES",
+            "description": "Match type: SINGLES or DOUBLES"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "example": "2026-08-25T18:00:00Z",
+            "description": "Scheduled time"
+          },
+          "pointsPerGame": {
+            "type": "number",
+            "example": 11,
+            "description": "Points required to win a game (default 11)"
+          },
+          "winByTwo": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether team must win by 2 points (default true)"
+          },
+          "gamesToWin": {
+            "type": "number",
+            "example": 2,
+            "description": "Number of games/periods needed to win the match (default 2)"
+          }
+        },
+        "required": ["sportId", "homePlayerIds", "awayPlayerIds", "matchType"]
       }
     }
   }

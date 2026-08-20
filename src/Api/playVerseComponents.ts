@@ -1799,6 +1799,888 @@ export const useGroundControllerDeleteSlot = (
   });
 };
 
+export type GroundControllerSearchGroundsAiError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerSearchGroundsAiRequestBody = {
+  prompt?: string;
+};
+
+export type GroundControllerSearchGroundsAiVariables = {
+  body?: GroundControllerSearchGroundsAiRequestBody;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerSearchGroundsAi = (
+  variables: GroundControllerSearchGroundsAiVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerSearchGroundsAiError,
+    GroundControllerSearchGroundsAiRequestBody,
+    {},
+    {},
+    {}
+  >({ url: "/api/grounds/v1/ai-search", method: "post", ...variables, signal });
+
+export const useGroundControllerSearchGroundsAi = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      GroundControllerSearchGroundsAiError,
+      GroundControllerSearchGroundsAiVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    GroundControllerSearchGroundsAiError,
+    GroundControllerSearchGroundsAiVariables
+  >({
+    mutationFn: (variables: GroundControllerSearchGroundsAiVariables) =>
+      fetchGroundControllerSearchGroundsAi(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type GroundControllerGetPersonalizedRecommendationsPathParams = {
+  userId: number;
+};
+
+export type GroundControllerGetPersonalizedRecommendationsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetPersonalizedRecommendationsVariables = {
+  pathParams: GroundControllerGetPersonalizedRecommendationsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetPersonalizedRecommendations = (
+  variables: GroundControllerGetPersonalizedRecommendationsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetPersonalizedRecommendationsError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetPersonalizedRecommendationsPathParams
+  >({
+    url: "/api/grounds/v1/ai-recommendation/user/{userId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetPersonalizedRecommendationsQuery(
+  variables: GroundControllerGetPersonalizedRecommendationsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetPersonalizedRecommendationsQuery(
+  variables:
+    | GroundControllerGetPersonalizedRecommendationsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetPersonalizedRecommendationsQuery(
+  variables:
+    | GroundControllerGetPersonalizedRecommendationsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/ai-recommendation/user/{userId}",
+      operationId: "groundControllerGetPersonalizedRecommendations",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetPersonalizedRecommendations(
+              variables,
+              signal,
+            ),
+  };
+}
+
+export const useSuspenseGroundControllerGetPersonalizedRecommendations = <
+  TData = undefined,
+>(
+  variables: GroundControllerGetPersonalizedRecommendationsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetPersonalizedRecommendationsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetPersonalizedRecommendationsError,
+    TData
+  >({
+    ...groundControllerGetPersonalizedRecommendationsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetPersonalizedRecommendations = <
+  TData = undefined,
+>(
+  variables:
+    | GroundControllerGetPersonalizedRecommendationsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetPersonalizedRecommendationsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetPersonalizedRecommendationsError,
+    TData
+  >({
+    ...groundControllerGetPersonalizedRecommendationsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetAnalyticsPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetAnalyticsError = Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetAnalyticsVariables = {
+  pathParams: GroundControllerGetAnalyticsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetAnalytics = (
+  variables: GroundControllerGetAnalyticsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetAnalyticsError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetAnalyticsPathParams
+  >({
+    url: "/api/grounds/v1/{id}/analytics",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetAnalyticsQuery(
+  variables: GroundControllerGetAnalyticsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetAnalyticsQuery(
+  variables: GroundControllerGetAnalyticsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetAnalyticsQuery(
+  variables: GroundControllerGetAnalyticsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/analytics",
+      operationId: "groundControllerGetAnalytics",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetAnalytics(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetAnalytics = <TData = undefined,>(
+  variables: GroundControllerGetAnalyticsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAnalyticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetAnalyticsError,
+    TData
+  >({
+    ...groundControllerGetAnalyticsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetAnalytics = <TData = undefined,>(
+  variables: GroundControllerGetAnalyticsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAnalyticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetAnalyticsError,
+    TData
+  >({
+    ...groundControllerGetAnalyticsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetOwnerInsightsPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetOwnerInsightsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetOwnerInsightsVariables = {
+  pathParams: GroundControllerGetOwnerInsightsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetOwnerInsights = (
+  variables: GroundControllerGetOwnerInsightsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetOwnerInsightsError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetOwnerInsightsPathParams
+  >({
+    url: "/api/grounds/v1/{id}/owner-insights",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetOwnerInsightsQuery(
+  variables: GroundControllerGetOwnerInsightsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetOwnerInsightsQuery(
+  variables: GroundControllerGetOwnerInsightsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetOwnerInsightsQuery(
+  variables: GroundControllerGetOwnerInsightsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/owner-insights",
+      operationId: "groundControllerGetOwnerInsights",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetOwnerInsights(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetOwnerInsights = <TData = undefined,>(
+  variables: GroundControllerGetOwnerInsightsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetOwnerInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetOwnerInsightsError,
+    TData
+  >({
+    ...groundControllerGetOwnerInsightsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetOwnerInsights = <TData = undefined,>(
+  variables: GroundControllerGetOwnerInsightsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetOwnerInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetOwnerInsightsError,
+    TData
+  >({
+    ...groundControllerGetOwnerInsightsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetRevenueInsightsPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetRevenueInsightsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetRevenueInsightsVariables = {
+  pathParams: GroundControllerGetRevenueInsightsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetRevenueInsights = (
+  variables: GroundControllerGetRevenueInsightsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetRevenueInsightsError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetRevenueInsightsPathParams
+  >({
+    url: "/api/grounds/v1/{id}/revenue-insights",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetRevenueInsightsQuery(
+  variables: GroundControllerGetRevenueInsightsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetRevenueInsightsQuery(
+  variables: GroundControllerGetRevenueInsightsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetRevenueInsightsQuery(
+  variables: GroundControllerGetRevenueInsightsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/revenue-insights",
+      operationId: "groundControllerGetRevenueInsights",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetRevenueInsights(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetRevenueInsights = <
+  TData = undefined,
+>(
+  variables: GroundControllerGetRevenueInsightsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetRevenueInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetRevenueInsightsError,
+    TData
+  >({
+    ...groundControllerGetRevenueInsightsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetRevenueInsights = <TData = undefined,>(
+  variables: GroundControllerGetRevenueInsightsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetRevenueInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetRevenueInsightsError,
+    TData
+  >({
+    ...groundControllerGetRevenueInsightsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetDemandPredictionPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetDemandPredictionError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetDemandPredictionVariables = {
+  pathParams: GroundControllerGetDemandPredictionPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetDemandPrediction = (
+  variables: GroundControllerGetDemandPredictionVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetDemandPredictionError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetDemandPredictionPathParams
+  >({
+    url: "/api/grounds/v1/{id}/demand-prediction",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetDemandPredictionQuery(
+  variables: GroundControllerGetDemandPredictionVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetDemandPredictionQuery(
+  variables:
+    | GroundControllerGetDemandPredictionVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetDemandPredictionQuery(
+  variables:
+    | GroundControllerGetDemandPredictionVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/demand-prediction",
+      operationId: "groundControllerGetDemandPrediction",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetDemandPrediction(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetDemandPrediction = <
+  TData = undefined,
+>(
+  variables: GroundControllerGetDemandPredictionVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetDemandPredictionError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetDemandPredictionError,
+    TData
+  >({
+    ...groundControllerGetDemandPredictionQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetDemandPrediction = <TData = undefined,>(
+  variables:
+    | GroundControllerGetDemandPredictionVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetDemandPredictionError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetDemandPredictionError,
+    TData
+  >({
+    ...groundControllerGetDemandPredictionQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetPricingRecommendationPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetPricingRecommendationError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetPricingRecommendationVariables = {
+  pathParams: GroundControllerGetPricingRecommendationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetPricingRecommendation = (
+  variables: GroundControllerGetPricingRecommendationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetPricingRecommendationError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetPricingRecommendationPathParams
+  >({
+    url: "/api/grounds/v1/{id}/pricing-recommendation",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetPricingRecommendationQuery(
+  variables: GroundControllerGetPricingRecommendationVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetPricingRecommendationQuery(
+  variables:
+    | GroundControllerGetPricingRecommendationVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetPricingRecommendationQuery(
+  variables:
+    | GroundControllerGetPricingRecommendationVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/pricing-recommendation",
+      operationId: "groundControllerGetPricingRecommendation",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetPricingRecommendation(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetPricingRecommendation = <
+  TData = undefined,
+>(
+  variables: GroundControllerGetPricingRecommendationVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetPricingRecommendationError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetPricingRecommendationError,
+    TData
+  >({
+    ...groundControllerGetPricingRecommendationQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetPricingRecommendation = <TData = undefined,>(
+  variables:
+    | GroundControllerGetPricingRecommendationVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetPricingRecommendationError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetPricingRecommendationError,
+    TData
+  >({
+    ...groundControllerGetPricingRecommendationQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type GroundControllerGetAiRecommendationPathParams = {
+  id: number;
+};
+
+export type GroundControllerGetAiRecommendationError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type GroundControllerGetAiRecommendationVariables = {
+  pathParams: GroundControllerGetAiRecommendationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchGroundControllerGetAiRecommendation = (
+  variables: GroundControllerGetAiRecommendationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    GroundControllerGetAiRecommendationError,
+    undefined,
+    {},
+    {},
+    GroundControllerGetAiRecommendationPathParams
+  >({
+    url: "/api/grounds/v1/{id}/ai-recommendation",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function groundControllerGetAiRecommendationQuery(
+  variables: GroundControllerGetAiRecommendationVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function groundControllerGetAiRecommendationQuery(
+  variables:
+    | GroundControllerGetAiRecommendationVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function groundControllerGetAiRecommendationQuery(
+  variables:
+    | GroundControllerGetAiRecommendationVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/grounds/v1/{id}/ai-recommendation",
+      operationId: "groundControllerGetAiRecommendation",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchGroundControllerGetAiRecommendation(variables, signal),
+  };
+}
+
+export const useSuspenseGroundControllerGetAiRecommendation = <
+  TData = undefined,
+>(
+  variables: GroundControllerGetAiRecommendationVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAiRecommendationError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    GroundControllerGetAiRecommendationError,
+    TData
+  >({
+    ...groundControllerGetAiRecommendationQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useGroundControllerGetAiRecommendation = <TData = undefined,>(
+  variables:
+    | GroundControllerGetAiRecommendationVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      GroundControllerGetAiRecommendationError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    GroundControllerGetAiRecommendationError,
+    TData
+  >({
+    ...groundControllerGetAiRecommendationQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type MasterControllerGetSportsError = Fetcher.ErrorWrapper<undefined>;
 
 export type MasterControllerGetSportsVariables =
@@ -2470,6 +3352,2296 @@ export const useBookingControllerCancelBooking = (
   });
 };
 
+export type BookingControllerAiAssistantError = Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerAiAssistantVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerAiAssistant = (
+  variables: BookingControllerAiAssistantVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerAiAssistantError,
+    undefined,
+    {},
+    {},
+    {}
+  >({
+    url: "/api/bookings/v1/ai-assistant",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerAiAssistant = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerAiAssistantError,
+      BookingControllerAiAssistantVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerAiAssistantError,
+    BookingControllerAiAssistantVariables
+  >({
+    mutationFn: (variables: BookingControllerAiAssistantVariables) =>
+      fetchBookingControllerAiAssistant(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type PlayerProfileControllerGetStatisticsPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetStatisticsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetStatisticsVariables = {
+  pathParams: PlayerProfileControllerGetStatisticsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetStatistics = (
+  variables: PlayerProfileControllerGetStatisticsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetStatisticsError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetStatisticsPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/statistics",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetStatisticsQuery(
+  variables: PlayerProfileControllerGetStatisticsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetStatisticsQuery(
+  variables:
+    | PlayerProfileControllerGetStatisticsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetStatisticsQuery(
+  variables:
+    | PlayerProfileControllerGetStatisticsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/statistics",
+      operationId: "playerProfileControllerGetStatistics",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetStatistics(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetStatistics = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetStatisticsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetStatisticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetStatisticsError,
+    TData
+  >({
+    ...playerProfileControllerGetStatisticsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetStatistics = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetStatisticsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetStatisticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetStatisticsError,
+    TData
+  >({
+    ...playerProfileControllerGetStatisticsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetSportStatisticsPathParams = {
+  playerId: number;
+  sportId: number;
+};
+
+export type PlayerProfileControllerGetSportStatisticsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetSportStatisticsVariables = {
+  pathParams: PlayerProfileControllerGetSportStatisticsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetSportStatistics = (
+  variables: PlayerProfileControllerGetSportStatisticsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetSportStatisticsError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetSportStatisticsPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/sport-statistics/{sportId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetSportStatisticsQuery(
+  variables: PlayerProfileControllerGetSportStatisticsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetSportStatisticsQuery(
+  variables:
+    | PlayerProfileControllerGetSportStatisticsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetSportStatisticsQuery(
+  variables:
+    | PlayerProfileControllerGetSportStatisticsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/sport-statistics/{sportId}",
+      operationId: "playerProfileControllerGetSportStatistics",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetSportStatistics(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetSportStatistics = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetSportStatisticsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetSportStatisticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetSportStatisticsError,
+    TData
+  >({
+    ...playerProfileControllerGetSportStatisticsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetSportStatistics = <
+  TData = undefined,
+>(
+  variables:
+    | PlayerProfileControllerGetSportStatisticsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetSportStatisticsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetSportStatisticsError,
+    TData
+  >({
+    ...playerProfileControllerGetSportStatisticsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetPerformanceHistoryPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetPerformanceHistoryError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetPerformanceHistoryVariables = {
+  pathParams: PlayerProfileControllerGetPerformanceHistoryPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetPerformanceHistory = (
+  variables: PlayerProfileControllerGetPerformanceHistoryVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetPerformanceHistoryError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetPerformanceHistoryPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/performance-history",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetPerformanceHistoryQuery(
+  variables: PlayerProfileControllerGetPerformanceHistoryVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetPerformanceHistoryQuery(
+  variables:
+    | PlayerProfileControllerGetPerformanceHistoryVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetPerformanceHistoryQuery(
+  variables:
+    | PlayerProfileControllerGetPerformanceHistoryVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/performance-history",
+      operationId: "playerProfileControllerGetPerformanceHistory",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetPerformanceHistory(
+              variables,
+              signal,
+            ),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetPerformanceHistory = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetPerformanceHistoryVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetPerformanceHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetPerformanceHistoryError,
+    TData
+  >({
+    ...playerProfileControllerGetPerformanceHistoryQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetPerformanceHistory = <
+  TData = undefined,
+>(
+  variables:
+    | PlayerProfileControllerGetPerformanceHistoryVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetPerformanceHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetPerformanceHistoryError,
+    TData
+  >({
+    ...playerProfileControllerGetPerformanceHistoryQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetFormPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetFormError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetFormVariables = {
+  pathParams: PlayerProfileControllerGetFormPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetForm = (
+  variables: PlayerProfileControllerGetFormVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetFormError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetFormPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/form",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetFormQuery(
+  variables: PlayerProfileControllerGetFormVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetFormQuery(
+  variables: PlayerProfileControllerGetFormVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetFormQuery(
+  variables: PlayerProfileControllerGetFormVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/form",
+      operationId: "playerProfileControllerGetForm",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetForm(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetForm = <TData = undefined,>(
+  variables: PlayerProfileControllerGetFormVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetFormError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetFormError,
+    TData
+  >({
+    ...playerProfileControllerGetFormQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetForm = <TData = undefined,>(
+  variables: PlayerProfileControllerGetFormVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetFormError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetFormError,
+    TData
+  >({
+    ...playerProfileControllerGetFormQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetSkillRatingPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetSkillRatingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetSkillRatingVariables = {
+  pathParams: PlayerProfileControllerGetSkillRatingPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetSkillRating = (
+  variables: PlayerProfileControllerGetSkillRatingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetSkillRatingError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetSkillRatingPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/skill-rating",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetSkillRatingQuery(
+  variables: PlayerProfileControllerGetSkillRatingVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetSkillRatingQuery(
+  variables:
+    | PlayerProfileControllerGetSkillRatingVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetSkillRatingQuery(
+  variables:
+    | PlayerProfileControllerGetSkillRatingVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/skill-rating",
+      operationId: "playerProfileControllerGetSkillRating",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetSkillRating(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetSkillRating = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetSkillRatingVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetSkillRatingError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetSkillRatingError,
+    TData
+  >({
+    ...playerProfileControllerGetSkillRatingQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetSkillRating = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetSkillRatingVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetSkillRatingError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetSkillRatingError,
+    TData
+  >({
+    ...playerProfileControllerGetSkillRatingQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetAchievementsPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetAchievementsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetAchievementsVariables = {
+  pathParams: PlayerProfileControllerGetAchievementsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetAchievements = (
+  variables: PlayerProfileControllerGetAchievementsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetAchievementsError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetAchievementsPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/achievements",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetAchievementsQuery(
+  variables: PlayerProfileControllerGetAchievementsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetAchievementsQuery(
+  variables:
+    | PlayerProfileControllerGetAchievementsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetAchievementsQuery(
+  variables:
+    | PlayerProfileControllerGetAchievementsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/achievements",
+      operationId: "playerProfileControllerGetAchievements",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetAchievements(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetAchievements = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetAchievementsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAchievementsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetAchievementsError,
+    TData
+  >({
+    ...playerProfileControllerGetAchievementsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetAchievements = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetAchievementsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAchievementsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetAchievementsError,
+    TData
+  >({
+    ...playerProfileControllerGetAchievementsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetRankingsPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetRankingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetRankingsVariables = {
+  pathParams: PlayerProfileControllerGetRankingsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetRankings = (
+  variables: PlayerProfileControllerGetRankingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetRankingsError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetRankingsPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/rankings",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetRankingsQuery(
+  variables: PlayerProfileControllerGetRankingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetRankingsQuery(
+  variables: PlayerProfileControllerGetRankingsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetRankingsQuery(
+  variables: PlayerProfileControllerGetRankingsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/rankings",
+      operationId: "playerProfileControllerGetRankings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetRankings(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetRankings = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetRankingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetRankingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetRankingsError,
+    TData
+  >({
+    ...playerProfileControllerGetRankingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetRankings = <TData = undefined,>(
+  variables: PlayerProfileControllerGetRankingsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetRankingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetRankingsError,
+    TData
+  >({
+    ...playerProfileControllerGetRankingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetHeadToHeadPathParams = {
+  playerId: number;
+  opponentId: number;
+};
+
+export type PlayerProfileControllerGetHeadToHeadError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetHeadToHeadVariables = {
+  pathParams: PlayerProfileControllerGetHeadToHeadPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetHeadToHead = (
+  variables: PlayerProfileControllerGetHeadToHeadVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetHeadToHeadError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetHeadToHeadPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/head-to-head/{opponentId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetHeadToHeadQuery(
+  variables: PlayerProfileControllerGetHeadToHeadVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetHeadToHeadQuery(
+  variables:
+    | PlayerProfileControllerGetHeadToHeadVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetHeadToHeadQuery(
+  variables:
+    | PlayerProfileControllerGetHeadToHeadVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/head-to-head/{opponentId}",
+      operationId: "playerProfileControllerGetHeadToHead",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetHeadToHead(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetHeadToHead = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetHeadToHeadVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetHeadToHeadError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetHeadToHeadError,
+    TData
+  >({
+    ...playerProfileControllerGetHeadToHeadQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetHeadToHead = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetHeadToHeadVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetHeadToHeadError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetHeadToHeadError,
+    TData
+  >({
+    ...playerProfileControllerGetHeadToHeadQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetMobileDashboardPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetMobileDashboardError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetMobileDashboardVariables = {
+  pathParams: PlayerProfileControllerGetMobileDashboardPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetMobileDashboard = (
+  variables: PlayerProfileControllerGetMobileDashboardVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetMobileDashboardError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetMobileDashboardPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/dashboard/mobile",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetMobileDashboardQuery(
+  variables: PlayerProfileControllerGetMobileDashboardVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetMobileDashboardQuery(
+  variables:
+    | PlayerProfileControllerGetMobileDashboardVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetMobileDashboardQuery(
+  variables:
+    | PlayerProfileControllerGetMobileDashboardVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/dashboard/mobile",
+      operationId: "playerProfileControllerGetMobileDashboard",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetMobileDashboard(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetMobileDashboard = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetMobileDashboardVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetMobileDashboardError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetMobileDashboardError,
+    TData
+  >({
+    ...playerProfileControllerGetMobileDashboardQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetMobileDashboard = <
+  TData = undefined,
+>(
+  variables:
+    | PlayerProfileControllerGetMobileDashboardVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetMobileDashboardError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetMobileDashboardError,
+    TData
+  >({
+    ...playerProfileControllerGetMobileDashboardQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetAdminDashboardPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetAdminDashboardError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetAdminDashboardVariables = {
+  pathParams: PlayerProfileControllerGetAdminDashboardPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetAdminDashboard = (
+  variables: PlayerProfileControllerGetAdminDashboardVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetAdminDashboardError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetAdminDashboardPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/dashboard/admin",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetAdminDashboardQuery(
+  variables: PlayerProfileControllerGetAdminDashboardVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetAdminDashboardQuery(
+  variables:
+    | PlayerProfileControllerGetAdminDashboardVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetAdminDashboardQuery(
+  variables:
+    | PlayerProfileControllerGetAdminDashboardVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/dashboard/admin",
+      operationId: "playerProfileControllerGetAdminDashboard",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetAdminDashboard(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetAdminDashboard = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetAdminDashboardVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAdminDashboardError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetAdminDashboardError,
+    TData
+  >({
+    ...playerProfileControllerGetAdminDashboardQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetAdminDashboard = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetAdminDashboardVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAdminDashboardError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetAdminDashboardError,
+    TData
+  >({
+    ...playerProfileControllerGetAdminDashboardQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type PlayerProfileControllerGetAiInsightsPathParams = {
+  playerId: number;
+};
+
+export type PlayerProfileControllerGetAiInsightsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type PlayerProfileControllerGetAiInsightsVariables = {
+  pathParams: PlayerProfileControllerGetAiInsightsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchPlayerProfileControllerGetAiInsights = (
+  variables: PlayerProfileControllerGetAiInsightsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    PlayerProfileControllerGetAiInsightsError,
+    undefined,
+    {},
+    {},
+    PlayerProfileControllerGetAiInsightsPathParams
+  >({
+    url: "/api/player-profile/v1/{playerId}/ai-insights",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function playerProfileControllerGetAiInsightsQuery(
+  variables: PlayerProfileControllerGetAiInsightsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function playerProfileControllerGetAiInsightsQuery(
+  variables:
+    | PlayerProfileControllerGetAiInsightsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function playerProfileControllerGetAiInsightsQuery(
+  variables:
+    | PlayerProfileControllerGetAiInsightsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/player-profile/v1/{playerId}/ai-insights",
+      operationId: "playerProfileControllerGetAiInsights",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchPlayerProfileControllerGetAiInsights(variables, signal),
+  };
+}
+
+export const useSuspensePlayerProfileControllerGetAiInsights = <
+  TData = undefined,
+>(
+  variables: PlayerProfileControllerGetAiInsightsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAiInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    PlayerProfileControllerGetAiInsightsError,
+    TData
+  >({
+    ...playerProfileControllerGetAiInsightsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const usePlayerProfileControllerGetAiInsights = <TData = undefined,>(
+  variables:
+    | PlayerProfileControllerGetAiInsightsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      PlayerProfileControllerGetAiInsightsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    PlayerProfileControllerGetAiInsightsError,
+    TData
+  >({
+    ...playerProfileControllerGetAiInsightsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type TeamControllerCreateTeamError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerCreateTeamVariables = {
+  body: Schemas.CreateTeamDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerCreateTeam = (
+  variables: TeamControllerCreateTeamVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerCreateTeamError,
+    Schemas.CreateTeamDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/teams/v1", method: "post", ...variables, signal });
+
+export const useTeamControllerCreateTeam = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerCreateTeamError,
+      TeamControllerCreateTeamVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerCreateTeamError,
+    TeamControllerCreateTeamVariables
+  >({
+    mutationFn: (variables: TeamControllerCreateTeamVariables) =>
+      fetchTeamControllerCreateTeam(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerInvitePlayerPathParams = {
+  id: number;
+};
+
+export type TeamControllerInvitePlayerError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerInvitePlayerVariables = {
+  body: Schemas.TeamInvitationDto;
+  pathParams: TeamControllerInvitePlayerPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerInvitePlayer = (
+  variables: TeamControllerInvitePlayerVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerInvitePlayerError,
+    Schemas.TeamInvitationDto,
+    {},
+    {},
+    TeamControllerInvitePlayerPathParams
+  >({
+    url: "/api/teams/v1/{id}/invitations",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerInvitePlayer = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerInvitePlayerError,
+      TeamControllerInvitePlayerVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerInvitePlayerError,
+    TeamControllerInvitePlayerVariables
+  >({
+    mutationFn: (variables: TeamControllerInvitePlayerVariables) =>
+      fetchTeamControllerInvitePlayer(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerAcceptInvitationPathParams = {
+  invitationId: number;
+};
+
+export type TeamControllerAcceptInvitationError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerAcceptInvitationVariables = {
+  pathParams: TeamControllerAcceptInvitationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerAcceptInvitation = (
+  variables: TeamControllerAcceptInvitationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerAcceptInvitationError,
+    undefined,
+    {},
+    {},
+    TeamControllerAcceptInvitationPathParams
+  >({
+    url: "/api/teams/v1/invitations/{invitationId}/accept",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerAcceptInvitation = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerAcceptInvitationError,
+      TeamControllerAcceptInvitationVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerAcceptInvitationError,
+    TeamControllerAcceptInvitationVariables
+  >({
+    mutationFn: (variables: TeamControllerAcceptInvitationVariables) =>
+      fetchTeamControllerAcceptInvitation(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerDeclineInvitationPathParams = {
+  invitationId: number;
+};
+
+export type TeamControllerDeclineInvitationError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerDeclineInvitationVariables = {
+  pathParams: TeamControllerDeclineInvitationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerDeclineInvitation = (
+  variables: TeamControllerDeclineInvitationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerDeclineInvitationError,
+    undefined,
+    {},
+    {},
+    TeamControllerDeclineInvitationPathParams
+  >({
+    url: "/api/teams/v1/invitations/{invitationId}/decline",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerDeclineInvitation = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerDeclineInvitationError,
+      TeamControllerDeclineInvitationVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerDeclineInvitationError,
+    TeamControllerDeclineInvitationVariables
+  >({
+    mutationFn: (variables: TeamControllerDeclineInvitationVariables) =>
+      fetchTeamControllerDeclineInvitation(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type TeamControllerGetTeamMatchesPathParams = {
+  id: number;
+};
+
+export type TeamControllerGetTeamMatchesError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerGetTeamMatchesVariables = {
+  pathParams: TeamControllerGetTeamMatchesPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerGetTeamMatches = (
+  variables: TeamControllerGetTeamMatchesVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerGetTeamMatchesError,
+    undefined,
+    {},
+    {},
+    TeamControllerGetTeamMatchesPathParams
+  >({ url: "/api/teams/v1/{id}/matches", method: "get", ...variables, signal });
+
+export function teamControllerGetTeamMatchesQuery(
+  variables: TeamControllerGetTeamMatchesVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function teamControllerGetTeamMatchesQuery(
+  variables: TeamControllerGetTeamMatchesVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function teamControllerGetTeamMatchesQuery(
+  variables: TeamControllerGetTeamMatchesVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/teams/v1/{id}/matches",
+      operationId: "teamControllerGetTeamMatches",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTeamControllerGetTeamMatches(variables, signal),
+  };
+}
+
+export const useSuspenseTeamControllerGetTeamMatches = <TData = undefined,>(
+  variables: TeamControllerGetTeamMatchesVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TeamControllerGetTeamMatchesError,
+    TData
+  >({
+    ...teamControllerGetTeamMatchesQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTeamControllerGetTeamMatches = <TData = undefined,>(
+  variables: TeamControllerGetTeamMatchesVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TeamControllerGetTeamMatchesError,
+    TData
+  >({
+    ...teamControllerGetTeamMatchesQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type TeamControllerGetTeamMembersPathParams = {
+  id: number;
+};
+
+export type TeamControllerGetTeamMembersError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerGetTeamMembersVariables = {
+  pathParams: TeamControllerGetTeamMembersPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerGetTeamMembers = (
+  variables: TeamControllerGetTeamMembersVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerGetTeamMembersError,
+    undefined,
+    {},
+    {},
+    TeamControllerGetTeamMembersPathParams
+  >({ url: "/api/teams/v1/{id}/members", method: "get", ...variables, signal });
+
+export function teamControllerGetTeamMembersQuery(
+  variables: TeamControllerGetTeamMembersVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function teamControllerGetTeamMembersQuery(
+  variables: TeamControllerGetTeamMembersVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function teamControllerGetTeamMembersQuery(
+  variables: TeamControllerGetTeamMembersVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/teams/v1/{id}/members",
+      operationId: "teamControllerGetTeamMembers",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTeamControllerGetTeamMembers(variables, signal),
+  };
+}
+
+export const useSuspenseTeamControllerGetTeamMembers = <TData = undefined,>(
+  variables: TeamControllerGetTeamMembersVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamMembersError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TeamControllerGetTeamMembersError,
+    TData
+  >({
+    ...teamControllerGetTeamMembersQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTeamControllerGetTeamMembers = <TData = undefined,>(
+  variables: TeamControllerGetTeamMembersVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamMembersError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TeamControllerGetTeamMembersError,
+    TData
+  >({
+    ...teamControllerGetTeamMembersQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type CommunityControllerGetCommunityActivityError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type CommunityControllerGetCommunityActivityVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchCommunityControllerGetCommunityActivity = (
+  variables: CommunityControllerGetCommunityActivityVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    CommunityControllerGetCommunityActivityError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/community/v1/activity", method: "get", ...variables, signal });
+
+export function communityControllerGetCommunityActivityQuery(
+  variables: CommunityControllerGetCommunityActivityVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function communityControllerGetCommunityActivityQuery(
+  variables:
+    | CommunityControllerGetCommunityActivityVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function communityControllerGetCommunityActivityQuery(
+  variables:
+    | CommunityControllerGetCommunityActivityVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/community/v1/activity",
+      operationId: "communityControllerGetCommunityActivity",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchCommunityControllerGetCommunityActivity(variables, signal),
+  };
+}
+
+export const useSuspenseCommunityControllerGetCommunityActivity = <
+  TData = undefined,
+>(
+  variables: CommunityControllerGetCommunityActivityVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      CommunityControllerGetCommunityActivityError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    CommunityControllerGetCommunityActivityError,
+    TData
+  >({
+    ...communityControllerGetCommunityActivityQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useCommunityControllerGetCommunityActivity = <TData = undefined,>(
+  variables:
+    | CommunityControllerGetCommunityActivityVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      CommunityControllerGetCommunityActivityError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    CommunityControllerGetCommunityActivityError,
+    TData
+  >({
+    ...communityControllerGetCommunityActivityQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type CommunityControllerChallengePlayerPathParams = {
+  /**
+   * The ID of YOUR team issuing the challenge
+   */
+  teamId: number;
+};
+
+export type CommunityControllerChallengePlayerError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type CommunityControllerChallengePlayerVariables = {
+  body: Schemas.ChallengeDto;
+  pathParams: CommunityControllerChallengePlayerPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchCommunityControllerChallengePlayer = (
+  variables: CommunityControllerChallengePlayerVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    CommunityControllerChallengePlayerError,
+    Schemas.ChallengeDto,
+    {},
+    {},
+    CommunityControllerChallengePlayerPathParams
+  >({
+    url: "/api/community/v1/challenge/{teamId}",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useCommunityControllerChallengePlayer = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      CommunityControllerChallengePlayerError,
+      CommunityControllerChallengePlayerVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    CommunityControllerChallengePlayerError,
+    CommunityControllerChallengePlayerVariables
+  >({
+    mutationFn: (variables: CommunityControllerChallengePlayerVariables) =>
+      fetchCommunityControllerChallengePlayer(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type MatchControllerCreateMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerCreateMatchVariables = {
+  body: Schemas.CreateMatchDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerCreateMatch = (
+  variables: MatchControllerCreateMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerCreateMatchError,
+    Schemas.CreateMatchDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/match/v1/create", method: "post", ...variables, signal });
+
+export const useMatchControllerCreateMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerCreateMatchError,
+      MatchControllerCreateMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerCreateMatchError,
+    MatchControllerCreateMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerCreateMatchVariables) =>
+      fetchMatchControllerCreateMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerStartMatchPathParams = {
+  /**
+   * The ID of the match to start
+   */
+  matchId: number;
+};
+
+export type MatchControllerStartMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerStartMatchVariables = {
+  pathParams: MatchControllerStartMatchPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerStartMatch = (
+  variables: MatchControllerStartMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerStartMatchError,
+    undefined,
+    {},
+    {},
+    MatchControllerStartMatchPathParams
+  >({
+    url: "/api/match/v1/{matchId}/start",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useMatchControllerStartMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerStartMatchError,
+      MatchControllerStartMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerStartMatchError,
+    MatchControllerStartMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerStartMatchVariables) =>
+      fetchMatchControllerStartMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerGetMatchHistoryQueryParams = {
+  /**
+   * Filter by Player ID
+   */
+  playerId?: number;
+  /**
+   * Filter by Team ID
+   */
+  teamId?: number;
+  /**
+   * Filter by status (SCHEDULED, LIVE, COMPLETED)
+   */
+  status?: string;
+  /**
+   * Pagination limit
+   */
+  limit?: number;
+  /**
+   * Pagination offset
+   */
+  offset?: number;
+};
+
+export type MatchControllerGetMatchHistoryError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchHistoryVariables = {
+  queryParams?: MatchControllerGetMatchHistoryQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchHistory = (
+  variables: MatchControllerGetMatchHistoryVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    undefined,
+    {},
+    MatchControllerGetMatchHistoryQueryParams,
+    {}
+  >({ url: "/api/match/v1/history", method: "get", ...variables, signal });
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/history",
+      operationId: "matchControllerGetMatchHistory",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchHistory(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchHistory = <TData = undefined,>(
+  variables: MatchControllerGetMatchHistoryVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    TData
+  >({
+    ...matchControllerGetMatchHistoryQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchHistory = <TData = undefined,>(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    TData
+  >({
+    ...matchControllerGetMatchHistoryQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type MatchControllerGetMatchDetailPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerGetMatchDetailError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchDetailVariables = {
+  pathParams: MatchControllerGetMatchDetailPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchDetail = (
+  variables: MatchControllerGetMatchDetailVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    undefined,
+    {},
+    {},
+    MatchControllerGetMatchDetailPathParams
+  >({ url: "/api/match/v1/{matchId}", method: "get", ...variables, signal });
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/{matchId}",
+      operationId: "matchControllerGetMatchDetail",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchDetail(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchDetail = <TData = undefined,>(
+  variables: MatchControllerGetMatchDetailVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchDetailError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    TData
+  >({
+    ...matchControllerGetMatchDetailQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchDetail = <TData = undefined,>(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchDetailError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    TData
+  >({
+    ...matchControllerGetMatchDetailQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type QueryOperation =
   | {
       path: "/api/users/v1/profile";
@@ -2513,6 +5685,53 @@ export type QueryOperation =
         | reactQuery.SkipToken;
     }
   | {
+      path: "/api/grounds/v1/ai-recommendation/user/{userId}";
+      operationId: "groundControllerGetPersonalizedRecommendations";
+      variables:
+        | GroundControllerGetPersonalizedRecommendationsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/analytics";
+      operationId: "groundControllerGetAnalytics";
+      variables: GroundControllerGetAnalyticsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/owner-insights";
+      operationId: "groundControllerGetOwnerInsights";
+      variables:
+        | GroundControllerGetOwnerInsightsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/revenue-insights";
+      operationId: "groundControllerGetRevenueInsights";
+      variables:
+        | GroundControllerGetRevenueInsightsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/demand-prediction";
+      operationId: "groundControllerGetDemandPrediction";
+      variables:
+        | GroundControllerGetDemandPredictionVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/pricing-recommendation";
+      operationId: "groundControllerGetPricingRecommendation";
+      variables:
+        | GroundControllerGetPricingRecommendationVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/grounds/v1/{id}/ai-recommendation";
+      operationId: "groundControllerGetAiRecommendation";
+      variables:
+        | GroundControllerGetAiRecommendationVariables
+        | reactQuery.SkipToken;
+    }
+  | {
       path: "/api/master/v1/sports";
       operationId: "masterControllerGetSports";
       variables: MasterControllerGetSportsVariables | reactQuery.SkipToken;
@@ -2535,4 +5754,106 @@ export type QueryOperation =
       variables:
         | BookingControllerGetGroundBookingsVariables
         | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/statistics";
+      operationId: "playerProfileControllerGetStatistics";
+      variables:
+        | PlayerProfileControllerGetStatisticsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/sport-statistics/{sportId}";
+      operationId: "playerProfileControllerGetSportStatistics";
+      variables:
+        | PlayerProfileControllerGetSportStatisticsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/performance-history";
+      operationId: "playerProfileControllerGetPerformanceHistory";
+      variables:
+        | PlayerProfileControllerGetPerformanceHistoryVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/form";
+      operationId: "playerProfileControllerGetForm";
+      variables: PlayerProfileControllerGetFormVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/skill-rating";
+      operationId: "playerProfileControllerGetSkillRating";
+      variables:
+        | PlayerProfileControllerGetSkillRatingVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/achievements";
+      operationId: "playerProfileControllerGetAchievements";
+      variables:
+        | PlayerProfileControllerGetAchievementsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/rankings";
+      operationId: "playerProfileControllerGetRankings";
+      variables:
+        | PlayerProfileControllerGetRankingsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/head-to-head/{opponentId}";
+      operationId: "playerProfileControllerGetHeadToHead";
+      variables:
+        | PlayerProfileControllerGetHeadToHeadVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/dashboard/mobile";
+      operationId: "playerProfileControllerGetMobileDashboard";
+      variables:
+        | PlayerProfileControllerGetMobileDashboardVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/dashboard/admin";
+      operationId: "playerProfileControllerGetAdminDashboard";
+      variables:
+        | PlayerProfileControllerGetAdminDashboardVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/player-profile/v1/{playerId}/ai-insights";
+      operationId: "playerProfileControllerGetAiInsights";
+      variables:
+        | PlayerProfileControllerGetAiInsightsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/teams/v1/{id}/matches";
+      operationId: "teamControllerGetTeamMatches";
+      variables: TeamControllerGetTeamMatchesVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/teams/v1/{id}/members";
+      operationId: "teamControllerGetTeamMembers";
+      variables: TeamControllerGetTeamMembersVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/community/v1/activity";
+      operationId: "communityControllerGetCommunityActivity";
+      variables:
+        | CommunityControllerGetCommunityActivityVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/history";
+      operationId: "matchControllerGetMatchHistory";
+      variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/{matchId}";
+      operationId: "matchControllerGetMatchDetail";
+      variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
     };

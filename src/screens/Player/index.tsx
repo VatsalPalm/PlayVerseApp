@@ -319,6 +319,8 @@ const PlayerHomeScreen = () => {
                   onPress={() => {
                     if (action.title === "Book Ground") {
                       navigation.navigate("GroundsList");
+                    } else if (action.title === "Live Scoring") {
+                      navigation.navigate("MatchHistory");
                     } else {
                       showMessage({
                         message: `${action.title} coming soon!`,

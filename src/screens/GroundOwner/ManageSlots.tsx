@@ -345,7 +345,7 @@ const ManageSlotsScreen = () => {
             <Text style={styles.headerTitle}>Manage Slots</Text>
             {ground?.name && (
               <Text style={styles.headerSubtitle} numberOfLines={1}>
-                {ground.name}
+                {ground.name} • Revenue: ₹{(ground.totalRevenue ?? 0).toLocaleString("en-IN")}
               </Text>
             )}
           </View>
