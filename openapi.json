@@ -300,6 +300,51 @@
         ]
       }
     },
+    "/api/v1/mobile/devices": {
+      "post": {
+        "operationId": "DeviceController_registerDevice",
+        "summary": "Register or update a device FCM token",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Device"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/mobile/devices/{deviceId}": {
+      "delete": {
+        "operationId": "DeviceController_unregisterDevice",
+        "summary": "Unregister a device",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Device"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/upload/v1/file": {
       "post": {
         "operationId": "UploadController_uploadFile",
@@ -2126,6 +2171,210 @@
         ]
       }
     },
+    "/api/teams/v1/my-teams": {
+      "get": {
+        "operationId": "TeamController_getMyTeams",
+        "summary": "Get all teams the user belongs to",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}": {
+      "get": {
+        "operationId": "TeamController_getTeamDetails",
+        "summary": "Get team details",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/join": {
+      "post": {
+        "operationId": "TeamController_joinTeam",
+        "summary": "Join a team",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/members/me": {
+      "delete": {
+        "operationId": "TeamController_leaveTeam",
+        "summary": "Leave a team",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/members/{userId}/approve": {
+      "post": {
+        "operationId": "TeamController_approveMember",
+        "summary": "Captain approve member join request",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/members/{userId}/reject": {
+      "post": {
+        "operationId": "TeamController_rejectMember",
+        "summary": "Captain reject member join request",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/members/{userId}": {
+      "delete": {
+        "operationId": "TeamController_removeMember",
+        "summary": "Captain remove team member",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/community/v1/activity": {
       "get": {
         "operationId": "CommunityController_getCommunityActivity",
@@ -2331,6 +2580,60 @@
         },
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/teams": {
+      "post": {
+        "operationId": "TournamentController_createTeamForTournament",
+        "summary": "Create a new team for a tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "TournamentController_getTournamentTeams",
+        "summary": "Get tournament teams",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -2621,6 +2924,32 @@
           }
         },
         "tags": ["Tournament Management (Phase 5)"]
+      },
+      "delete": {
+        "operationId": "TournamentController_deleteTournament",
+        "summary": "Delete a tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/tournament/v1/{id}/participants": {
@@ -3559,6 +3888,32 @@
             "type": "number",
             "example": 60,
             "description": "Estimated duration of a match in minutes"
+          },
+          "registrationType": {
+            "type": "string",
+            "example": "TEAM",
+            "enum": ["INDIVIDUAL", "TEAM"],
+            "description": "Registration type (INDIVIDUAL or TEAM)"
+          },
+          "teamSize": {
+            "type": "number",
+            "example": 5,
+            "description": "Maximum size of a team"
+          },
+          "minPlayersRequired": {
+            "type": "number",
+            "example": 1,
+            "description": "Minimum players required per team"
+          },
+          "teamApprovalRequired": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether captain approval is required to join a team"
+          },
+          "initialTeamName": {
+            "type": "string",
+            "example": "Thunder Warriors",
+            "description": "Initial team name to register"
           }
         },
         "required": ["sportId", "name", "format"]

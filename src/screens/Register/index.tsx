@@ -11,6 +11,7 @@ import {
   Image,
   Platform,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -29,7 +30,7 @@ import {
 } from "../../Api/playVerseComponents";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
-import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
+import FloatingOrbs from "../../Components/atoms/FloatingOrbs";
 import DeviceInfo from "react-native-device-info";
 import { getFcmPushToken } from "../../utils/helpers";
 import { Ionicons } from "@expo/vector-icons";
@@ -406,210 +407,218 @@ const RegisterScreen = () => {
       <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
-          contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]}
-          keyboardShouldPersistTaps="handled"
         >
-          {/* Logo */}
-          <CImage
-            source={Icons.crmLogo}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>
-              Enter your details and select your sports to join PlayVerse.
-            </Text>
-          </View>
-
-          <SizedBox height={20} />
-
-          {/* Profile Image Picker */}
-          <TouchableOpacity
-            style={[
-              styles.avatarContainer,
-              profileImage ? styles.avatarContainerActive : null,
-            ]}
-            activeOpacity={0.8}
-            onPress={handlePickImage}
-            disabled={isUploading}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]}
+            keyboardShouldPersistTaps="handled"
           >
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons
-                  name="person"
-                  size={32}
-                  color="#6C4DF6"
-                  style={styles.avatarPlaceholderIcon}
-                />
-                <Text style={styles.avatarPlaceholderText}>Add Photo</Text>
-              </View>
-            )}
+            {/* Logo */}
+            <CImage
+              source={Icons.crmLogo}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
 
-            {isUploading && (
-              <View style={styles.uploadSpinnerContainer}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              </View>
-            )}
-
-            <View style={styles.avatarBadge}>
-              <Ionicons name="camera" size={14} color="#FFFFFF" />
-            </View>
-          </TouchableOpacity>
-
-          <SizedBox height={20} />
-
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Role Selector — full width cards stacked vertically */}
-            <View style={styles.roleSection}>
-              <Text style={styles.roleLabel}>Register As</Text>
-              <View style={styles.roleContainer}>
-                {[
-                  {
-                    id: "PLAYER",
-                    name: "Player",
-                    icon: "🏃",
-                    desc: "Join tournaments & compete",
-                  },
-                  {
-                    id: "GROUND_OWNER",
-                    name: "Ground Owner",
-                    icon: "🏟️",
-                    desc: "List & manage sports grounds",
-                  },
-                ].map((r) => {
-                  const isSelected = selectedRole === r.id;
-                  return (
-                    <TouchableOpacity
-                      key={r.id}
-                      activeOpacity={0.8}
-                      onPress={() => setSelectedRole(r.id as any)}
-                      style={[
-                        styles.roleChip,
-                        isSelected && styles.roleChipActive,
-                      ]}
-                    >
-                      <Text style={styles.roleChipEmoji}>{r.icon}</Text>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={[
-                            styles.roleChipText,
-                            isSelected && styles.roleChipTextActive,
-                          ]}
-                        >
-                          {r.name}
-                        </Text>
-                        <Text style={styles.roleChipDesc}>{r.desc}</Text>
-                      </View>
-                      {isSelected && <View style={styles.roleCheckDot} />}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>
+                Enter your details and select your sports to join PlayVerse.
+              </Text>
             </View>
 
             <SizedBox height={20} />
 
-            <CTextInput
-              label="Full Name"
-              placeholder="Enter your full name"
-              value={fullName}
-              onChangeTextValue={setFullName}
-            />
+            {/* Profile Image Picker */}
+            <TouchableOpacity
+              style={[
+                styles.avatarContainer,
+                profileImage ? styles.avatarContainerActive : null,
+              ]}
+              activeOpacity={0.8}
+              onPress={handlePickImage}
+              disabled={isUploading}
+            >
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons
+                    name="person"
+                    size={32}
+                    color="#6C4DF6"
+                    style={styles.avatarPlaceholderIcon}
+                  />
+                  <Text style={styles.avatarPlaceholderText}>Add Photo</Text>
+                </View>
+              )}
 
-            <SizedBox height={16} />
+              {isUploading && (
+                <View style={styles.uploadSpinnerContainer}>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                </View>
+              )}
 
-            <CTextInput
-              label="Phone Number"
-              placeholder="Enter 10-digit mobile number"
-              value={phone}
-              onChangeTextValue={(text) =>
-                setPhone(text.replace(/[^0-9]/g, ""))
-              }
-              keyboardType="phone-pad"
-              maxLength={10}
-            />
+              <View style={styles.avatarBadge}>
+                <Ionicons name="camera" size={14} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
 
-            {/* Sports — only for Players */}
-            {!isGroundOwner && (
-              <>
-                <SizedBox height={20} />
-                <View style={styles.sportsSection}>
-                  <Text style={styles.sportsLabel}>Sports of Interest</Text>
-                  <View style={styles.chipsContainer}>
-                    {SPORTS_LIST.map((sport) => {
-                      const isSelected = selectedSports.includes(sport.id);
-                      return (
-                        <TouchableOpacity
-                          key={sport.id}
-                          activeOpacity={0.8}
-                          onPress={() => toggleSport(sport.id)}
-                          style={[styles.chip, isSelected && styles.chipActive]}
-                        >
-                          <Text style={styles.chipEmoji}>{sport.icon}</Text>
+            <SizedBox height={20} />
+
+            {/* Form */}
+            <View style={styles.form}>
+              {/* Role Selector — full width cards stacked vertically */}
+              <View style={styles.roleSection}>
+                <Text style={styles.roleLabel}>Register As</Text>
+                <View style={styles.roleContainer}>
+                  {[
+                    {
+                      id: "PLAYER",
+                      name: "Player",
+                      icon: "🏃",
+                      desc: "Join tournaments & compete",
+                    },
+                    {
+                      id: "GROUND_OWNER",
+                      name: "Ground Owner",
+                      icon: "🏟️",
+                      desc: "List & manage sports grounds",
+                    },
+                  ].map((r) => {
+                    const isSelected = selectedRole === r.id;
+                    return (
+                      <TouchableOpacity
+                        key={r.id}
+                        activeOpacity={0.8}
+                        onPress={() => setSelectedRole(r.id as any)}
+                        style={[
+                          styles.roleChip,
+                          isSelected && styles.roleChipActive,
+                        ]}
+                      >
+                        <Text style={styles.roleChipEmoji}>{r.icon}</Text>
+                        <View style={{ flex: 1 }}>
                           <Text
                             style={[
-                              styles.chipText,
-                              isSelected && styles.chipTextActive,
+                              styles.roleChipText,
+                              isSelected && styles.roleChipTextActive,
                             ]}
                           >
-                            {sport.name}
+                            {r.name}
                           </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                          <Text style={styles.roleChipDesc}>{r.desc}</Text>
+                        </View>
+                        {isSelected && <View style={styles.roleCheckDot} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <SizedBox height={20} />
+
+              <CTextInput
+                label="Full Name"
+                placeholder="Enter your full name"
+                value={fullName}
+                onChangeTextValue={setFullName}
+              />
+
+              <SizedBox height={16} />
+
+              <CTextInput
+                label="Phone Number"
+                placeholder="Enter 10-digit mobile number"
+                value={phone}
+                onChangeTextValue={(text) =>
+                  setPhone(text.replace(/[^0-9]/g, ""))
+                }
+                keyboardType="phone-pad"
+                maxLength={10}
+              />
+
+              {/* Sports — only for Players */}
+              {!isGroundOwner && (
+                <>
+                  <SizedBox height={20} />
+                  <View style={styles.sportsSection}>
+                    <Text style={styles.sportsLabel}>Sports of Interest</Text>
+                    <View style={styles.chipsContainer}>
+                      {SPORTS_LIST.map((sport) => {
+                        const isSelected = selectedSports.includes(sport.id);
+                        return (
+                          <TouchableOpacity
+                            key={sport.id}
+                            activeOpacity={0.8}
+                            onPress={() => toggleSport(sport.id)}
+                            style={[
+                              styles.chip,
+                              isSelected && styles.chipActive,
+                            ]}
+                          >
+                            <Text style={styles.chipEmoji}>{sport.icon}</Text>
+                            <Text
+                              style={[
+                                styles.chipText,
+                                isSelected && styles.chipTextActive,
+                              ]}
+                            >
+                              {sport.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
                   </View>
-                </View>
-              </>
-            )}
+                </>
+              )}
 
-            {/* Ground Owner info note */}
-            {isGroundOwner && (
-              <>
-                <SizedBox height={20} />
-                <View style={styles.infoNote}>
-                  <Text style={styles.infoNoteIcon}>ℹ️</Text>
-                  <Text style={styles.infoNoteText}>
-                    Additional details like Business Name, City, Contact Email
-                    and WhatsApp can be added in your Edit Profile after
-                    registration.
-                  </Text>
-                </View>
-              </>
-            )}
+              {/* Ground Owner info note */}
+              {isGroundOwner && (
+                <>
+                  <SizedBox height={20} />
+                  <View style={styles.infoNote}>
+                    <Text style={styles.infoNoteIcon}>ℹ️</Text>
+                    <Text style={styles.infoNoteText}>
+                      Additional details like Business Name, City, Contact Email
+                      and WhatsApp can be added in your Edit Profile after
+                      registration.
+                    </Text>
+                  </View>
+                </>
+              )}
 
-            <SizedBox height={30} />
+              <SizedBox height={30} />
 
-            <CButton
-              title={
-                isGroundOwner ? "Create Ground Owner" : "Register as Player"
-              }
-              onPress={handleRegister}
-              loading={isPending || localLoading}
-              disabled={isPending || localLoading}
-              swipeable={true}
-            />
-          </View>
+              <CButton
+                title={
+                  isGroundOwner ? "Create Ground Owner" : "Register as Player"
+                }
+                onPress={handleRegister}
+                loading={isPending || localLoading}
+                disabled={isPending || localLoading}
+                swipeable={true}
+              />
+            </View>
 
-          <SizedBox height={20} />
+            <SizedBox height={20} />
 
-          {/* Footer Link */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.footerLink}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+            {/* Footer Link */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "206341069906",
-    "project_id": "playverse-2c9e1",
-    "storage_bucket": "playverse-2c9e1.firebasestorage.app"
+    "project_number": "586971763131",
+    "project_id": "playverse-a4cc8",
+    "storage_bucket": "playverse-a4cc8.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:206341069906:android:37ae5efc12a00f8842138b",
+        "mobilesdk_app_id": "1:586971763131:android:a30b536eff35513fbaf49e",
         "android_client_info": {
           "package_name": "com.playverse"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCqiZTYky-5bA7rjRB7RBHBEmjKWHGMYTI"
+          "current_key": "AIzaSyDdKXWqmh6qAcr1ZpA_ZhvZilR1lrKkQtw"
         }
       ],
       "services": {

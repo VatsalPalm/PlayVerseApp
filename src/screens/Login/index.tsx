@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Modal } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, StatusBar, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -309,52 +309,57 @@ const LoginScreen = () => {
       <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
-          <SizedBox height={20} />
-          
-          {/* Top Logo */}
-          <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
-          
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Sign In</Text>
-            <Text style={styles.subtitle}>Welcome back! Enter your phone number to access your account.</Text>
-          </View>
-
-          <SizedBox height={30} />
-
-          {/* Form */}
-          <View style={styles.form}>
-            <CTextInput 
-              label="Phone Number" 
-              placeholder="Enter 10-digit number" 
-              value={phone}
-              onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
-              keyboardType="phone-pad"
-              autoCapitalize="none"
-              maxLength={10}
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
+            <SizedBox height={20} />
             
+            {/* Top Logo */}
+            <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
+            
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Sign In</Text>
+              <Text style={styles.subtitle}>Welcome back! Enter your phone number to access your account.</Text>
+            </View>
+
             <SizedBox height={30} />
 
-            <CButton
-              title="Sign In"
-              onPress={handleLogin}
-              loading={isPending || localLoading}
-              disabled={isPending || localLoading}
-              swipeable={true}
-            />
-          </View>
+            {/* Form */}
+            <View style={styles.form}>
+              <CTextInput 
+                label="Phone Number" 
+                placeholder="Enter 10-digit number" 
+                value={phone}
+                onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
+                keyboardType="phone-pad"
+                autoCapitalize="none"
+                maxLength={10}
+              />
+              
+              <SizedBox height={30} />
 
-          <SizedBox height={30} />
+              <CButton
+                title="Sign In"
+                onPress={handleLogin}
+                loading={isPending || localLoading}
+                disabled={isPending || localLoading}
+                swipeable={true}
+              />
+            </View>
 
-          {/* Footer Link */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>New to PlayVerse? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.footerLink}>Create Account</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+            <SizedBox height={30} />
+
+            {/* Footer Link */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>New to PlayVerse? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.footerLink}>Create Account</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

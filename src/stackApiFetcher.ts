@@ -1,9 +1,9 @@
 import type { StackApiContext } from "./stackApiContext";
-
-import { instance } from "./services/request";
+import { instance, getURL, env } from "./services/request";
+import { storage } from "./services/mmkv";
 import { AxiosRequestConfig } from "axios";
 
-const baseUrl = "https://peptide-web-app.onrender.com";
+const baseUrl = getURL(env).replace(/\/$/, "");
 
 export type ErrorWrapper<TError> =
   | TError
@@ -42,9 +42,15 @@ export async function stackApiFetch<
   TPathParams
 >): Promise<TData> {
   try {
+    const token = storage.getString("accessToken");
     const requestHeaders: any = {
       ...headers,
+      "X-Tunnel-Skip-AntiSpam": "true",
     };
+
+    if (token) {
+      requestHeaders["Authorization"] = `Bearer ${token}`;
+    }
 
     /**
      * As the fetch API is being used, when multipart/form-data is specified

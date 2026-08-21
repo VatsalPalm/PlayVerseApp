@@ -540,6 +540,100 @@ export const useUserControllerUpdateProfile = (
   });
 };
 
+export type DeviceControllerRegisterDeviceError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type DeviceControllerRegisterDeviceVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchDeviceControllerRegisterDevice = (
+  variables: DeviceControllerRegisterDeviceVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    DeviceControllerRegisterDeviceError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/v1/mobile/devices", method: "post", ...variables, signal });
+
+export const useDeviceControllerRegisterDevice = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      DeviceControllerRegisterDeviceError,
+      DeviceControllerRegisterDeviceVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    DeviceControllerRegisterDeviceError,
+    DeviceControllerRegisterDeviceVariables
+  >({
+    mutationFn: (variables: DeviceControllerRegisterDeviceVariables) =>
+      fetchDeviceControllerRegisterDevice(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type DeviceControllerUnregisterDevicePathParams = {
+  deviceId: string;
+};
+
+export type DeviceControllerUnregisterDeviceError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type DeviceControllerUnregisterDeviceVariables = {
+  pathParams: DeviceControllerUnregisterDevicePathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchDeviceControllerUnregisterDevice = (
+  variables: DeviceControllerUnregisterDeviceVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    DeviceControllerUnregisterDeviceError,
+    undefined,
+    {},
+    {},
+    DeviceControllerUnregisterDevicePathParams
+  >({
+    url: "/api/v1/mobile/devices/{deviceId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useDeviceControllerUnregisterDevice = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      DeviceControllerUnregisterDeviceError,
+      DeviceControllerUnregisterDeviceVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    DeviceControllerUnregisterDeviceError,
+    DeviceControllerUnregisterDeviceVariables
+  >({
+    mutationFn: (variables: DeviceControllerUnregisterDeviceVariables) =>
+      fetchDeviceControllerUnregisterDevice(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
 export type UploadControllerUploadFileError = Fetcher.ErrorWrapper<undefined>;
 
 export type UploadControllerUploadFileRequestBody = {
@@ -5144,6 +5238,449 @@ export const useTeamControllerGetTeamMembers = <TData = undefined,>(
   });
 };
 
+export type TeamControllerGetMyTeamsError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerGetMyTeamsVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerGetMyTeams = (
+  variables: TeamControllerGetMyTeamsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerGetMyTeamsError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/teams/v1/my-teams", method: "get", ...variables, signal });
+
+export function teamControllerGetMyTeamsQuery(
+  variables: TeamControllerGetMyTeamsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function teamControllerGetMyTeamsQuery(
+  variables: TeamControllerGetMyTeamsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function teamControllerGetMyTeamsQuery(
+  variables: TeamControllerGetMyTeamsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/teams/v1/my-teams",
+      operationId: "teamControllerGetMyTeams",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTeamControllerGetMyTeams(variables, signal),
+  };
+}
+
+export const useSuspenseTeamControllerGetMyTeams = <TData = undefined,>(
+  variables: TeamControllerGetMyTeamsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<undefined, TeamControllerGetMyTeamsError, TData>,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TeamControllerGetMyTeamsError,
+    TData
+  >({
+    ...teamControllerGetMyTeamsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTeamControllerGetMyTeams = <TData = undefined,>(
+  variables: TeamControllerGetMyTeamsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<undefined, TeamControllerGetMyTeamsError, TData>,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<undefined, TeamControllerGetMyTeamsError, TData>({
+    ...teamControllerGetMyTeamsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type TeamControllerGetTeamDetailsPathParams = {
+  id: number;
+};
+
+export type TeamControllerGetTeamDetailsError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerGetTeamDetailsVariables = {
+  pathParams: TeamControllerGetTeamDetailsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerGetTeamDetails = (
+  variables: TeamControllerGetTeamDetailsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerGetTeamDetailsError,
+    undefined,
+    {},
+    {},
+    TeamControllerGetTeamDetailsPathParams
+  >({ url: "/api/teams/v1/{id}", method: "get", ...variables, signal });
+
+export function teamControllerGetTeamDetailsQuery(
+  variables: TeamControllerGetTeamDetailsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function teamControllerGetTeamDetailsQuery(
+  variables: TeamControllerGetTeamDetailsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function teamControllerGetTeamDetailsQuery(
+  variables: TeamControllerGetTeamDetailsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/teams/v1/{id}",
+      operationId: "teamControllerGetTeamDetails",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTeamControllerGetTeamDetails(variables, signal),
+  };
+}
+
+export const useSuspenseTeamControllerGetTeamDetails = <TData = undefined,>(
+  variables: TeamControllerGetTeamDetailsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamDetailsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TeamControllerGetTeamDetailsError,
+    TData
+  >({
+    ...teamControllerGetTeamDetailsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTeamControllerGetTeamDetails = <TData = undefined,>(
+  variables: TeamControllerGetTeamDetailsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetTeamDetailsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TeamControllerGetTeamDetailsError,
+    TData
+  >({
+    ...teamControllerGetTeamDetailsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type TeamControllerJoinTeamPathParams = {
+  id: number;
+};
+
+export type TeamControllerJoinTeamError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerJoinTeamVariables = {
+  pathParams: TeamControllerJoinTeamPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerJoinTeam = (
+  variables: TeamControllerJoinTeamVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerJoinTeamError,
+    undefined,
+    {},
+    {},
+    TeamControllerJoinTeamPathParams
+  >({ url: "/api/teams/v1/{id}/join", method: "post", ...variables, signal });
+
+export const useTeamControllerJoinTeam = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerJoinTeamError,
+      TeamControllerJoinTeamVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerJoinTeamError,
+    TeamControllerJoinTeamVariables
+  >({
+    mutationFn: (variables: TeamControllerJoinTeamVariables) =>
+      fetchTeamControllerJoinTeam(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerLeaveTeamPathParams = {
+  id: number;
+};
+
+export type TeamControllerLeaveTeamError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerLeaveTeamVariables = {
+  pathParams: TeamControllerLeaveTeamPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerLeaveTeam = (
+  variables: TeamControllerLeaveTeamVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerLeaveTeamError,
+    undefined,
+    {},
+    {},
+    TeamControllerLeaveTeamPathParams
+  >({
+    url: "/api/teams/v1/{id}/members/me",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerLeaveTeam = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerLeaveTeamError,
+      TeamControllerLeaveTeamVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerLeaveTeamError,
+    TeamControllerLeaveTeamVariables
+  >({
+    mutationFn: (variables: TeamControllerLeaveTeamVariables) =>
+      fetchTeamControllerLeaveTeam(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerApproveMemberPathParams = {
+  id: number;
+  userId: number;
+};
+
+export type TeamControllerApproveMemberError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerApproveMemberVariables = {
+  pathParams: TeamControllerApproveMemberPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerApproveMember = (
+  variables: TeamControllerApproveMemberVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerApproveMemberError,
+    undefined,
+    {},
+    {},
+    TeamControllerApproveMemberPathParams
+  >({
+    url: "/api/teams/v1/{id}/members/{userId}/approve",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerApproveMember = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerApproveMemberError,
+      TeamControllerApproveMemberVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerApproveMemberError,
+    TeamControllerApproveMemberVariables
+  >({
+    mutationFn: (variables: TeamControllerApproveMemberVariables) =>
+      fetchTeamControllerApproveMember(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerRejectMemberPathParams = {
+  id: number;
+  userId: number;
+};
+
+export type TeamControllerRejectMemberError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerRejectMemberVariables = {
+  pathParams: TeamControllerRejectMemberPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerRejectMember = (
+  variables: TeamControllerRejectMemberVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerRejectMemberError,
+    undefined,
+    {},
+    {},
+    TeamControllerRejectMemberPathParams
+  >({
+    url: "/api/teams/v1/{id}/members/{userId}/reject",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerRejectMember = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerRejectMemberError,
+      TeamControllerRejectMemberVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerRejectMemberError,
+    TeamControllerRejectMemberVariables
+  >({
+    mutationFn: (variables: TeamControllerRejectMemberVariables) =>
+      fetchTeamControllerRejectMember(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerRemoveMemberPathParams = {
+  id: number;
+  userId: number;
+};
+
+export type TeamControllerRemoveMemberError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerRemoveMemberVariables = {
+  pathParams: TeamControllerRemoveMemberPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerRemoveMember = (
+  variables: TeamControllerRemoveMemberVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerRemoveMemberError,
+    undefined,
+    {},
+    {},
+    TeamControllerRemoveMemberPathParams
+  >({
+    url: "/api/teams/v1/{id}/members/{userId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerRemoveMember = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerRemoveMemberError,
+      TeamControllerRemoveMemberVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerRemoveMemberError,
+    TeamControllerRemoveMemberVariables
+  >({
+    mutationFn: (variables: TeamControllerRemoveMemberVariables) =>
+      fetchTeamControllerRemoveMember(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type CommunityControllerGetCommunityActivityError =
   Fetcher.ErrorWrapper<undefined>;
 
@@ -5683,6 +6220,189 @@ export const useTournamentControllerCreateTournament = (
         deepMerge(fetcherOptions, variables),
       ),
     ...options,
+  });
+};
+
+export type TournamentControllerCreateTeamForTournamentPathParams = {
+  /**
+   * Tournament ID
+   */
+  id: number;
+};
+
+export type TournamentControllerCreateTeamForTournamentError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerCreateTeamForTournamentVariables = {
+  pathParams: TournamentControllerCreateTeamForTournamentPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerCreateTeamForTournament = (
+  variables: TournamentControllerCreateTeamForTournamentVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerCreateTeamForTournamentError,
+    undefined,
+    {},
+    {},
+    TournamentControllerCreateTeamForTournamentPathParams
+  >({
+    url: "/api/tournament/v1/{id}/teams",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTournamentControllerCreateTeamForTournament = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TournamentControllerCreateTeamForTournamentError,
+      TournamentControllerCreateTeamForTournamentVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TournamentControllerCreateTeamForTournamentError,
+    TournamentControllerCreateTeamForTournamentVariables
+  >({
+    mutationFn: (
+      variables: TournamentControllerCreateTeamForTournamentVariables,
+    ) =>
+      fetchTournamentControllerCreateTeamForTournament(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type TournamentControllerGetTournamentTeamsPathParams = {
+  /**
+   * Tournament ID
+   */
+  id: number;
+};
+
+export type TournamentControllerGetTournamentTeamsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerGetTournamentTeamsVariables = {
+  pathParams: TournamentControllerGetTournamentTeamsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerGetTournamentTeams = (
+  variables: TournamentControllerGetTournamentTeamsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerGetTournamentTeamsError,
+    undefined,
+    {},
+    {},
+    TournamentControllerGetTournamentTeamsPathParams
+  >({
+    url: "/api/tournament/v1/{id}/teams",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function tournamentControllerGetTournamentTeamsQuery(
+  variables: TournamentControllerGetTournamentTeamsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function tournamentControllerGetTournamentTeamsQuery(
+  variables:
+    | TournamentControllerGetTournamentTeamsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function tournamentControllerGetTournamentTeamsQuery(
+  variables:
+    | TournamentControllerGetTournamentTeamsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/tournament/v1/{id}/teams",
+      operationId: "tournamentControllerGetTournamentTeams",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTournamentControllerGetTournamentTeams(variables, signal),
+  };
+}
+
+export const useSuspenseTournamentControllerGetTournamentTeams = <
+  TData = undefined,
+>(
+  variables: TournamentControllerGetTournamentTeamsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerGetTournamentTeamsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TournamentControllerGetTournamentTeamsError,
+    TData
+  >({
+    ...tournamentControllerGetTournamentTeamsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTournamentControllerGetTournamentTeams = <TData = undefined,>(
+  variables:
+    | TournamentControllerGetTournamentTeamsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerGetTournamentTeamsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TournamentControllerGetTournamentTeamsError,
+    TData
+  >({
+    ...tournamentControllerGetTournamentTeamsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
   });
 };
 
@@ -6257,6 +6977,57 @@ export const useTournamentControllerGetTournament = <TData = undefined,>(
     ),
     ...options,
     ...queryOptions,
+  });
+};
+
+export type TournamentControllerDeleteTournamentPathParams = {
+  /**
+   * Tournament ID
+   */
+  id: number;
+};
+
+export type TournamentControllerDeleteTournamentError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerDeleteTournamentVariables = {
+  pathParams: TournamentControllerDeleteTournamentPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerDeleteTournament = (
+  variables: TournamentControllerDeleteTournamentVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerDeleteTournamentError,
+    undefined,
+    {},
+    {},
+    TournamentControllerDeleteTournamentPathParams
+  >({ url: "/api/tournament/v1/{id}", method: "delete", ...variables, signal });
+
+export const useTournamentControllerDeleteTournament = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TournamentControllerDeleteTournamentError,
+      TournamentControllerDeleteTournamentVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TournamentControllerDeleteTournamentError,
+    TournamentControllerDeleteTournamentVariables
+  >({
+    mutationFn: (variables: TournamentControllerDeleteTournamentVariables) =>
+      fetchTournamentControllerDeleteTournament(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
   });
 };
 
@@ -7120,6 +7891,16 @@ export type QueryOperation =
       variables: TeamControllerGetTeamMembersVariables | reactQuery.SkipToken;
     }
   | {
+      path: "/api/teams/v1/my-teams";
+      operationId: "teamControllerGetMyTeams";
+      variables: TeamControllerGetMyTeamsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/teams/v1/{id}";
+      operationId: "teamControllerGetTeamDetails";
+      variables: TeamControllerGetTeamDetailsVariables | reactQuery.SkipToken;
+    }
+  | {
       path: "/api/community/v1/activity";
       operationId: "communityControllerGetCommunityActivity";
       variables:
@@ -7135,6 +7916,13 @@ export type QueryOperation =
       path: "/api/match/v1/{matchId}";
       operationId: "matchControllerGetMatchDetail";
       variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/tournament/v1/{id}/teams";
+      operationId: "tournamentControllerGetTournamentTeams";
+      variables:
+        | TournamentControllerGetTournamentTeamsVariables
+        | reactQuery.SkipToken;
     }
   | {
       path: "/api/tournament/v1";

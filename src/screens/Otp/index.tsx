@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -154,54 +154,59 @@ const OtpScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
-          <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
-          
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Verify OTP</Text>
-            <Text style={styles.subtitle}>
-              We have sent a verification code to:
-            </Text>
-            <Text style={styles.emailText}>{mobileNumber}</Text>
-          </View>
-
-          <SizedBox height={30} />
-
-          <View style={styles.form}>
-            <CTextInput 
-              label="OTP Code" 
-              placeholder="Enter code" 
-              value={otp}
-              onChangeTextValue={setOtp}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
+            <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
+            
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Verify OTP</Text>
+              <Text style={styles.subtitle}>
+                We have sent a verification code to:
+              </Text>
+              <Text style={styles.emailText}>{mobileNumber}</Text>
+            </View>
 
             <SizedBox height={30} />
 
-            <CButton
-              title="Verify OTP"
-              onPress={handleVerify}
-              loading={isPending}
-              disabled={isPending}
-            />
-          </View>
+            <View style={styles.form}>
+              <CTextInput 
+                label="OTP Code" 
+                placeholder="Enter code" 
+                value={otp}
+                onChangeTextValue={setOtp}
+                keyboardType="number-pad"
+                maxLength={6}
+              />
 
-          <SizedBox height={40} />
+              <SizedBox height={30} />
 
-          <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn't receive code? </Text>
-            <TouchableOpacity onPress={() => {
-              showMessage({
-                message: 'OTP Resent',
-                description: 'A new verification code was sent to your email.',
-                type: 'info',
-              });
-            }}>
-              <Text style={styles.resendLink}>Resend OTP</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+              <CButton
+                title="Verify OTP"
+                onPress={handleVerify}
+                loading={isPending}
+                disabled={isPending}
+              />
+            </View>
+
+            <SizedBox height={40} />
+
+            <View style={styles.resendContainer}>
+              <Text style={styles.resendText}>Didn't receive code? </Text>
+              <TouchableOpacity onPress={() => {
+                showMessage({
+                  message: 'OTP Resent',
+                  description: 'A new verification code was sent to your email.',
+                  type: 'info',
+                });
+              }}>
+                <Text style={styles.resendLink}>Resend OTP</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

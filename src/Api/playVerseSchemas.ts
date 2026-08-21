@@ -723,6 +723,36 @@ export type CreateTournamentDto = {
    * @example 60
    */
   matchDurationMinutes?: number;
+  /**
+   * Registration type (INDIVIDUAL or TEAM)
+   *
+   * @example TEAM
+   */
+  registrationType?: "INDIVIDUAL" | "TEAM";
+  /**
+   * Maximum size of a team
+   *
+   * @example 5
+   */
+  teamSize?: number;
+  /**
+   * Minimum players required per team
+   *
+   * @example 1
+   */
+  minPlayersRequired?: number;
+  /**
+   * Whether captain approval is required to join a team
+   *
+   * @example false
+   */
+  teamApprovalRequired?: boolean;
+  /**
+   * Initial team name to register
+   *
+   * @example Thunder Warriors
+   */
+  initialTeamName?: string;
 };
 
 export type RegisterTeamDto = {

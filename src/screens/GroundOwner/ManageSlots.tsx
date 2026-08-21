@@ -483,12 +483,11 @@ const ManageSlotsScreen = () => {
           animationType="slide"
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalOverlay}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              style={{ width: "100%" }}
-            >
-              <View style={styles.modalContent}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.modalOverlay}
+          >
+            <View style={[styles.modalContent, { width: '100%' }]}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>
                     {editingSlot ? "Edit Booking Slot" : "Add Booking Slot"}
@@ -617,10 +616,9 @@ const ManageSlotsScreen = () => {
                     disabled={isAdding || isUpdating}
                   />
                 </ScrollView>
-              </View>
-            </KeyboardAvoidingView>
-            <FlashMessage position="top" />
-          </View>
+            </View>
+          </KeyboardAvoidingView>
+          <FlashMessage position="top" />
         </Modal>
       </SafeAreaView>
 
