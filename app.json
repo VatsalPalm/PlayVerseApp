@@ -18,6 +18,11 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "googleMapsApiKey": "AIzaSyDY1UU7ewuL9EK2zemNvtzZoLx_9epbqIg"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow PlayVerse to use your location to find nearby matches.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow PlayVerse to use your location to find nearby matches.",
+        "NSLocationAlwaysUsageDescription": "Allow PlayVerse to use your location to find nearby matches."
       }
     },
     "android": {

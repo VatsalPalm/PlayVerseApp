@@ -649,3 +649,158 @@ export type CreateMatchDto = {
    */
   gamesToWin?: number;
 };
+
+export type CreateTournamentDto = {
+  /**
+   * ID of the sport (e.g. 5 for Pickleball)
+   *
+   * @example 5
+   */
+  sportId: number;
+  /**
+   * Name of the tournament
+   *
+   * @example PlayVerse Pickleball Open
+   */
+  name: string;
+  /**
+   * Format of the tournament
+   *
+   * @example KNOCKOUT
+   */
+  format: "KNOCKOUT" | "ROUND_ROBIN" | "GROUP_STAGE" | "GROUP_KNOCKOUT";
+  /**
+   * Start date of the tournament
+   *
+   * @example 2026-08-21T10:00:00.000Z
+   */
+  startDate?: string;
+  /**
+   * End date of the tournament
+   *
+   * @example 2026-08-28T18:00:00.000Z
+   */
+  endDate?: string;
+  /**
+   * Visibility of the tournament
+   *
+   * @example PUBLIC
+   */
+  visibility?: "PUBLIC" | "PRIVATE";
+  /**
+   * Maximum number of team participants allowed
+   *
+   * @example 16
+   */
+  maxTeams?: number;
+  /**
+   * Registration deadline datetime
+   *
+   * @example 2026-08-20T20:00:00.000Z
+   */
+  registrationDeadline?: string;
+  /**
+   * Points awarded for a win
+   *
+   * @example 3
+   */
+  pointsForWin?: number;
+  /**
+   * Points awarded for a draw
+   *
+   * @example 1
+   */
+  pointsForDraw?: number;
+  /**
+   * Points awarded for a loss
+   *
+   * @example 0
+   */
+  pointsForLoss?: number;
+  /**
+   * Estimated duration of a match in minutes
+   *
+   * @example 60
+   */
+  matchDurationMinutes?: number;
+};
+
+export type RegisterTeamDto = {
+  /**
+   * ID of the team registering
+   *
+   * @example 12
+   */
+  teamId: number;
+};
+
+export type SeedItem = {
+  /**
+   * Team ID
+   *
+   * @example 12
+   */
+  teamId: number;
+  /**
+   * Seed number (1-indexed)
+   *
+   * @example 1
+   */
+  seed: number;
+};
+
+export type ConfigureSeedingDto = {
+  /**
+   * List of team seeds mapping
+   */
+  seeds: SeedItem[];
+};
+
+export type GroupItem = {
+  /**
+   * Team ID
+   *
+   * @example 12
+   */
+  teamId: number;
+  /**
+   * Group Name (e.g. A, B, C)
+   *
+   * @example A
+   */
+  groupName: string;
+};
+
+export type ConfigureGroupsDto = {
+  /**
+   * List of team group mappings
+   */
+  groups: GroupItem[];
+};
+
+export type GenerateBracketsDto = {
+  /**
+   * Start date/time of the first match
+   *
+   * @example 2026-08-21T09:00:00.000Z
+   */
+  startDate: string;
+  /**
+   * Match duration in minutes
+   *
+   * @example 60
+   */
+  matchDurationMinutes?: number;
+  /**
+   * Ground ID where matches will be played
+   *
+   * @example 5
+   */
+  groundId: number;
+  /**
+   * Number of courts available at the ground
+   *
+   * @example 2
+   */
+  courtsAvailable?: number;
+};

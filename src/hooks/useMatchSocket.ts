@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { storage } from '../services/mmkv';
 import { getURL, env } from '../services/request';
+import { fetchMatchControllerGetMatchDetail } from '../Api/playVerseComponents';
 
 // Extract the base host URL without /api suffix for Socket.IO connection
 const getSocketURL = (): string => {
@@ -61,6 +62,37 @@ export const useMatchSocket = (matchId: number) => {
       return state;
     });
   }, []);
+
+  // Fetch initial match state via REST API on mount or matchId change
+  useEffect(() => {
+    let active = true;
+    const fetchInitialState = async () => {
+      try {
+        setSyncing(true);
+        const data = await fetchMatchControllerGetMatchDetail({
+          pathParams: { matchId },
+        });
+        if (active && data) {
+          setMatchState(data as unknown as MatchState);
+        }
+      } catch (err: any) {
+        console.error('Error fetching initial match state:', err);
+        if (active) {
+          setError(err.message || 'Failed to load initial match state');
+        }
+      } finally {
+        if (active) {
+          setSyncing(false);
+        }
+      }
+    };
+
+    fetchInitialState();
+
+    return () => {
+      active = false;
+    };
+  }, [matchId]);
 
   useEffect(() => {
     const socketUrl = getSocketURL();
@@ -160,10 +192,23 @@ export const useMatchSocket = (matchId: number) => {
   }, [matchId, isConnected]);
 
   // Manual refresh/sync trigger
-  const requestSync = useCallback(() => {
+  const requestSync = useCallback(async () => {
     if (!socketRef.current || !isConnected) return;
     setSyncing(true);
     socketRef.current.emit('join_match', { matchId });
+    try {
+      const data = await fetchMatchControllerGetMatchDetail({
+        pathParams: { matchId },
+      });
+      if (data) {
+        setMatchState(data as unknown as MatchState);
+      }
+    } catch (err: any) {
+      console.error('Error syncing match state:', err);
+      setError(err.message || 'Failed to sync match state');
+    } finally {
+      setSyncing(false);
+    }
   }, [matchId, isConnected]);
 
   return {

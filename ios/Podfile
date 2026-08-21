@@ -8,6 +8,7 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '0' if podfile_properties['newArchEnabled'] == 'fa
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] = podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
 
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
+
 install! 'cocoapods',
   :deterministic_uuids => false
 
@@ -15,6 +16,21 @@ prepare_react_native_project!
 
 target 'PlayVerse' do
   use_expo_modules!
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseCoreExtension', :modular_headers => true
+  pod 'FirebaseAppCheckInterop', :modular_headers => true
+  pod 'FirebaseInstallations', :modular_headers => true
+  pod 'FirebaseAuth', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'PromisesObjC', :modular_headers => true
+  pod 'RecaptchaInterop', :modular_headers => true
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app', :modular_headers => true
+  pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth', :modular_headers => true
+  pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging', :modular_headers => true
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];

@@ -2313,6 +2313,437 @@
         },
         "tags": ["Match Management (Phase 3)"]
       }
+    },
+    "/api/tournament/v1/create": {
+      "post": {
+        "operationId": "TournamentController_createTournament",
+        "summary": "Create a tournament",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTournamentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/register": {
+      "post": {
+        "operationId": "TournamentController_registerTeam",
+        "summary": "Register a team to the tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/approve-registration": {
+      "post": {
+        "operationId": "TournamentController_approveRegistration",
+        "summary": "Approve a team's registration",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/cancel-registration": {
+      "post": {
+        "operationId": "TournamentController_cancelRegistration",
+        "summary": "Cancel a team's registration",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/seeding": {
+      "post": {
+        "operationId": "TournamentController_updateSeeding",
+        "summary": "Set seed numbers for tournament teams",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureSeedingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/groups": {
+      "post": {
+        "operationId": "TournamentController_updateGroups",
+        "summary": "Assign teams to groups",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureGroupsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/generate-brackets": {
+      "post": {
+        "operationId": "TournamentController_generateBrackets",
+        "summary": "Generate brackets and scheduled matches for the tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateBracketsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}": {
+      "get": {
+        "operationId": "TournamentController_getTournament",
+        "summary": "Get tournament details",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/participants": {
+      "get": {
+        "operationId": "TournamentController_getParticipants",
+        "summary": "Get registered teams, status, and seed numbers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/fixtures": {
+      "get": {
+        "operationId": "TournamentController_getFixtures",
+        "summary": "Get generated match fixtures for the tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/conflicts": {
+      "get": {
+        "operationId": "TournamentController_detectConflicts",
+        "summary": "Scan fixtures for double-booking or team scheduling conflicts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/standings": {
+      "get": {
+        "operationId": "TournamentController_getStandings",
+        "summary": "Get tournament standings leaderboard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/analytics": {
+      "get": {
+        "operationId": "TournamentController_getAnalytics",
+        "summary": "Get tournament match analytics summary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/admin/complete-match/{matchId}": {
+      "post": {
+        "operationId": "TournamentController_adminCompleteMatch",
+        "summary": "Admin override to force complete a match, set winner, and progress bracket standings",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "description": "Match ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
     }
   },
   "info": {
@@ -3028,6 +3459,174 @@
           }
         },
         "required": ["sportId", "homePlayerIds", "awayPlayerIds", "matchType"]
+      },
+      "CreateTournamentDto": {
+        "type": "object",
+        "properties": {
+          "sportId": {
+            "type": "number",
+            "example": 5,
+            "description": "ID of the sport (e.g. 5 for Pickleball)"
+          },
+          "name": {
+            "type": "string",
+            "example": "PlayVerse Pickleball Open",
+            "description": "Name of the tournament"
+          },
+          "format": {
+            "type": "string",
+            "example": "KNOCKOUT",
+            "enum": [
+              "KNOCKOUT",
+              "ROUND_ROBIN",
+              "GROUP_STAGE",
+              "GROUP_KNOCKOUT"
+            ],
+            "description": "Format of the tournament"
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2026-08-21T10:00:00.000Z",
+            "description": "Start date of the tournament"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2026-08-28T18:00:00.000Z",
+            "description": "End date of the tournament"
+          },
+          "visibility": {
+            "type": "string",
+            "example": "PUBLIC",
+            "enum": ["PUBLIC", "PRIVATE"],
+            "description": "Visibility of the tournament"
+          },
+          "maxTeams": {
+            "type": "number",
+            "example": 16,
+            "description": "Maximum number of team participants allowed"
+          },
+          "registrationDeadline": {
+            "type": "string",
+            "example": "2026-08-20T20:00:00.000Z",
+            "description": "Registration deadline datetime"
+          },
+          "pointsForWin": {
+            "type": "number",
+            "example": 3,
+            "description": "Points awarded for a win"
+          },
+          "pointsForDraw": {
+            "type": "number",
+            "example": 1,
+            "description": "Points awarded for a draw"
+          },
+          "pointsForLoss": {
+            "type": "number",
+            "example": 0,
+            "description": "Points awarded for a loss"
+          },
+          "matchDurationMinutes": {
+            "type": "number",
+            "example": 60,
+            "description": "Estimated duration of a match in minutes"
+          }
+        },
+        "required": ["sportId", "name", "format"]
+      },
+      "RegisterTeamDto": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "number",
+            "example": 12,
+            "description": "ID of the team registering"
+          }
+        },
+        "required": ["teamId"]
+      },
+      "SeedItem": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "number",
+            "example": 12,
+            "description": "Team ID"
+          },
+          "seed": {
+            "type": "number",
+            "example": 1,
+            "description": "Seed number (1-indexed)"
+          }
+        },
+        "required": ["teamId", "seed"]
+      },
+      "ConfigureSeedingDto": {
+        "type": "object",
+        "properties": {
+          "seeds": {
+            "description": "List of team seeds mapping",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeedItem"
+            }
+          }
+        },
+        "required": ["seeds"]
+      },
+      "GroupItem": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "number",
+            "example": 12,
+            "description": "Team ID"
+          },
+          "groupName": {
+            "type": "string",
+            "example": "A",
+            "description": "Group Name (e.g. A, B, C)"
+          }
+        },
+        "required": ["teamId", "groupName"]
+      },
+      "ConfigureGroupsDto": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "description": "List of team group mappings",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupItem"
+            }
+          }
+        },
+        "required": ["groups"]
+      },
+      "GenerateBracketsDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "example": "2026-08-21T09:00:00.000Z",
+            "description": "Start date/time of the first match"
+          },
+          "matchDurationMinutes": {
+            "type": "number",
+            "example": 60,
+            "description": "Match duration in minutes"
+          },
+          "groundId": {
+            "type": "number",
+            "example": 5,
+            "description": "Ground ID where matches will be played"
+          },
+          "courtsAvailable": {
+            "type": "number",
+            "example": 2,
+            "description": "Number of courts available at the ground"
+          }
+        },
+        "required": ["startDate", "groundId"]
       }
     }
   }
