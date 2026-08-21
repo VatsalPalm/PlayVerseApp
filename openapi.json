@@ -2570,6 +2570,36 @@
         ]
       }
     },
+    "/api/tournament/v1": {
+      "get": {
+        "operationId": "TournamentController_listTournaments",
+        "summary": "Get all tournaments with pagination",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
     "/api/tournament/v1/{id}": {
       "get": {
         "operationId": "TournamentController_getTournament",

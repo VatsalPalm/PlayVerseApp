@@ -6028,6 +6028,124 @@ export const useTournamentControllerGenerateBrackets = (
   });
 };
 
+export type TournamentControllerListTournamentsQueryParams = {
+  limit?: number;
+  offset?: number;
+};
+
+export type TournamentControllerListTournamentsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerListTournamentsVariables = {
+  queryParams?: TournamentControllerListTournamentsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerListTournaments = (
+  variables: TournamentControllerListTournamentsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerListTournamentsError,
+    undefined,
+    {},
+    TournamentControllerListTournamentsQueryParams,
+    {}
+  >({ url: "/api/tournament/v1", method: "get", ...variables, signal });
+
+export function tournamentControllerListTournamentsQuery(
+  variables: TournamentControllerListTournamentsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function tournamentControllerListTournamentsQuery(
+  variables:
+    | TournamentControllerListTournamentsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function tournamentControllerListTournamentsQuery(
+  variables:
+    | TournamentControllerListTournamentsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/tournament/v1",
+      operationId: "tournamentControllerListTournaments",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTournamentControllerListTournaments(variables, signal),
+  };
+}
+
+export const useSuspenseTournamentControllerListTournaments = <
+  TData = undefined,
+>(
+  variables: TournamentControllerListTournamentsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerListTournamentsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TournamentControllerListTournamentsError,
+    TData
+  >({
+    ...tournamentControllerListTournamentsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTournamentControllerListTournaments = <TData = undefined,>(
+  variables:
+    | TournamentControllerListTournamentsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerListTournamentsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TournamentControllerListTournamentsError,
+    TData
+  >({
+    ...tournamentControllerListTournamentsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type TournamentControllerGetTournamentPathParams = {
   /**
    * Tournament ID
@@ -7017,6 +7135,13 @@ export type QueryOperation =
       path: "/api/match/v1/{matchId}";
       operationId: "matchControllerGetMatchDetail";
       variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/tournament/v1";
+      operationId: "tournamentControllerListTournaments";
+      variables:
+        | TournamentControllerListTournamentsVariables
+        | reactQuery.SkipToken;
     }
   | {
       path: "/api/tournament/v1/{id}";

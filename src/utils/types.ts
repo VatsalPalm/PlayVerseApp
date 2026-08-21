@@ -23,7 +23,10 @@ export type HomeStackParamList = {
     GroundDetails: { groundId: number; groundName: string };
     MatchHistory: undefined;
     CreateMatch: undefined;
-    LiveScoring: { matchId: number };
+    LiveScoring: { matchId: number; canScore?: boolean };
+    TournamentList: undefined;
+    TournamentDetails: { tournamentId: number };
+    CreateTournament: undefined;
 }
 
 export type RootStackParamList = {

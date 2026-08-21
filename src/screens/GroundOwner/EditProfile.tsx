@@ -26,6 +26,7 @@ import {
 import { ProfileImageDto } from "../../Api/playVerseSchemas";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { Ionicons } from "@expo/vector-icons";
 import { storage } from "../../services/mmkv";
 
@@ -47,6 +48,9 @@ const EditProfileScreen = () => {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [city, setCity] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
 
   // Profile photo states
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
@@ -63,6 +67,9 @@ const EditProfileScreen = () => {
         setDisplayName(profile.display_name || "");
         setBio(profile.bio || profile.playerProfile?.bio || "");
         setCity(profile.city || profile.playerProfile?.city || "");
+        setBusinessName(profile.business_name || "");
+        setContactEmail(profile.contact_email || "");
+        setWhatsappNumber(profile.whatsapp_number || "");
 
         if (profile.profile_image) {
           if (typeof profile.profile_image === "string") {
@@ -277,7 +284,10 @@ const EditProfileScreen = () => {
         bio: bio.trim() || undefined,
         city: trimmedCity || undefined,
         profile_image: uploadedImage || undefined,
-      },
+        business_name: businessName.trim() || undefined,
+        contact_email: contactEmail.trim() || undefined,
+        whatsapp_number: whatsappNumber.trim() || undefined,
+      } as any,
     });
   };
 
@@ -306,6 +316,8 @@ const EditProfileScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
@@ -347,13 +359,31 @@ const EditProfileScreen = () => {
           <SizedBox height={15} />
 
           {/* Form Fields */}
-          <CTextInput label="Full Name" value={displayName} onChangeTextValue={setDisplayName} placeholder="Enter your full name" />
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionCardTitle}>👤  Personal Info</Text>
+            <CTextInput label="Full Name" value={displayName} onChangeTextValue={setDisplayName} placeholder="Enter your full name" />
+            <SizedBox height={16} />
+            <CTextInput label="Bio" value={bio} onChangeTextValue={setBio} placeholder="Describe yourself briefly..." multiline numberOfLines={3} />
+          </View>
+
           <SizedBox height={16} />
 
-          <CTextInput label="Bio" value={bio} onChangeTextValue={setBio} placeholder="Describe yourself (e.g. Ground owner or administrator)" multiline numberOfLines={3} />
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionCardTitle}>🏟️  Business Details</Text>
+            <CTextInput label="Business / Ground Name" value={businessName} onChangeTextValue={setBusinessName} placeholder="e.g. City Sports Arena" />
+            <SizedBox height={16} />
+            <CTextInput label="City" value={city} onChangeTextValue={setCity} placeholder="e.g. Mumbai, Bengaluru" />
+          </View>
+
           <SizedBox height={16} />
 
-          <CTextInput label="City" value={city} onChangeTextValue={setCity} placeholder="e.g. Mumbai, Delhi" />
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionCardTitle}>📞  Contact Info</Text>
+            <CTextInput label="Contact Email" value={contactEmail} onChangeTextValue={setContactEmail} placeholder="business@email.com" keyboardType="email-address" autoCapitalize="none" />
+            <SizedBox height={16} />
+            <CTextInput label="WhatsApp Number" value={whatsappNumber} onChangeTextValue={(t) => setWhatsappNumber(t.replace(/[^0-9+]/g, ''))} placeholder="e.g. +919876543210" keyboardType="phone-pad" />
+          </View>
+
           <SizedBox height={30} />
 
           <CButton title="Save Changes" onPress={handleSaveChanges} loading={isUpdating} disabled={isUpdating || isUploading} />
@@ -401,6 +431,22 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 15,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  sectionCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.07)",
+    borderRadius: 18,
+    padding: 18,
+  },
+  sectionCardTitle: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 16,
+    opacity: 0.8,
   },
   avatarSection: {
     alignItems: "center",

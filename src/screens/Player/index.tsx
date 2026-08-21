@@ -25,7 +25,11 @@ import { RootStackParamList, HomeStackParamList } from "../../utils/types";
 import { storage } from "../../services/mmkv";
 import { showMessage } from "react-native-flash-message";
 import SizedBox from "../../Components/atoms/SizeBox";
-import { useBookingControllerGetMyBookings } from "../../Api/playVerseComponents";
+import { 
+  useBookingControllerGetMyBookings,
+  fetchTournamentControllerListTournaments,
+  fetchTournamentControllerGetParticipants
+} from "../../Api/playVerseComponents";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -77,22 +81,67 @@ const PlayerHomeScreen = () => {
     }, [refetchBookings]),
   );
 
-  // Load user name from stored profile
-  useEffect(() => {
+  const [myTournaments, setMyTournaments] = useState<any[]>([]);
+  const [tournamentsLoading, setTournamentsLoading] = useState(false);
+
+  const loadPlayerTournaments = async (pId: number) => {
     try {
-      const stored = storage.getString("userProfile");
-      if (stored) {
-        const userObj = JSON.parse(stored);
-        if (userObj?.display_name) {
-          setUserName(userObj.display_name);
-        } else if (userObj?.full_name) {
-          setUserName(userObj.full_name);
+      setTournamentsLoading(true);
+      const res = await fetchTournamentControllerListTournaments({
+        queryParams: {
+          limit: 30,
+          offset: 0,
+        },
+      }) as any;
+
+      const listArray = res?.data || [];
+      const matched: any[] = [];
+      
+      const promises = listArray.slice(0, 8).map(async (t: any) => {
+        try {
+          const parts = (await fetchTournamentControllerGetParticipants({
+            pathParams: { id: t.id }
+          }).catch(() => null)) as any;
+          
+          const isParticipant = parts?.some((p: any) => p.captain_id === pId);
+          if (isParticipant || t.organizer_id === pId) {
+            matched.push(t);
+          }
+        } catch {
+          // Ignore
         }
-      }
+      });
+
+      await Promise.all(promises);
+      setMyTournaments(matched);
     } catch (e) {
-      console.log("Failed to parse user profile:", e);
+      console.log('Failed to load player tournaments:', e);
+    } finally {
+      setTournamentsLoading(false);
     }
-  }, []);
+  };
+
+  // Load user name from stored profile
+  useFocusEffect(
+    useCallback(() => {
+      try {
+        const stored = storage.getString("userProfile");
+        if (stored) {
+          const userObj = JSON.parse(stored);
+          if (userObj?.display_name) {
+            setUserName(userObj.display_name);
+          } else if (userObj?.full_name) {
+            setUserName(userObj.full_name);
+          }
+          if (userObj?.id) {
+            loadPlayerTournaments(userObj.id);
+          }
+        }
+      } catch (e) {
+        console.log("Failed to parse user profile:", e);
+      }
+    }, [])
+  );
 
   // Shared values for background orbs
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
@@ -309,7 +358,7 @@ const PlayerHomeScreen = () => {
               {[
                 { title: "Live Scoring", icon: "⚡" },
                 { title: "Book Ground", icon: "🏟️" },
-                { title: "My Teams", icon: "👥" },
+                { title: "Tournaments", icon: "🏆" },
                 { title: "AI Insights", icon: "🧠" },
               ].map((action, index) => (
                 <TouchableOpacity
@@ -321,6 +370,8 @@ const PlayerHomeScreen = () => {
                       navigation.navigate("GroundsList");
                     } else if (action.title === "Live Scoring") {
                       navigation.navigate("MatchHistory");
+                    } else if (action.title === "Tournaments") {
+                      navigation.navigate("TournamentList");
                     } else {
                       showMessage({
                         message: `${action.title} coming soon!`,
@@ -334,6 +385,68 @@ const PlayerHomeScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+
+          {/* My Tournaments */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>My Tournaments</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate("TournamentList")}
+              >
+                <Text
+                  style={{ color: "#6C4DF6", fontSize: 13, fontWeight: "600" }}
+                >
+                  View All
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {tournamentsLoading ? (
+              <ActivityIndicator size="small" color="#6C4DF6" style={{ marginVertical: 20 }} />
+            ) : myTournaments.length === 0 ? (
+              <View style={styles.emptyBookingsBox}>
+                <Text style={styles.emptyBookingsText}>
+                  You haven't registered in any tournaments yet.
+                </Text>
+              </View>
+            ) : (
+              myTournaments.map((item) => {
+                const isLive = item.status === 'ONGOING';
+                const isUpcoming = item.status === 'UPCOMING';
+                const statusColorVal = isLive ? '#22c55e' : isUpcoming ? '#00D2FF' : '#9CA3AF';
+                
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.bookingItem}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate('TournamentDetails', { tournamentId: item.id })}
+                  >
+                    <View style={styles.bookingLeft}>
+                      <Text style={styles.bookingGround} numberOfLines={1}>{item.name}</Text>
+                      <Text style={styles.bookingDate}>
+                        Sport: {item.sport_name || 'Pickleball'} • Format: {item.format}
+                      </Text>
+                      <Text style={[styles.bookingDate, { fontSize: 10, opacity: 0.8 }]}>
+                        Starts: {item.start_date ? new Date(item.start_date).toLocaleDateString() : 'TBD'}
+                      </Text>
+                    </View>
+                    
+                    <View style={[styles.statusBadge, { 
+                      borderColor: statusColorVal + '40', 
+                      backgroundColor: statusColorVal + '12',
+                      borderWidth: 1,
+                    }]}>
+                      <Text style={{ color: statusColorVal, fontSize: 9, fontWeight: '900' }}>
+                        {item.status}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
 
           {/* Recent Bookings */}
@@ -436,9 +549,9 @@ const styles = StyleSheet.create({
   floatingOrb: {
     position: "absolute",
     borderRadius: 9999,
-    width: 250,
-    height: 250,
-    opacity: 0.15,
+    width: 280,
+    height: 280,
+    opacity: 0.12,
   },
   orb1: {
     backgroundColor: "#6C4DF6",

@@ -18,6 +18,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { showMessage } from "react-native-flash-message";
 import {
   useGroundControllerGetAvailability,
@@ -697,6 +698,8 @@ const BookGroundScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bg)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#00E676" orb2Color="#6C4DF6" />
 
       <SafeAreaView style={{ flex: 1 }}>{renderContent()}</SafeAreaView>
     </View>

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { showMessage } from 'react-native-flash-message';
 import {
   useBookingControllerGetMyBookings,
@@ -239,6 +240,8 @@ const MyBookingsScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bg)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}

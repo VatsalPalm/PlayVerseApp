@@ -39,6 +39,7 @@ export interface MatchState {
   servingTeamId?: number | null;
   serverSide?: 'LEFT' | 'RIGHT'; // service court side
   version: number; // match version/sequence for concurrency
+  tournamentId?: number | null;
 }
 
 export const useMatchSocket = (matchId: number) => {
@@ -51,17 +52,50 @@ export const useMatchSocket = (matchId: number) => {
   // Keep track of event sequence numbers to prevent duplicate and out-of-order execution
   const sequenceNumberRef = useRef(1);
 
+  // Helper to convert backend nested response { match, players, periods, events } to a flat MatchState
+  const flattenMatchState = useCallback((data: any): MatchState | null => {
+    if (!data || !data.match) return null;
+    return {
+      id: data.match.id,
+      sport_id: data.match.sport_id,
+      status: data.match.status,
+      home_team_id: data.match.home_team_id,
+      away_team_id: data.match.away_team_id,
+      scheduled_at: data.match.scheduled_at,
+      started_at: data.match.started_at,
+      ended_at: data.match.ended_at,
+      winner_team_id: data.match.winner_team_id,
+      pointsPerGame: data.match.points_per_game ?? 11,
+      winByTwo: data.match.win_by_two === 1 || data.match.win_by_two === true,
+      gamesToWin: data.match.games_to_win ?? 2,
+      matchType: data.match.match_type || 'SINGLES',
+      homePlayers: data.players?.filter((p: any) => p.team_id === data.match.home_team_id) || [],
+      awayPlayers: data.players?.filter((p: any) => p.team_id === data.match.away_team_id) || [],
+      periods: data.periods || [],
+      events: data.events || [],
+      activeServerId: data.match.active_server_id,
+      serverNumber: data.match.server_number,
+      servingTeamId: data.match.serving_team_id,
+      serverSide: data.match.server_side,
+      version: data.match.version ?? 1,
+      tournamentId: data.match.tournament_id,
+    };
+  }, []);
+
   const syncState = useCallback((state: any) => {
     if (!state) return;
+    const flatState = flattenMatchState(state);
+    if (!flatState) return;
+
     setMatchState((prev) => {
       // If we receive an older version, ignore it (prevent out-of-order events)
-      if (prev && state.version !== undefined && state.version < prev.version) {
-        console.log(`Ignored stale match state version: ${state.version} vs current: ${prev.version}`);
+      if (prev && flatState.version !== undefined && flatState.version < prev.version) {
+        console.log(`Ignored stale match state version: ${flatState.version} vs current: ${prev.version}`);
         return prev;
       }
-      return state;
+      return flatState;
     });
-  }, []);
+  }, [flattenMatchState]);
 
   // Fetch initial match state via REST API on mount or matchId change
   useEffect(() => {
@@ -73,7 +107,10 @@ export const useMatchSocket = (matchId: number) => {
           pathParams: { matchId },
         });
         if (active && data) {
-          setMatchState(data as unknown as MatchState);
+          const flat = flattenMatchState(data);
+          if (flat) {
+            setMatchState(flat);
+          }
         }
       } catch (err: any) {
         console.error('Error fetching initial match state:', err);
@@ -92,7 +129,7 @@ export const useMatchSocket = (matchId: number) => {
     return () => {
       active = false;
     };
-  }, [matchId]);
+  }, [matchId, flattenMatchState]);
 
   useEffect(() => {
     const socketUrl = getSocketURL();
@@ -142,10 +179,11 @@ export const useMatchSocket = (matchId: number) => {
     });
 
     // Handle error events from socket gateway
-    socket.on('error', (errMsg: string) => {
+    socket.on('error', (errData: any) => {
+      const errMsg = typeof errData === 'string' ? errData : errData.message || 'Unknown socket error';
       setError(errMsg);
       setSyncing(false);
-      console.error('Socket error event:', errMsg);
+      console.error('Socket error event:', errData);
     });
 
     return () => {
@@ -154,7 +192,7 @@ export const useMatchSocket = (matchId: number) => {
     };
   }, [matchId, syncState]);
 
-  // Authoritative Scoring event emission
+  // Authoritative Scoring event emission (record_rally)
   const scorePoint = useCallback((teamId: number, playerId?: number, eventType: string = 'POINT') => {
     if (!socketRef.current || !isConnected) {
       setError('Cannot score: connection offline');
@@ -162,24 +200,20 @@ export const useMatchSocket = (matchId: number) => {
     }
 
     setSyncing(true);
-    const eventSeq = sequenceNumberRef.current++;
     const currentVersion = matchState?.version ?? 0;
 
     const payload = {
       matchId,
-      teamId,
-      playerId: playerId || null,
-      eventType,
-      points: 1,
-      sequenceNumber: eventSeq,
-      matchVersion: currentVersion,
+      winnerTeamId: teamId,
+      scoredByPlayerUserId: playerId || null,
+      clientVersion: currentVersion,
     };
 
-    console.log('Emitting scoring event:', payload);
-    socketRef.current.emit('score_event', payload);
+    console.log('Emitting record_rally event:', payload);
+    socketRef.current.emit('record_rally', payload);
   }, [matchId, isConnected, matchState]);
 
-  // Score correction/undo last action
+  // Score correction/undo last action (undo_rally)
   const undoLastAction = useCallback(() => {
     if (!socketRef.current || !isConnected) {
       setError('Cannot undo: connection offline');
@@ -187,9 +221,14 @@ export const useMatchSocket = (matchId: number) => {
     }
 
     setSyncing(true);
-    console.log('Emitting undo event for match:', matchId);
-    socketRef.current.emit('undo_event', { matchId });
-  }, [matchId, isConnected]);
+    const currentVersion = matchState?.version ?? 0;
+    const payload = {
+      matchId,
+      clientVersion: currentVersion,
+    };
+    console.log('Emitting undo_rally event for match:', payload);
+    socketRef.current.emit('undo_rally', payload);
+  }, [matchId, isConnected, matchState]);
 
   // Manual refresh/sync trigger
   const requestSync = useCallback(async () => {
@@ -201,7 +240,10 @@ export const useMatchSocket = (matchId: number) => {
         pathParams: { matchId },
       });
       if (data) {
-        setMatchState(data as unknown as MatchState);
+        const flat = flattenMatchState(data);
+        if (flat) {
+          setMatchState(flat);
+        }
       }
     } catch (err: any) {
       console.error('Error syncing match state:', err);
@@ -209,7 +251,7 @@ export const useMatchSocket = (matchId: number) => {
     } finally {
       setSyncing(false);
     }
-  }, [matchId, isConnected]);
+  }, [matchId, isConnected, flattenMatchState]);
 
   return {
     isConnected,
@@ -222,3 +264,4 @@ export const useMatchSocket = (matchId: number) => {
     clearError: () => setError(null),
   };
 };
+

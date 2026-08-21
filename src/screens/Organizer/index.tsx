@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ScrollView, StatusBar, ActivityIndicator } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -9,33 +9,87 @@ import Animated, {
   withSequence,
   Easing
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../utils/types';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
+import { fetchTournamentControllerListTournaments } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const OrganizerHomeScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [userName, setUserName] = useState('Organizer');
+const SPORT_COLORS: Record<string, string> = {
+  Cricket: '#FF7A00',
+  Football: '#00E676',
+  Pickleball: '#00D2FF',
+  Badminton: '#A855F7',
+};
 
-  useEffect(() => {
+const SPORT_BG: Record<string, string> = {
+  Cricket: 'rgba(255, 122, 0, 0.12)',
+  Football: 'rgba(0, 230, 118, 0.12)',
+  Pickleball: 'rgba(0, 210, 255, 0.12)',
+  Badminton: 'rgba(168, 85, 247, 0.12)',
+};
+
+const statusColors: Record<string, string> = {
+  DRAFT: '#9CA3AF',
+  UPCOMING: '#00D2FF',
+  ONGOING: '#00E676',
+  COMPLETED: '#A855F7',
+  CANCELLED: '#EF4444',
+};
+
+const OrganizerHomeScreen = () => {
+  const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const [userName, setUserName] = useState('Organizer');
+  const [myTournaments, setMyTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const loadData = async (orgId: number) => {
     try {
-      const stored = storage.getString('userProfile');
-      if (stored) {
-        const userObj = JSON.parse(stored);
-        if (userObj?.display_name) {
-          setUserName(userObj.display_name);
-        }
-      }
+      setLoading(true);
+      const res = await fetchTournamentControllerListTournaments({
+        queryParams: {
+          limit: 50,
+          offset: 0,
+        },
+      }) as any;
+
+      const listArray = res?.data || [];
+      const filtered = listArray.filter((t: any) => t.organizer_id === orgId);
+      setMyTournaments(filtered);
     } catch (e) {
-      console.log('Failed to parse user profile:', e);
+      console.log('Failed to load organizer tournaments:', e);
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      try {
+        const stored = storage.getString('userProfile');
+        if (stored) {
+          const userObj = JSON.parse(stored);
+          if (userObj?.display_name) {
+            setUserName(userObj.display_name);
+          }
+          if (userObj?.id) {
+            setUserId(userObj.id);
+            loadData(userObj.id);
+          }
+        }
+      } catch (e) {
+        console.log('Failed to parse user profile:', e);
+      }
+    }, [])
+  );
 
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.1);
   const orb1Y = useSharedValue(SCREEN_HEIGHT * 0.6);
@@ -106,17 +160,19 @@ const OrganizerHomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
           
           {/* Metrics */}
           <View style={styles.metricsContainer}>
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>Tournaments</Text>
-              <Text style={styles.metricValue}>2 Active</Text>
+              <Text style={styles.metricValue}>{loading ? '...' : `${myTournaments.length} Active`}</Text>
             </View>
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>Total Teams</Text>
-              <Text style={styles.metricValue}>24 Registered</Text>
+              <Text style={styles.metricValue}>
+                {loading ? '...' : `${myTournaments.reduce((acc, t) => acc + (t.max_teams || 16), 0)} Registered`}
+              </Text>
             </View>
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>Today's Matches</Text>
@@ -130,49 +186,100 @@ const OrganizerHomeScreen = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>My Tournaments</Text>
             
-            <View style={styles.tournamentCard}>
-              <View style={styles.tournamentHeader}>
-                <Text style={styles.tournamentName}>Summer Cricket Championship</Text>
-                <View style={styles.liveTag}>
-                  <Text style={styles.liveText}>LIVE</Text>
-                </View>
+            {loading ? (
+              <ActivityIndicator size="small" color="#6C4DF6" style={{ marginVertical: 20 }} />
+            ) : myTournaments.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyText}>You haven't created any tournaments yet.</Text>
+                <SizedBox height={12} />
+                <TouchableOpacity 
+                  style={styles.emptyCreateBtn} 
+                  onPress={() => navigation.navigate('CreateTournament')}
+                >
+                  <Text style={styles.emptyCreateBtnText}>Create Your First Tournament</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.tournamentDetails}>16 Teams • Ground: Green Field Arena</Text>
-              <View style={styles.progressContainer}>
-                <View style={styles.progressBar} />
-                <Text style={styles.progressText}>Stage: Semi-Finals</Text>
-              </View>
-            </View>
+            ) : (
+              myTournaments.map((item) => {
+                const sportName = item.sport_name || 'Pickleball';
+                const statusColorVal = statusColors[item.status] || '#FFF';
+                const sportColor = SPORT_COLORS[sportName] || '#6C4DF6';
+                const sportBg = SPORT_BG[sportName] || 'rgba(108, 77, 246, 0.1)';
 
-            <View style={styles.tournamentCard}>
-              <View style={styles.tournamentHeader}>
-                <Text style={styles.tournamentName}>Pickleball Doubles Open</Text>
-                <View style={[styles.liveTag, styles.upcomingTag]}>
-                  <Text style={styles.upcomingText}>UPCOMING</Text>
-                </View>
-              </View>
-              <Text style={styles.tournamentDetails}>8 Teams • Ground: Smash Pickle Club</Text>
-              <View style={styles.progressContainer}>
-                <Text style={styles.progressText}>Starts: August 5, 2026</Text>
-              </View>
-            </View>
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.tournamentCard}
+                    activeOpacity={0.85}
+                    onPress={() => navigation.navigate('TournamentDetails', { tournamentId: item.id })}
+                  >
+                    <View style={styles.cardGlassHighlight} />
+                    
+                    <View style={styles.tournamentHeader}>
+                      <View style={[styles.sportBadge, { backgroundColor: sportBg }]}>
+                        <Text style={[styles.sportBadgeText, { color: sportColor }]}>
+                          {sportName.toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={[styles.statusTag, { 
+                        borderColor: statusColorVal + '40', 
+                        backgroundColor: statusColorVal + '12',
+                        borderWidth: 1, 
+                      }]}>
+                        <Text style={{ color: statusColorVal, fontSize: 9, fontWeight: '900' }}>
+                          {item.status}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <SizedBox height={12} />
+                    <Text style={styles.tournamentName} numberOfLines={1}>{item.name}</Text>
+                    
+                    <SizedBox height={14} />
+                    <View style={styles.cardFooter}>
+                      <View style={styles.dateBox}>
+                        <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
+                        <Text style={styles.footerVal}>
+                          {item.start_date ? new Date(item.start_date).toLocaleDateString() : 'TBD'}
+                        </Text>
+                      </View>
+                      <View style={styles.teamBox}>
+                        <Ionicons name="people-outline" size={14} color="#9CA3AF" />
+                        <Text style={styles.footerVal}>
+                          {item.max_teams || 16} slots
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
 
           {/* Actions */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Organizer Actions</Text>
             <View style={styles.quickActionsGrid}>
-              <TouchableOpacity style={styles.actionCard}>
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('CreateTournament')}
+              >
                 <Text style={styles.actionIcon}>🏆</Text>
                 <Text style={styles.actionTitle}>New Tournament</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionCard}>
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('TournamentList')}
+              >
                 <Text style={styles.actionIcon}>📅</Text>
-                <Text style={styles.actionTitle}>Add Match</Text>
+                <Text style={styles.actionTitle}>View All</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionCard}>
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => navigation.navigate('MatchHistory')}
+              >
                 <Text style={styles.actionIcon}>👥</Text>
-                <Text style={styles.actionTitle}>Manage Teams</Text>
+                <Text style={styles.actionTitle}>Match History</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -197,8 +304,8 @@ const styles = StyleSheet.create({
   floatingOrb: {
     position: 'absolute',
     borderRadius: 9999,
-    width: 220,
-    height: 220,
+    width: 280,
+    height: 280,
     opacity: 0.12,
   },
   orb1: {
@@ -284,12 +391,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tournamentCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 16,
-    padding: 16,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 20,
+    padding: 18,
     marginBottom: 12,
+    overflow: 'hidden',
+  },
+  cardGlassHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   tournamentHeader: {
     flexDirection: 'row',
@@ -302,6 +418,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     flex: 1,
+  },
+  statusTag: {
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  sportBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  sportBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  dateBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  teamBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  footerVal: {
+    color: '#9CA3AF',
+    fontSize: 12,
   },
   liveTag: {
     backgroundColor: 'rgba(255, 62, 62, 0.12)',
@@ -368,5 +521,32 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  emptyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 18,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 12,
+  },
+  emptyText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyCreateBtn: {
+    backgroundColor: '#6C4DF6',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  emptyCreateBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

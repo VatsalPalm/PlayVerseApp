@@ -18,6 +18,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { showMessage } from "react-native-flash-message";
 import {
   useMatchControllerCreateMatch,
@@ -349,6 +350,8 @@ const CreateMatchScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bg)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#A855F7" />
 
       {/* Header */}
       <View style={styles.header}>

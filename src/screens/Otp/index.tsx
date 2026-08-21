@@ -14,6 +14,7 @@ import { useAuthControllerVerifyOtp } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -143,6 +144,8 @@ const OtpScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>

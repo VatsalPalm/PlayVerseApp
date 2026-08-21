@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { storage } from '../../services/mmkv';
 import {
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { showMessage } from 'react-native-flash-message';
 import { useMatchSocket } from '../../hooks/useMatchSocket';
 import SizedBox from '../../Components/atoms/SizeBox';
@@ -26,6 +28,23 @@ const LiveScoringScreen = () => {
   const insets = useSafeAreaInsets();
   
   const { matchId } = (route.params || {}) as { matchId: number };
+
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = storage.getString('userProfile');
+      if (stored) {
+        const userObj = JSON.parse(stored);
+        setUserId(userObj.id);
+      }
+      const role = storage.getString('userRole');
+      setUserRole(role || 'PLAYER');
+    } catch (e) {
+      console.log('Error parsing profile:', e);
+    }
+  }, []);
 
   if (!matchId) {
     showMessage({ message: 'Invalid Match ID', type: 'danger' });
@@ -59,6 +78,22 @@ const LiveScoringScreen = () => {
   // Extract variables
   const match = matchState;
   const isCompleted = match?.status === 'COMPLETED';
+
+  // Determine if the user is authorized to perform scoring inputs
+  const isAllowedToScore = (() => {
+    if (route.params?.canScore !== undefined) {
+      return route.params.canScore;
+    }
+    if (match?.tournamentId) {
+      return userRole === 'TOURNAMENT_ORGANIZER' || userRole === 'PLAYER';
+    }
+    if (match) {
+      const isPlayer = match.homePlayers?.some((p: any) => p.user_id === userId) || 
+                       match.awayPlayers?.some((p: any) => p.user_id === userId);
+      return isPlayer || userRole === 'TOURNAMENT_ORGANIZER' || userRole === 'ADMIN' || userRole === 'PLAYER';
+    }
+    return false;
+  })();
 
   // Get player names
   const homePlayerNames = match?.homePlayers?.map((p: any) => p.display_name || p.name || `Player ${p.id}`) || [];
@@ -111,6 +146,8 @@ const LiveScoringScreen = () => {
         </Svg>
       </View>
 
+      <FloatingOrbs orb1Color="#FF6B35" orb2Color="#6C4DF6" />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -150,7 +187,7 @@ const LiveScoringScreen = () => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
             
             {/* Set Games Score Header */}
             <View style={styles.gamesWinsCard}>
@@ -257,51 +294,96 @@ const LiveScoringScreen = () => {
             <SizedBox height={10} />
 
             {/* ACTION CONTROLS */}
-            <View style={styles.controlsCard}>
-              <Text style={styles.controlsHeader}>Score Management</Text>
-              
-              <View style={styles.controlsRow}>
-                <TouchableOpacity
-                  style={[styles.controlBtn, styles.homePointBtn]}
-                  onPress={() => scorePoint(match.home_team_id!, undefined, 'POINT')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.controlBtnIcon}>➕</Text>
-                  <Text style={styles.controlBtnText}>Home Point</Text>
-                </TouchableOpacity>
+            {isAllowedToScore ? (
+              <View style={styles.controlsCard}>
+                <Text style={styles.controlsHeader}>Score Management</Text>
+                
+                <View style={styles.controlsRow}>
+                  <TouchableOpacity
+                    style={[styles.controlBtn, styles.homePointBtn]}
+                    onPress={() => scorePoint(match.home_team_id!, undefined, 'POINT')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.controlBtnIcon}>➕</Text>
+                    <Text style={styles.controlBtnText}>Home Point</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.controlBtn, styles.awayPointBtn]}
-                  onPress={() => scorePoint(match.away_team_id!, undefined, 'POINT')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.controlBtnIcon}>➕</Text>
-                  <Text style={styles.controlBtnText}>Away Point</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.controlBtn, styles.awayPointBtn]}
+                    onPress={() => scorePoint(match.away_team_id!, undefined, 'POINT')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.controlBtnIcon}>➕</Text>
+                    <Text style={styles.controlBtnText}>Away Point</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <SizedBox height={12} />
+
+                <View style={styles.controlsRow}>
+                  <TouchableOpacity
+                    style={[styles.controlBtn, styles.faultBtn]}
+                    onPress={() => scorePoint(match.servingTeamId!, undefined, 'FAULT')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.controlBtnIcon}>❌</Text>
+                    <Text style={styles.controlBtnText}>Fault / Sideout</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.controlBtn, styles.undoBtn]}
+                    onPress={undoLastAction}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.controlBtnIcon}>↩️</Text>
+                    <Text style={styles.controlBtnText}>Undo Last</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
+            ) : (
+              <View style={styles.spectatorCard}>
+                <View style={styles.spectatorHeaderRow}>
+                  <View style={styles.spectatorLiveBadge}>
+                    <View style={styles.spectatorPulseDot} />
+                    <Text style={styles.spectatorLiveText}>LIVE BROADCAST</Text>
+                  </View>
+                  <Text style={styles.spectatorSyncText}>👁️ Spectator Mode</Text>
+                </View>
 
-              <SizedBox height={12} />
+                <SizedBox height={16} />
 
-              <View style={styles.controlsRow}>
-                <TouchableOpacity
-                  style={[styles.controlBtn, styles.faultBtn]}
-                  onPress={() => scorePoint(match.servingTeamId!, undefined, 'FAULT')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.controlBtnIcon}>❌</Text>
-                  <Text style={styles.controlBtnText}>Fault / Sideout</Text>
-                </TouchableOpacity>
+                <Text style={styles.spectatorStatusTitle}>
+                  {match.status === 'LIVE' ? 'Match is active and in progress' : 'Waiting for match to start'}
+                </Text>
 
-                <TouchableOpacity
-                  style={[styles.controlBtn, styles.undoBtn]}
-                  onPress={undoLastAction}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.controlBtnIcon}>↩️</Text>
-                  <Text style={styles.controlBtnText}>Undo Last</Text>
-                </TouchableOpacity>
+                <View style={styles.spectatorInfoGrid}>
+                  <View style={styles.spectatorInfoBox}>
+                    <Text style={styles.spectatorInfoLabel}>Serving Team</Text>
+                    <Text style={styles.spectatorInfoValue}>
+                      {match.servingTeamId === match.home_team_id ? 'Home Team' : match.servingTeamId === match.away_team_id ? 'Away Team' : 'None'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.spectatorInfoBox}>
+                    <Text style={styles.spectatorInfoLabel}>Format</Text>
+                    <Text style={styles.spectatorInfoValue}>{match.matchType || 'SINGLES'}</Text>
+                  </View>
+                </View>
+
+                {match.events && match.events.length > 0 && (
+                  <View style={styles.latestActionBox}>
+                    <Text style={styles.latestActionLabel}>Latest Action</Text>
+                    <Text style={styles.latestActionText} numberOfLines={1}>
+                      {(() => {
+                        const lastEv = match.events[match.events.length - 1];
+                        const isHome = lastEv.team_id === match.home_team_id;
+                        return `${isHome ? 'Home' : 'Away'} scored ${lastEv.event_type || 'POINT'}`;
+                      })()}
+                    </Text>
+                  </View>
+                )}
               </View>
-            </View>
+            )}
 
             {/* EVENT FEED / LOG */}
             <View style={styles.feedBox}>
@@ -804,6 +886,97 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 15,
     fontWeight: '700',
+  },
+  spectatorCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+  },
+  spectatorHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  spectatorLiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  spectatorPulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#EF4444',
+    marginRight: 6,
+  },
+  spectatorLiveText: {
+    color: '#EF4444',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  spectatorSyncText: {
+    color: '#00D2FF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  spectatorStatusTitle: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 12,
+  },
+  spectatorInfoGrid: {
+    flexDirection: 'row',
+    marginTop: 14,
+    gap: 10,
+  },
+  spectatorInfoBox: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.01)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 12,
+    padding: 10,
+  },
+  spectatorInfoLabel: {
+    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  spectatorInfoValue: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  latestActionBox: {
+    marginTop: 14,
+    backgroundColor: 'rgba(108, 77, 246, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(108, 77, 246, 0.1)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  latestActionLabel: {
+    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  latestActionText: {
+    color: '#6C4DF6',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
 

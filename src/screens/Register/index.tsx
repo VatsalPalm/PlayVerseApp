@@ -29,6 +29,7 @@ import {
 } from "../../Api/playVerseComponents";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import DeviceInfo from "react-native-device-info";
 import { getFcmPushToken } from "../../utils/helpers";
 import { Ionicons } from "@expo/vector-icons";
@@ -53,6 +54,8 @@ const RegisterScreen = () => {
   );
   const [selectedSports, setSelectedSports] = useState<number[]>([]);
   const [localLoading, setLocalLoading] = useState(false);
+
+  const isGroundOwner = selectedRole === "GROUND_OWNER";
 
   const toggleSport = (sportId: number) => {
     if (selectedSports.includes(sportId)) {
@@ -244,7 +247,8 @@ const RegisterScreen = () => {
     if (!nameRegex.test(trimmedName)) {
       showMessage({
         message: "Validation Error",
-        description: "Please enter a valid full name (alphabets and spaces only, 3 to 50 characters).",
+        description:
+          "Please enter a valid full name (alphabets and spaces only, 3 to 50 characters).",
         type: "warning",
       });
       return;
@@ -260,7 +264,7 @@ const RegisterScreen = () => {
       return;
     }
 
-    if (selectedSports.length === 0) {
+    if (!isGroundOwner && selectedSports.length === 0) {
       showMessage({
         message: "Select Sport",
         description: "Please select at least one sport of interest.",
@@ -399,6 +403,8 @@ const RegisterScreen = () => {
         </Svg>
       </View>
 
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
+
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           style={{ flex: 1 }}
@@ -463,33 +469,23 @@ const RegisterScreen = () => {
 
           {/* Form */}
           <View style={styles.form}>
-            <CTextInput
-              label="Full Name"
-              placeholder="Enter your full name"
-              value={fullName}
-              onChangeTextValue={setFullName}
-            />
-
-            <SizedBox height={16} />
-
-            <CTextInput
-              label="Phone Number"
-              placeholder="Enter 10-digit number"
-              value={phone}
-              onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
-              keyboardType="phone-pad"
-              maxLength={10}
-            />
-
-            <SizedBox height={16} />
-
-            {/* Choose Role Section */}
+            {/* Role Selector — full width cards stacked vertically */}
             <View style={styles.roleSection}>
               <Text style={styles.roleLabel}>Register As</Text>
               <View style={styles.roleContainer}>
                 {[
-                  { id: "PLAYER", name: "Player", icon: "🏃" },
-                  { id: "GROUND_OWNER", name: "Ground Owner", icon: "🏟️" },
+                  {
+                    id: "PLAYER",
+                    name: "Player",
+                    icon: "🏃",
+                    desc: "Join tournaments & compete",
+                  },
+                  {
+                    id: "GROUND_OWNER",
+                    name: "Ground Owner",
+                    icon: "🏟️",
+                    desc: "List & manage sports grounds",
+                  },
                 ].map((r) => {
                   const isSelected = selectedRole === r.id;
                   return (
@@ -503,14 +499,18 @@ const RegisterScreen = () => {
                       ]}
                     >
                       <Text style={styles.roleChipEmoji}>{r.icon}</Text>
-                      <Text
-                        style={[
-                          styles.roleChipText,
-                          isSelected && styles.roleChipTextActive,
-                        ]}
-                      >
-                        {r.name}
-                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.roleChipText,
+                            isSelected && styles.roleChipTextActive,
+                          ]}
+                        >
+                          {r.name}
+                        </Text>
+                        <Text style={styles.roleChipDesc}>{r.desc}</Text>
+                      </View>
+                      {isSelected && <View style={styles.roleCheckDot} />}
                     </TouchableOpacity>
                   );
                 })}
@@ -519,38 +519,80 @@ const RegisterScreen = () => {
 
             <SizedBox height={20} />
 
-            {/* Choose Sports Section */}
-            <View style={styles.sportsSection}>
-              <Text style={styles.sportsLabel}>Choose Your Sports</Text>
-              <View style={styles.chipsContainer}>
-                {SPORTS_LIST.map((sport) => {
-                  const isSelected = selectedSports.includes(sport.id);
-                  return (
-                    <TouchableOpacity
-                      key={sport.id}
-                      activeOpacity={0.8}
-                      onPress={() => toggleSport(sport.id)}
-                      style={[styles.chip, isSelected && styles.chipActive]}
-                    >
-                      <Text style={styles.chipEmoji}>{sport.icon}</Text>
-                      <Text
-                        style={[
-                          styles.chipText,
-                          isSelected && styles.chipTextActive,
-                        ]}
-                      >
-                        {sport.name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
+            <CTextInput
+              label="Full Name"
+              placeholder="Enter your full name"
+              value={fullName}
+              onChangeTextValue={setFullName}
+            />
+
+            <SizedBox height={16} />
+
+            <CTextInput
+              label="Phone Number"
+              placeholder="Enter 10-digit mobile number"
+              value={phone}
+              onChangeTextValue={(text) =>
+                setPhone(text.replace(/[^0-9]/g, ""))
+              }
+              keyboardType="phone-pad"
+              maxLength={10}
+            />
+
+            {/* Sports — only for Players */}
+            {!isGroundOwner && (
+              <>
+                <SizedBox height={20} />
+                <View style={styles.sportsSection}>
+                  <Text style={styles.sportsLabel}>Sports of Interest</Text>
+                  <View style={styles.chipsContainer}>
+                    {SPORTS_LIST.map((sport) => {
+                      const isSelected = selectedSports.includes(sport.id);
+                      return (
+                        <TouchableOpacity
+                          key={sport.id}
+                          activeOpacity={0.8}
+                          onPress={() => toggleSport(sport.id)}
+                          style={[styles.chip, isSelected && styles.chipActive]}
+                        >
+                          <Text style={styles.chipEmoji}>{sport.icon}</Text>
+                          <Text
+                            style={[
+                              styles.chipText,
+                              isSelected && styles.chipTextActive,
+                            ]}
+                          >
+                            {sport.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              </>
+            )}
+
+            {/* Ground Owner info note */}
+            {isGroundOwner && (
+              <>
+                <SizedBox height={20} />
+                <View style={styles.infoNote}>
+                  <Text style={styles.infoNoteIcon}>ℹ️</Text>
+                  <Text style={styles.infoNoteText}>
+                    Additional details like Business Name, City, Contact Email
+                    and WhatsApp can be added in your Edit Profile after
+                    registration.
+                  </Text>
+                </View>
+              </>
+            )}
 
             <SizedBox height={30} />
 
             <CButton
-              title="Register"
+              title={
+                isGroundOwner ? "Create Ground Owner" : "Register as Player"
+              }
               onPress={handleRegister}
               loading={isPending || localLoading}
               disabled={isPending || localLoading}
@@ -674,13 +716,13 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   sportsSection: {
-    marginHorizontal: SCREEN_WIDTH * 0.043,
+    width: "100%",
     marginTop: 8,
   },
   sportsLabel: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "400",
+    fontWeight: "600",
     marginBottom: 10,
   },
   chipsContainer: {
@@ -716,47 +758,76 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   roleSection: {
-    marginTop: 8,
     width: "100%",
   },
   roleLabel: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "400",
-    marginBottom: 10,
+    fontWeight: "600",
+    marginBottom: 12,
   },
   roleContainer: {
-    flexDirection: "row",
-    gap: 8,
+    flexDirection: "column",
+    gap: 10,
     width: "100%",
   },
   roleChip: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.04)",
     borderWidth: 1.5,
     borderColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: 20,
-    paddingVertical: 10,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
   },
   roleChipActive: {
-    backgroundColor: "rgba(108, 77, 246, 0.15)",
+    backgroundColor: "rgba(108, 77, 246, 0.12)",
     borderColor: "#6C4DF6",
   },
   roleChipEmoji: {
-    fontSize: 14,
-    marginRight: 6,
+    fontSize: 22,
   },
   roleChipText: {
-    color: "#9CA3AF",
-    fontSize: 12,
-    fontWeight: "500",
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
   },
   roleChipTextActive: {
     color: "#FFFFFF",
-    fontWeight: "700",
+    fontWeight: "800",
+  },
+  roleChipDesc: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    marginTop: 2,
+  },
+  roleCheckDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#6C4DF6",
+    marginLeft: "auto",
+  },
+  infoNote: {
+    flexDirection: "row",
+    backgroundColor: "rgba(0, 210, 255, 0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(0, 210, 255, 0.2)",
+    borderRadius: 14,
+    padding: 14,
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  infoNoteIcon: {
+    fontSize: 16,
+  },
+  infoNoteText: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    lineHeight: 18,
+    flex: 1,
   },
   btnRegister: {
     height: 56,

@@ -18,6 +18,9 @@ import GroundDetailsScreen from '../screens/Player/GroundDetails';
 import MatchHistoryScreen from '../screens/Player/MatchHistory';
 import CreateMatchScreen from '../screens/Player/CreateMatch';
 import LiveScoringScreen from '../screens/Player/LiveScoring';
+import TournamentListScreen from '../screens/Player/TournamentList';
+import TournamentDetailsScreen from '../screens/Player/TournamentDetails';
+import CreateTournamentScreen from '../screens/Organizer/CreateTournament';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -32,7 +35,7 @@ const Home = () => {
       case 'GROUND_OWNER':
         TargetHomeScreen = GroundOwnerHomeScreen;
         break;
-      case 'ORGANIZER':
+      case 'TOURNAMENT_ORGANIZER':
         TargetHomeScreen = OrganizerHomeScreen;
         break;
       case 'PLAYER':
@@ -55,6 +58,9 @@ const Home = () => {
             <Stack.Screen name="MatchHistory" component={MatchHistoryScreen} />
             <Stack.Screen name="CreateMatch" component={CreateMatchScreen} />
             <Stack.Screen name="LiveScoring" component={LiveScoringScreen} />
+            <Stack.Screen name="TournamentList" component={TournamentListScreen} />
+            <Stack.Screen name="TournamentDetails" component={TournamentDetailsScreen} />
+            <Stack.Screen name="CreateTournament" component={CreateTournamentScreen} />
         </Stack.Navigator>
     );
 };

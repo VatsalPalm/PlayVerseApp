@@ -14,6 +14,7 @@ import { useAuthControllerLoginUser } from '../../Api/playVerseComponents';
 import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import DeviceInfo from 'react-native-device-info';
 import * as Location from 'expo-location';
 import { getFcmPushToken } from '../../utils/helpers';
@@ -304,6 +305,8 @@ const LoginScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#6C4DF6" orb2Color="#00D2FF" />
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">

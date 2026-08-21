@@ -20,6 +20,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { useGroundControllerGetGroundDetails } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
 import { storage } from "../../services/mmkv";
@@ -128,6 +129,8 @@ const GroundDetailsScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#00E676" orb2Color="#00D2FF" />
 
       <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
         {/* Top Header Row */}

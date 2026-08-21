@@ -33,6 +33,7 @@ import SizedBox from "../../Components/atoms/SizeBox";
 import CButton from "../../Components/atoms/CButton";
 import { showMessage } from "react-native-flash-message";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -795,6 +796,8 @@ const AddEditGroundScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#00E676" orb2Color="#6C4DF6" />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}

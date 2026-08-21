@@ -33,6 +33,7 @@ import {
 import SizedBox from "../../Components/atoms/SizeBox";
 import * as Location from "expo-location";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { showMessage } from "react-native-flash-message";
 import { storage } from "../../services/mmkv";
 
@@ -566,6 +567,8 @@ const GroundsListScreen = () => {
           <Rect width="100%" height="100%" fill="url(#bgGrad)" />
         </Svg>
       </View>
+
+      <FloatingOrbs orb1Color="#00E676" orb2Color="#6C4DF6" />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Screen Header */}

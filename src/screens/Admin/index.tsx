@@ -191,8 +191,8 @@ const styles = StyleSheet.create({
   floatingOrb: {
     position: 'absolute',
     borderRadius: 9999,
-    width: 220,
-    height: 220,
+    width: 280,
+    height: 280,
     opacity: 0.12,
   },
   orb1: {
