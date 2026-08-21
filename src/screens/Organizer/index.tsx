@@ -18,6 +18,7 @@ import { storage } from '../../services/mmkv';
 import { showMessage } from 'react-native-flash-message';
 import { fetchTournamentControllerListTournaments } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
+import MyTeamsModal from '../../Components/MyTeamsModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -50,6 +51,7 @@ const OrganizerHomeScreen = () => {
   const [myTournaments, setMyTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
+  const [showMyTeamsModal, setShowMyTeamsModal] = useState(false);
 
   const loadData = async (orgId: number) => {
     try {
@@ -278,8 +280,15 @@ const OrganizerHomeScreen = () => {
                 style={styles.actionCard}
                 onPress={() => navigation.navigate('MatchHistory')}
               >
-                <Text style={styles.actionIcon}>👥</Text>
+                <Text style={styles.actionIcon}>⚡</Text>
                 <Text style={styles.actionTitle}>Match History</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => setShowMyTeamsModal(true)}
+              >
+                <Text style={styles.actionIcon}>👥</Text>
+                <Text style={styles.actionTitle}>My Teams</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -287,6 +296,10 @@ const OrganizerHomeScreen = () => {
           <SizedBox height={30} />
         </ScrollView>
       </SafeAreaView>
+      <MyTeamsModal
+        visible={showMyTeamsModal}
+        onClose={() => setShowMyTeamsModal(false)}
+      />
     </View>
   );
 };

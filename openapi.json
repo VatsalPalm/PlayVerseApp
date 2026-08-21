@@ -2561,6 +2561,31 @@
           }
         },
         "tags": ["Match Management (Phase 3)"]
+      },
+      "delete": {
+        "operationId": "MatchController_deleteMatch",
+        "summary": "Delete a scheduled match",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/tournament/v1/create": {

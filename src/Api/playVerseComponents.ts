@@ -6179,6 +6179,51 @@ export const useMatchControllerGetMatchDetail = <TData = undefined,>(
   });
 };
 
+export type MatchControllerDeleteMatchPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerDeleteMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerDeleteMatchVariables = {
+  pathParams: MatchControllerDeleteMatchPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerDeleteMatch = (
+  variables: MatchControllerDeleteMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerDeleteMatchError,
+    undefined,
+    {},
+    {},
+    MatchControllerDeleteMatchPathParams
+  >({ url: "/api/match/v1/{matchId}", method: "delete", ...variables, signal });
+
+export const useMatchControllerDeleteMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerDeleteMatchError,
+      MatchControllerDeleteMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerDeleteMatchError,
+    MatchControllerDeleteMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerDeleteMatchVariables) =>
+      fetchMatchControllerDeleteMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type TournamentControllerCreateTournamentError =
   Fetcher.ErrorWrapper<undefined>;
 

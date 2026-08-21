@@ -102,6 +102,9 @@ const LiveScoringScreen = () => {
   const homeNames = homePlayerNames.join(' & ') || 'Home Team';
   const awayNames = awayPlayerNames.join(' & ') || 'Away Team';
 
+  const homeTeamDisplayName = (match as any)?.home_team_name || (match as any)?.homeTeamName || homeNames;
+  const awayTeamDisplayName = (match as any)?.away_team_name || (match as any)?.awayTeamName || awayNames;
+
   // Active score calculation
   const periods = match?.periods || [];
   const currentPeriod = periods.find((p: any) => !p.ended_at) || periods[periods.length - 1] || {
@@ -192,7 +195,7 @@ const LiveScoringScreen = () => {
             {/* Set Games Score Header */}
             <View style={styles.gamesWinsCard}>
               <View style={styles.teamWinBox}>
-                <Text style={styles.teamWinLabel} numberOfLines={1}>{homeNames}</Text>
+                <Text style={styles.teamWinLabel} numberOfLines={1}>{homeTeamDisplayName}</Text>
                 <Text style={styles.gamesCount}>{homeGamesWon} Games</Text>
               </View>
               <View style={styles.vsBox}>
@@ -202,7 +205,7 @@ const LiveScoringScreen = () => {
                 </View>
               </View>
               <View style={styles.teamWinBox}>
-                <Text style={styles.teamWinLabel} numberOfLines={1}>{awayNames}</Text>
+                <Text style={styles.teamWinLabel} numberOfLines={1}>{awayTeamDisplayName}</Text>
                 <Text style={styles.gamesCount}>{awayGamesWon} Games</Text>
               </View>
             </View>
@@ -217,7 +220,7 @@ const LiveScoringScreen = () => {
                   </View>
                 )}
                 <Text style={styles.scoreText}>{currentHomeScore}</Text>
-                <Text style={styles.scoreLabel}>Home</Text>
+                <Text style={styles.scoreLabel} numberOfLines={1}>{homeTeamDisplayName}</Text>
               </View>
 
               {/* Score Divider / Doubles Server Info */}
@@ -238,7 +241,7 @@ const LiveScoringScreen = () => {
                   </View>
                 )}
                 <Text style={styles.scoreText}>{currentAwayScore}</Text>
-                <Text style={styles.scoreLabel}>Away</Text>
+                <Text style={styles.scoreLabel} numberOfLines={1}>{awayTeamDisplayName}</Text>
               </View>
             </View>
 
@@ -250,16 +253,16 @@ const LiveScoringScreen = () => {
                 {/* AWAY COURT (Top half) */}
                 <View style={styles.courtHalf}>
                   <View style={[styles.courtQuadrant, isAwayLeftHighlighted && styles.courtQuadrantActive]}>
-                    <Text style={styles.courtQuadrantLabel}>Away Left</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{awayTeamDisplayName} Left</Text>
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
-                      {awayPlayerNames[1] || 'Away 2'}
+                      {awayPlayerNames[1] || awayTeamDisplayName}
                     </Text>
                     {isAwayLeftHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
                   </View>
                   <View style={[styles.courtQuadrant, isAwayRightHighlighted && styles.courtQuadrantActive]}>
-                    <Text style={styles.courtQuadrantLabel}>Away Right</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{awayTeamDisplayName} Right</Text>
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
-                      {awayPlayerNames[0] || 'Away 1'}
+                      {awayPlayerNames[0] || awayTeamDisplayName}
                     </Text>
                     {isAwayRightHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
                   </View>
@@ -276,16 +279,16 @@ const LiveScoringScreen = () => {
                   <View style={[styles.courtQuadrant, isHomeLeftHighlighted && styles.courtQuadrantActive]}>
                     {isHomeLeftHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
-                      {homePlayerNames[1] || 'Home 2'}
+                      {homePlayerNames[1] || homeTeamDisplayName}
                     </Text>
-                    <Text style={styles.courtQuadrantLabel}>Home Left</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{homeTeamDisplayName} Left</Text>
                   </View>
                   <View style={[styles.courtQuadrant, isHomeRightHighlighted && styles.courtQuadrantActive]}>
                     {isHomeRightHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
-                      {homePlayerNames[0] || 'Home 1'}
+                      {homePlayerNames[0] || homeTeamDisplayName}
                     </Text>
-                    <Text style={styles.courtQuadrantLabel}>Home Right</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{homeTeamDisplayName} Right</Text>
                   </View>
                 </View>
               </View>
@@ -298,6 +301,14 @@ const LiveScoringScreen = () => {
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
                 
+                {/* Scoring Rule Explanation Banner */}
+                <View style={styles.scoringExplanationBanner}>
+                  <Ionicons name="information-circle-outline" size={16} color="#A78BFA" />
+                  <Text style={styles.scoringExplanationText}>
+                    In official rules, only the team on <Text style={{ color: '#00E676', fontWeight: '800' }}>🎾 SERVE</Text> gains points. If receiving team wins a rally, serve switches (<Text style={{ color: '#F59E0B', fontWeight: '800' }}>Side Out</Text>).
+                  </Text>
+                </View>
+
                 <View style={styles.controlsRow}>
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.homePointBtn]}
@@ -305,7 +316,9 @@ const LiveScoringScreen = () => {
                     activeOpacity={0.8}
                   >
                     <Text style={styles.controlBtnIcon}>➕</Text>
-                    <Text style={styles.controlBtnText}>Home Point</Text>
+                    <Text style={styles.controlBtnText} numberOfLines={1}>
+                      Point {homeTeamDisplayName}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -314,7 +327,9 @@ const LiveScoringScreen = () => {
                     activeOpacity={0.8}
                   >
                     <Text style={styles.controlBtnIcon}>➕</Text>
-                    <Text style={styles.controlBtnText}>Away Point</Text>
+                    <Text style={styles.controlBtnText} numberOfLines={1}>
+                      Point {awayTeamDisplayName}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
@@ -977,6 +992,23 @@ const styles = StyleSheet.create({
     color: '#6C4DF6',
     fontSize: 12,
     fontWeight: '800',
+  },
+  scoringExplanationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(167, 139, 250, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(167, 139, 250, 0.15)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    gap: 8,
+  },
+  scoringExplanationText: {
+    color: '#D1D5DB',
+    fontSize: 11,
+    lineHeight: 15,
+    flex: 1,
   },
 });
 

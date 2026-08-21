@@ -8,6 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { showMessage } from 'react-native-flash-message';
 import {
   useMatchControllerGetMatchHistory,
   useMatchControllerStartMatch,
+  useMatchControllerDeleteMatch,
 } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
 
@@ -76,6 +78,7 @@ const MatchHistoryScreen = () => {
   });
 
   const startMatchMutation = useMatchControllerStartMatch();
+  const deleteMatchMutation = useMatchControllerDeleteMatch();
 
   // Refetch when screen gains focus
   useFocusEffect(
@@ -114,10 +117,47 @@ const MatchHistoryScreen = () => {
     );
   };
 
+  const handleDeleteMatch = (matchId: number) => {
+    Alert.alert(
+      "Delete Match",
+      "Are you sure you want to delete this scheduled match?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteMatchMutation.mutate(
+              { pathParams: { matchId } },
+              {
+                onSuccess: () => {
+                  showMessage({
+                    message: "Match deleted successfully",
+                    type: "success",
+                  });
+                  refetch();
+                },
+                onError: (err: any) => {
+                  showMessage({
+                    message: err?.message || "Failed to delete match",
+                    type: "danger",
+                  });
+                },
+              }
+            );
+          },
+        },
+      ]
+    );
+  };
+
   const renderMatchCard = ({ item }: { item: any }) => {
-    // Get player names
-    const homeNames = item.homePlayers?.map((p: any) => p.display_name || p.name || `Player ${p.id}`).join(' & ') || 'Home Team';
-    const awayNames = item.awayPlayers?.map((p: any) => p.display_name || p.name || `Player ${p.id}`).join(' & ') || 'Away Team';
+    // Get team names
+    const homePlayerNames = item.homePlayers?.map((p: any) => p.display_name || p.name).filter(Boolean).join(' & ');
+    const awayPlayerNames = item.awayPlayers?.map((p: any) => p.display_name || p.name).filter(Boolean).join(' & ');
+
+    const homeTeamDisplayName = item.home_team_name || item.homeTeamName || homePlayerNames || 'Home Team';
+    const awayTeamDisplayName = item.away_team_name || item.awayTeamName || awayPlayerNames || 'Away Team';
 
     const isLive = item.status === 'LIVE';
     const isCompleted = item.status === 'COMPLETED';
@@ -159,7 +199,7 @@ const MatchHistoryScreen = () => {
         {/* Competitors Scoreboard Row */}
         <View style={styles.matchTeamsRow}>
           <View style={[styles.teamContainer, isCompleted && homeGamesWon > awayGamesWon && styles.winnerTeam]}>
-            <Text style={styles.teamNameText} numberOfLines={2}>{homeNames}</Text>
+            <Text style={styles.teamNameText} numberOfLines={2}>{homeTeamDisplayName}</Text>
             {isCompleted && (
               <Text style={styles.gameScoreText}>{homeGamesWon} {homeGamesWon > awayGamesWon && '🏆'}</Text>
             )}
@@ -168,7 +208,7 @@ const MatchHistoryScreen = () => {
           <Text style={styles.vsText}>VS</Text>
 
           <View style={[styles.teamContainer, isCompleted && awayGamesWon > homeGamesWon && styles.winnerTeam]}>
-            <Text style={styles.teamNameText} numberOfLines={2}>{awayNames}</Text>
+            <Text style={styles.teamNameText} numberOfLines={2}>{awayTeamDisplayName}</Text>
             {isCompleted && (
               <Text style={styles.gameScoreText}>{awayGamesWon} {awayGamesWon > homeGamesWon && '🏆'}</Text>
             )}
@@ -195,14 +235,24 @@ const MatchHistoryScreen = () => {
 
         {/* Action Button */}
         {isScheduled && (
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={() => handleStartMatch(item.id)}
-            disabled={startMatchMutation.isPending}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.actionBtnText}>Start Match (Make Live)</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              style={[styles.actionBtn, { flex: 4 }]}
+              onPress={() => handleStartMatch(item.id)}
+              disabled={startMatchMutation.isPending || deleteMatchMutation.isPending}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.actionBtnText}>Start Match (Make Live)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionBtn, { flex: 1, backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.4)', borderWidth: 1 }]}
+              onPress={() => handleDeleteMatch(item.id)}
+              disabled={startMatchMutation.isPending || deleteMatchMutation.isPending}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="trash-outline" size={18} color="#EF4444" style={{ alignSelf: 'center' }} />
+            </TouchableOpacity>
+          </View>
         )}
 
         {isLive && (

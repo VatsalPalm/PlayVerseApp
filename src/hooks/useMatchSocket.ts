@@ -22,6 +22,8 @@ export interface MatchState {
   status: 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED' | 'POSTPONED';
   home_team_id: number | null;
   away_team_id: number | null;
+  home_team_name?: string;
+  away_team_name?: string;
   scheduled_at: string;
   started_at: string | null;
   ended_at: string | null;
@@ -54,31 +56,36 @@ export const useMatchSocket = (matchId: number) => {
 
   // Helper to convert backend nested response { match, players, periods, events } to a flat MatchState
   const flattenMatchState = useCallback((data: any): MatchState | null => {
-    if (!data || !data.match) return null;
+    if (!data) return null;
+    const matchObj = data.match || data;
+    if (!matchObj || !matchObj.id) return null;
+
     return {
-      id: data.match.id,
-      sport_id: data.match.sport_id,
-      status: data.match.status,
-      home_team_id: data.match.home_team_id,
-      away_team_id: data.match.away_team_id,
-      scheduled_at: data.match.scheduled_at,
-      started_at: data.match.started_at,
-      ended_at: data.match.ended_at,
-      winner_team_id: data.match.winner_team_id,
-      pointsPerGame: data.match.points_per_game ?? 11,
-      winByTwo: data.match.win_by_two === 1 || data.match.win_by_two === true,
-      gamesToWin: data.match.games_to_win ?? 2,
-      matchType: data.match.match_type || 'SINGLES',
-      homePlayers: data.players?.filter((p: any) => p.team_id === data.match.home_team_id) || [],
-      awayPlayers: data.players?.filter((p: any) => p.team_id === data.match.away_team_id) || [],
-      periods: data.periods || [],
-      events: data.events || [],
-      activeServerId: data.match.active_server_id,
-      serverNumber: data.match.server_number,
-      servingTeamId: data.match.serving_team_id,
-      serverSide: data.match.server_side,
-      version: data.match.version ?? 1,
-      tournamentId: data.match.tournament_id,
+      id: matchObj.id,
+      sport_id: matchObj.sport_id,
+      status: matchObj.status,
+      home_team_id: matchObj.home_team_id,
+      away_team_id: matchObj.away_team_id,
+      home_team_name: matchObj.home_team_name || matchObj.homeTeamName || data.home_team_name || data.homeTeamName,
+      away_team_name: matchObj.away_team_name || matchObj.awayTeamName || data.away_team_name || data.awayTeamName,
+      scheduled_at: matchObj.scheduled_at,
+      started_at: matchObj.started_at,
+      ended_at: matchObj.ended_at,
+      winner_team_id: matchObj.winner_team_id,
+      pointsPerGame: matchObj.points_per_game ?? matchObj.pointsPerGame ?? 11,
+      winByTwo: matchObj.win_by_two === 1 || matchObj.win_by_two === true || matchObj.winByTwo === true,
+      gamesToWin: matchObj.games_to_win ?? matchObj.gamesToWin ?? 2,
+      matchType: matchObj.match_type || matchObj.matchType || 'SINGLES',
+      homePlayers: data.players?.filter((p: any) => p.team_id === matchObj.home_team_id) || matchObj.homePlayers || [],
+      awayPlayers: data.players?.filter((p: any) => p.team_id === matchObj.away_team_id) || matchObj.awayPlayers || [],
+      periods: data.periods || matchObj.periods || [],
+      events: data.events || matchObj.events || [],
+      activeServerId: matchObj.active_server_id ?? matchObj.activeServerId,
+      serverNumber: matchObj.server_number ?? matchObj.serverNumber,
+      servingTeamId: matchObj.serving_team_id ?? matchObj.servingTeamId,
+      serverSide: matchObj.server_side ?? matchObj.serverSide,
+      version: matchObj.version ?? 1,
+      tournamentId: matchObj.tournament_id ?? matchObj.tournamentId,
     };
   }, []);
 
@@ -200,6 +207,8 @@ export const useMatchSocket = (matchId: number) => {
     }
 
     setSyncing(true);
+    setTimeout(() => setSyncing(false), 4000);
+
     const currentVersion = matchState?.version ?? 0;
 
     const payload = {
@@ -221,6 +230,8 @@ export const useMatchSocket = (matchId: number) => {
     }
 
     setSyncing(true);
+    setTimeout(() => setSyncing(false), 4000);
+
     const currentVersion = matchState?.version ?? 0;
     const payload = {
       matchId,

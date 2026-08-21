@@ -25,6 +25,7 @@ import { RootStackParamList, HomeStackParamList } from "../../utils/types";
 import { storage } from "../../services/mmkv";
 import { showMessage } from "react-native-flash-message";
 import SizedBox from "../../Components/atoms/SizeBox";
+import MyTeamsModal from "../../Components/MyTeamsModal";
 import { 
   useBookingControllerGetMyBookings,
   fetchTournamentControllerListTournaments,
@@ -83,6 +84,7 @@ const PlayerHomeScreen = () => {
 
   const [myTournaments, setMyTournaments] = useState<any[]>([]);
   const [tournamentsLoading, setTournamentsLoading] = useState(false);
+  const [showMyTeamsModal, setShowMyTeamsModal] = useState(false);
 
   const loadPlayerTournaments = async (pId: number) => {
     try {
@@ -359,7 +361,7 @@ const PlayerHomeScreen = () => {
                 { title: "Live Scoring", icon: "⚡" },
                 { title: "Book Ground", icon: "🏟️" },
                 { title: "Tournaments", icon: "🏆" },
-                { title: "AI Insights", icon: "🧠" },
+                { title: "My Teams", icon: "👥" },
               ].map((action, index) => (
                 <TouchableOpacity
                   key={index}
@@ -372,6 +374,8 @@ const PlayerHomeScreen = () => {
                       navigation.navigate("MatchHistory");
                     } else if (action.title === "Tournaments") {
                       navigation.navigate("TournamentList");
+                    } else if (action.title === "My Teams") {
+                      setShowMyTeamsModal(true);
                     } else {
                       showMessage({
                         message: `${action.title} coming soon!`,
@@ -534,6 +538,10 @@ const PlayerHomeScreen = () => {
           <SizedBox height={30} />
         </ScrollView>
       </SafeAreaView>
+      <MyTeamsModal
+        visible={showMyTeamsModal}
+        onClose={() => setShowMyTeamsModal(false)}
+      />
     </View>
   );
 };

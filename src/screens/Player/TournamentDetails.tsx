@@ -46,6 +46,7 @@ import {
   fetchTournamentControllerGenerateBrackets,
   fetchTournamentControllerAdminCompleteMatch,
   fetchMatchControllerCreateMatch,
+  fetchMatchControllerDeleteMatch,
 } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
 
@@ -535,6 +536,37 @@ const TournamentDetailsScreen = () => {
     );
   };
 
+  const handleDeleteMatch = async (matchId: number) => {
+    Alert.alert(
+      "Delete Match",
+      "Are you sure you want to delete this match from the tournament?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await fetchMatchControllerDeleteMatch({
+                pathParams: { matchId },
+              });
+              showMessage({ message: "Match deleted successfully", type: "success" });
+              loadAllData();
+            } catch (err: any) {
+              showMessage({
+                message: err.message || "Failed to delete match",
+                type: "danger",
+              });
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleShare = async () => {
     if (!tournament) return;
     try {
@@ -711,9 +743,21 @@ const TournamentDetailsScreen = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionHeader}>
-          Registered Teams ({participants.length})
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={styles.sectionHeader}>
+            Registered Teams ({participants.length})
+          </Text>
+          {tournament.config?.registrationType === "TEAM" && tournament.status === "UPCOMING" && (
+            <TouchableOpacity
+              style={styles.addTeamBtn}
+              onPress={handleRegisterTeam}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add-circle-outline" size={16} color="#FFF" />
+              <Text style={styles.addTeamBtnText}>Register Team</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {participants.length === 0 ? (
           <View style={styles.emptyTabBox}>
@@ -725,6 +769,8 @@ const TournamentDetailsScreen = () => {
               <View style={{ flex: 1 }}>
                 <Text style={styles.participantName}>{item.team_name}</Text>
                 <Text style={styles.participantDetails}>
+                  {item.captain_name ? `Captain: ${item.captain_name} • ` : ""}
+                  {item.member_count !== undefined ? `${item.member_count} Members • ` : ""}
                   Status: {item.status}{" "}
                   {item.seed ? `• Seed: ${item.seed}` : ""}{" "}
                   {item.group_name ? `• Group: ${item.group_name}` : ""}
@@ -939,6 +985,15 @@ const TournamentDetailsScreen = () => {
                     onPress={() => handleAdminCompleteMatch(item.id)}
                   >
                     <Text style={styles.overrideBtnText}>Admin Complete</Text>
+                  </TouchableOpacity>
+                )}
+
+                {isOrganizer && item.status === "SCHEDULED" && (
+                  <TouchableOpacity
+                    style={[styles.overrideBtn, { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.3)', borderWidth: 1 }]}
+                    onPress={() => handleDeleteMatch(item.id)}
+                  >
+                    <Text style={[styles.overrideBtnText, { color: '#EF4444' }]}>Delete</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -2073,5 +2128,19 @@ const styles = StyleSheet.create({
     color: "#0F0D1A",
     fontSize: 13,
     fontWeight: "800",
+  },
+  addTeamBtn: {
+    backgroundColor: '#6C4DF6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  addTeamBtnText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
