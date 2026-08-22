@@ -555,9 +555,9 @@ export type CreateTeamDto = {
 
 export type TeamInvitationDto = {
   /**
-   * @example 12
+   * @example 9876543210
    */
-  playerId: number;
+  phoneNumber: string;
 };
 
 export type ChallengeDto = {

@@ -288,7 +288,18 @@ const AddEditGroundScreen = () => {
           description: "Ground registered successfully.",
           type: "success",
         });
-        navigation.navigate("GroundsList");
+        // Clear creation form state so navigating back does not retain draft data
+        setName("");
+        setDescription("");
+        setAddress("");
+        setCity("");
+        setLatitude("");
+        setLongitude("");
+        setLocationName("");
+        setSelectedSports([]);
+        setSportsGroundTypes({});
+        setGroundImages([]);
+        navigation.goBack();
       },
       onError: (error: any) => {
         console.log("Create error:", error);

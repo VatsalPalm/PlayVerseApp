@@ -315,89 +315,74 @@ const GroundOwnerHomeScreen = () => {
               <View style={styles.aiCard}>
                 <View style={styles.priceHeader}>
                   <Text style={styles.aiCardTitle}>Price Competitiveness</Text>
-                  <View
-                    style={[
-                      styles.badge,
-                      aiInsights.price_analysis?.competitiveness ===
-                      "Overpriced"
-                        ? styles.badgeDanger
-                        : aiInsights.price_analysis?.competitiveness ===
-                            "Underpriced"
-                          ? styles.badgeWarning
-                          : styles.badgeSuccess,
-                    ]}
-                  >
-                    <Text style={styles.badgeText}>
-                      {aiInsights.price_analysis?.competitiveness ||
-                        "Competitive"}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.aiCardDesc}>
-                  {aiInsights.price_analysis?.comparison_summary}
-                </Text>
-
-                <SizedBox height={16} />
-
-                {/* Modern Side-by-Side Comparison Blocks */}
-                <View style={styles.priceRow}>
-                  <View style={styles.priceBlock}>
-                    <Text style={styles.priceBlockLabel}>
-                      YOUR AVERAGE PRICE
-                    </Text>
-                    <Text style={styles.priceBlockVal}>₹{ownerPrice}</Text>
-                    <Text style={styles.priceBlockSub}>per hour</Text>
-                  </View>
-                  <View style={styles.priceDivider}>
-                    <Text style={styles.priceDividerText}>vs</Text>
-                  </View>
-                  <View style={styles.priceBlock}>
-                    <Text
-                      style={[styles.priceBlockLabel, { color: "#FF9100" }]}
+                  {ownerPrice && ownerPrice > 0 && aiInsights?.price_analysis?.competitiveness ? (
+                    <View
+                      style={[
+                        styles.badge,
+                        aiInsights.price_analysis?.competitiveness === "Overpriced"
+                          ? styles.badgeDanger
+                          : aiInsights.price_analysis?.competitiveness === "Underpriced"
+                            ? styles.badgeWarning
+                            : styles.badgeSuccess,
+                      ]}
                     >
-                      MARKET AVERAGE
-                    </Text>
-                    <Text style={[styles.priceBlockVal, { color: "#FF9100" }]}>
-                      ₹{marketPrice}
-                    </Text>
-                    <Text style={styles.priceBlockSub}>nearby grounds</Text>
-                  </View>
+                      <Text style={styles.badgeText}>
+                        {aiInsights.price_analysis.competitiveness}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.badge, styles.badgeWarning]}>
+                      <Text style={styles.badgeText}>Not Set</Text>
+                    </View>
+                  )}
                 </View>
 
-                <SizedBox height={20} />
+                {ownerPrice && ownerPrice > 0 ? (
+                  <>
+                    <Text style={styles.aiCardDesc}>
+                      {aiInsights.price_analysis?.comparison_summary || "Hourly rates compared with market averages."}
+                    </Text>
 
-                {/* Thicker, Highly Readable Visual Gauge Bar */}
-                <View style={styles.sliderContainer}>
-                  {/* Background Track */}
-                  <View style={styles.sliderTrack} />
+                    <SizedBox height={16} />
 
-                  {/* Fill track up to Owner's Price */}
-                  <View
-                    style={[styles.sliderFill, { width: `${ownerPos}%` }]}
-                  />
+                    {/* Modern Side-by-Side Comparison Blocks */}
+                    <View style={styles.priceRow}>
+                      <View style={styles.priceBlock}>
+                        <Text style={styles.priceBlockLabel}>YOUR AVERAGE PRICE</Text>
+                        <Text style={styles.priceBlockVal}>₹{ownerPrice}</Text>
+                        <Text style={styles.priceBlockSub}>per hour</Text>
+                      </View>
+                      <View style={styles.priceDivider}>
+                        <Text style={styles.priceDividerText}>vs</Text>
+                      </View>
+                      <View style={styles.priceBlock}>
+                        <Text style={[styles.priceBlockLabel, { color: "#FF9100" }]}>MARKET AVERAGE</Text>
+                        <Text style={[styles.priceBlockVal, { color: "#FF9100" }]}>₹{marketPrice || 0}</Text>
+                        <Text style={styles.priceBlockSub}>nearby grounds</Text>
+                      </View>
+                    </View>
 
-                  {/* Marker for Owner Price */}
-                  <View
-                    style={[
-                      styles.sliderMarker,
-                      { left: `${ownerPos}%`, marginLeft: -12 },
-                    ]}
-                  >
-                    <View style={styles.markerDotOwner} />
-                    <Text style={styles.markerLabelOwner}>You</Text>
-                  </View>
+                    <SizedBox height={20} />
 
-                  {/* Marker for Market Price */}
-                  <View
-                    style={[
-                      styles.sliderMarker,
-                      { left: `${marketPos}%`, marginLeft: -12 },
-                    ]}
-                  >
-                    <View style={styles.markerDotMarket} />
-                    <Text style={styles.markerLabelMarket}>Market</Text>
-                  </View>
-                </View>
+                    {/* Visual Gauge Bar */}
+                    <View style={styles.sliderContainer}>
+                      <View style={styles.sliderTrack} />
+                      <View style={[styles.sliderFill, { width: `${ownerPos}%` }]} />
+                      <View style={[styles.sliderMarker, { left: `${ownerPos}%`, marginLeft: -12 }]}>
+                        <View style={styles.markerDotOwner} />
+                        <Text style={styles.markerLabelOwner}>You</Text>
+                      </View>
+                      <View style={[styles.sliderMarker, { left: `${marketPos}%`, marginLeft: -12 }]}>
+                        <View style={styles.markerDotMarket} />
+                        <Text style={styles.markerLabelMarket}>Market</Text>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.aiCardDesc}>
+                    No ground charges configured yet. Go to Manage Slots to set your hourly slot pricing.
+                  </Text>
+                )}
 
                 <SizedBox height={12} />
               </View>
@@ -408,71 +393,71 @@ const GroundOwnerHomeScreen = () => {
               <View style={styles.aiCard}>
                 <Text style={styles.aiCardTitle}>Booking Trends</Text>
                 <Text style={styles.aiCardDesc}>
-                  {aiInsights.booking_trends?.weekday_vs_weekend_analysis}
+                  {Number(dashboardStats?.total_bookings || 0) === 0
+                    ? "No bookings recorded yet. Trends will update dynamically when bookings are made."
+                    : aiInsights.booking_trends?.weekday_vs_weekend_analysis || "Analysis of weekday vs weekend bookings."}
                 </Text>
 
                 <SizedBox height={24} />
 
                 {/* Custom Visual Bar Chart */}
-                <View style={styles.chartContainer}>
-                  <View style={styles.chartYAxis}>
-                    <Text style={styles.yLabel}>100%</Text>
-                    <Text style={styles.yLabel}>50%</Text>
-                    <Text style={styles.yLabel}>0%</Text>
-                  </View>
+                {(() => {
+                  const hasBookings = Number(dashboardStats?.total_bookings || 0) > 0;
+                  const weekdayPct = hasBookings
+                    ? parsePercent(aiInsights.booking_trends?.weekday_vs_weekend_analysis, "weekday", 0)
+                    : 0;
+                  const weekendPct = hasBookings
+                    ? parsePercent(aiInsights.booking_trends?.weekday_vs_weekend_analysis, "weekend", 0)
+                    : 0;
 
-                  <View style={styles.chartBarsRow}>
-                    {/* Weekday Bar */}
-                    <View style={styles.chartBarWrapper}>
-                      <View style={styles.chartBarTrack}>
-                        <View
-                          style={[
-                            styles.chartBarFill,
-                            {
-                              height: `${parsePercent(aiInsights.booking_trends?.weekday_vs_weekend_analysis, "weekday", 40)}%`,
-                              backgroundColor: "#00D2FF",
-                            },
-                          ]}
-                        />
+                  return (
+                    <View style={styles.chartContainer}>
+                      <View style={styles.chartYAxis}>
+                        <Text style={styles.yLabel}>100%</Text>
+                        <Text style={styles.yLabel}>50%</Text>
+                        <Text style={styles.yLabel}>0%</Text>
                       </View>
-                      <Text style={styles.chartBarLabel}>
-                        Weekdays (
-                        {parsePercent(
-                          aiInsights.booking_trends
-                            ?.weekday_vs_weekend_analysis,
-                          "weekday",
-                          40,
-                        )}
-                        %)
-                      </Text>
-                    </View>
 
-                    {/* Weekend Bar */}
-                    <View style={styles.chartBarWrapper}>
-                      <View style={styles.chartBarTrack}>
-                        <View
-                          style={[
-                            styles.chartBarFill,
-                            {
-                              height: `${parsePercent(aiInsights.booking_trends?.weekday_vs_weekend_analysis, "weekend", 60)}%`,
-                              backgroundColor: "#6C4DF6",
-                            },
-                          ]}
-                        />
+                      <View style={styles.chartBarsRow}>
+                        {/* Weekday Bar */}
+                        <View style={styles.chartBarWrapper}>
+                          <View style={styles.chartBarTrack}>
+                            <View
+                              style={[
+                                styles.chartBarFill,
+                                {
+                                  height: `${weekdayPct}%`,
+                                  backgroundColor: "#00D2FF",
+                                },
+                              ]}
+                            />
+                          </View>
+                          <Text style={styles.chartBarLabel}>
+                            Weekdays ({weekdayPct}%)
+                          </Text>
+                        </View>
+
+                        {/* Weekend Bar */}
+                        <View style={styles.chartBarWrapper}>
+                          <View style={styles.chartBarTrack}>
+                            <View
+                              style={[
+                                styles.chartBarFill,
+                                {
+                                  height: `${weekendPct}%`,
+                                  backgroundColor: "#6C4DF6",
+                                },
+                              ]}
+                            />
+                          </View>
+                          <Text style={styles.chartBarLabel}>
+                            Weekends ({weekendPct}%)
+                          </Text>
+                        </View>
                       </View>
-                      <Text style={styles.chartBarLabel}>
-                        Weekends (
-                        {parsePercent(
-                          aiInsights.booking_trends
-                            ?.weekday_vs_weekend_analysis,
-                          "weekend",
-                          60,
-                        )}
-                        %)
-                      </Text>
                     </View>
-                  </View>
-                </View>
+                  );
+                })()}
               </View>
 
               <SizedBox height={16} />

@@ -3850,12 +3850,12 @@
       "TeamInvitationDto": {
         "type": "object",
         "properties": {
-          "playerId": {
-            "type": "number",
-            "example": 12
+          "phoneNumber": {
+            "type": "string",
+            "example": "9876543210"
           }
         },
-        "required": ["playerId"]
+        "required": ["phoneNumber"]
       },
       "ChallengeDto": {
         "type": "object",

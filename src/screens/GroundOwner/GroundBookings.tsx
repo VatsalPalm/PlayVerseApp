@@ -179,7 +179,7 @@ const GroundBookingsScreen = () => {
       return !isPast && status === 'PENDING';
     }
     if (activeFilter === 'CONFIRMED') {
-      return !isPast && status === 'CONFIRMED';
+      return status === 'CONFIRMED';
     }
     if (activeFilter === 'CANCELLED') {
       return status === 'CANCELLED';

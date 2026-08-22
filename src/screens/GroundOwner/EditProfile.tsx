@@ -30,6 +30,8 @@ import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
 import { Ionicons } from "@expo/vector-icons";
 import { storage } from "../../services/mmkv";
 
+import { env, getURL } from "../../services/request";
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Helper to parse dynamic/relative image URLs
@@ -38,7 +40,8 @@ const getProfileImageUrl = (url?: string) => {
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://")) {
     return url;
   }
-  return `https://8lqg2hx4-3339.inc1.devtunnels.ms${url}`;
+  const baseUrl = getURL(env).replace(/\/api\/?$/, "").replace(/\/$/, "");
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
 const EditProfileScreen = () => {
@@ -120,8 +123,9 @@ const EditProfileScreen = () => {
           const newProfileObj = {
             ...currentProfileObj,
             ...updatedProfileData,
-            // Explicitly sync displayName and profile_image in storage
+            // Explicitly sync displayName, whatsapp_number and profile_image in storage
             display_name: displayName,
+            whatsapp_number: whatsappNumber.trim() || updatedProfileData.whatsapp_number,
             profile_image: uploadedImage || currentProfileObj.profile_image,
           };
           storage.set("userProfile", JSON.stringify(newProfileObj));
@@ -184,7 +188,7 @@ const EditProfileScreen = () => {
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -211,7 +215,7 @@ const EditProfileScreen = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -272,6 +276,18 @@ const EditProfileScreen = () => {
         showMessage({
           message: "Validation Error",
           description: "Please enter a valid city name (alphabets only, 3 to 30 characters).",
+          type: "warning",
+        });
+        return;
+      }
+    }
+
+    if (whatsappNumber.trim()) {
+      const cleanWa = whatsappNumber.trim().replace(/[^0-9]/g, "");
+      if (cleanWa.length < 10 || cleanWa.length > 15) {
+        showMessage({
+          message: "Validation Error",
+          description: "Please enter a valid WhatsApp number (10 to 15 digits).",
           type: "warning",
         });
         return;

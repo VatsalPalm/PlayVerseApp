@@ -10,7 +10,9 @@ import {
   Alert,
   StatusBar,
   Share,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -115,6 +117,7 @@ const TeamDetailsScreen = () => {
         method: "POST",
         pathParams: { id: String(teamId) },
         body: {
+          phoneNumber: val,
           mobileNumber: val,
           userIdOrEmail: val,
           playerId: isShortId ? Number(val) : undefined,
@@ -243,18 +246,46 @@ const TeamDetailsScreen = () => {
     }
   };
 
-  const displayName =
-    teamDetails?.name || teamDetails?.team_name || initialTeamName || "Team Details";
-  const captainName =
+  const safeStr = (val: any, fallback = ""): string => {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === "string") return val;
+    if (typeof val === "number" || typeof val === "boolean") return String(val);
+    if (typeof val === "object") {
+      if (typeof val.display_name === "string") return val.display_name;
+      if (typeof val.name === "string") return val.name;
+      if (typeof val.username === "string") return val.username;
+      if (typeof val.user_name === "string") return val.user_name;
+      if (val.id !== undefined && (typeof val.id === "string" || typeof val.id === "number")) return String(val.id);
+      if (val.playerId !== undefined && (typeof val.playerId === "string" || typeof val.playerId === "number")) return String(val.playerId);
+      if (val.userId !== undefined && (typeof val.userId === "string" || typeof val.userId === "number")) return String(val.userId);
+    }
+    return fallback;
+  };
+
+  const displayName = safeStr(
+    teamDetails?.name || teamDetails?.team_name || initialTeamName,
+    "Team Details"
+  );
+  const rawCaptain =
     teamDetails?.captain_name ||
     teamDetails?.captain?.display_name ||
     teamDetails?.captain?.full_name ||
-    (teamDetails?.captain_id ? `Captain #${teamDetails.captain_id}` : "Not Assigned");
-  const isCaptain =
-    Number(teamDetails?.captain_id) === Number(currentUserId);
-  const isAlreadyMember = members.some(
-    (m: any) => Number(m.user_id || m.id) === Number(currentUserId)
+    teamDetails?.captain;
+  const captainName = safeStr(
+    rawCaptain,
+    teamDetails?.captain_id ? `Captain #${safeStr(teamDetails.captain_id)}` : "Not Assigned"
   );
+
+  const teamShortName = safeStr(teamDetails?.short_name || teamDetails?.shortName);
+  const teamCity = safeStr(teamDetails?.city);
+  const teamDesc = safeStr(teamDetails?.description);
+
+  const isCaptain =
+    Number(safeStr(teamDetails?.captain_id)) === Number(currentUserId);
+  const isAlreadyMember = members.some((m: any) => {
+    const memberUid = safeStr(m.user_id || m.id || m.userId);
+    return Number(memberUid) === Number(currentUserId);
+  });
 
   return (
     <View style={styles.container}>
@@ -292,14 +323,49 @@ const TeamDetailsScreen = () => {
             {/* Team Overview Card */}
             <View style={styles.card}>
               <View style={styles.cardHeaderRow}>
-                <View style={styles.shieldIconBox}>
-                  <Ionicons name="shield-checkmark" size={32} color="#00D2FF" />
+                <View
+                  style={[
+                    styles.shieldIconBox,
+                    {
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      overflow: "hidden",
+                      backgroundColor: "rgba(108, 77, 246, 0.2)",
+                    },
+                  ]}
+                >
+                  {teamDetails?.logo ? (
+                    <Image
+                      source={{ uri: teamDetails.logo }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <Ionicons name="shield-checkmark" size={30} color="#00D2FF" />
+                  )}
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.teamTitle}>{displayName}</Text>
-                  <Text style={styles.teamSub}>Team ID: #{teamId}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Text style={styles.teamTitle}>{displayName}</Text>
+                    {(teamDetails?.short_name || teamDetails?.shortName) && (
+                      <View style={{ backgroundColor: "rgba(0, 210, 255, 0.15)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: "#00D2FF" }}>
+                        <Text style={{ color: "#00D2FF", fontSize: 11, fontWeight: "800" }}>
+                          {teamDetails?.short_name || teamDetails?.shortName}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.teamSub}>
+                    Team ID: #{teamId} {teamDetails?.city ? `• 📍 ${teamDetails.city}` : ""}
+                  </Text>
                 </View>
               </View>
+
+              {teamDetails?.description ? (
+                <Text style={{ color: "#D1D5DB", fontSize: 13, marginTop: 10, lineHeight: 18, fontStyle: "italic" }}>
+                  "{teamDetails.description}"
+                </Text>
+              ) : null}
 
               <View style={styles.divider} />
 
@@ -440,18 +506,21 @@ const TeamDetailsScreen = () => {
                 </View>
               ) : (
                 members.map((member, index) => {
-                  const mId = member.user_id || member.id;
-                  const mName =
-                    member.user_name || member.name || member.username || `Player #${mId}`;
+                  const rawId = member.user_id || member.id || member.player_id || member.user;
+                  const mId = safeStr(rawId, String(index + 1));
+                  const rawName = member.user_name || member.name || member.username || member.display_name || member.user;
+                  const mName = safeStr(rawName, `Player #${mId}`);
                   const isCap =
                     member.role === "CAPTAIN" ||
                     member.isCaptain ||
-                    Number(mId) === Number(teamDetails?.captain_id);
+                    Number(mId) === Number(safeStr(teamDetails?.captain_id));
+                  const mRole = safeStr(member.role, isCap ? "Captain" : "Player");
+                  const mStatus = safeStr(member.status, "ACTIVE");
 
                   return (
-                    <View key={member.id || index} style={styles.memberRow}>
+                    <View key={safeStr(member.id, String(index))} style={styles.memberRow}>
                       <View style={styles.avatarCircle}>
-                        <Text style={styles.avatarText}>{mName.charAt(0).toUpperCase()}</Text>
+                        <Text style={styles.avatarText}>{(mName ? mName.charAt(0).toUpperCase() : "P")}</Text>
                       </View>
 
                       <View style={{ flex: 1, marginLeft: 12 }}>
@@ -464,14 +533,14 @@ const TeamDetailsScreen = () => {
                           )}
                         </View>
                         <Text style={styles.memberSub}>
-                          Role: {member.role || (isCap ? "Captain" : "Player")} • Status: {member.status || "ACTIVE"}
+                          Role: {mRole} • Status: {mStatus}
                         </Text>
                       </View>
 
                       {!isCap && (
                         <TouchableOpacity
                           style={styles.removeMemberBtn}
-                          onPress={() => handleRemovePlayer(mId, mName)}
+                          onPress={() => handleRemovePlayer(Number(mId) || 0, mName)}
                         >
                           <Ionicons name="trash-outline" size={18} color="#EF4444" />
                         </TouchableOpacity>

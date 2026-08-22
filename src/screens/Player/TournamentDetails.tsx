@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,9 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -112,8 +114,77 @@ const TournamentDetailsScreen = () => {
   const [userTeams, setUserTeams] = useState<any[]>([]);
   const [tournamentTeams, setTournamentTeams] = useState<any[]>([]);
   const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamShortName, setNewTeamShortName] = useState("");
+  const [newTeamCity, setNewTeamCity] = useState("");
+  const [newTeamDescription, setNewTeamDescription] = useState("");
+  const [newTeamLogo, setNewTeamLogo] = useState("");
   const [loadingUserTeams, setLoadingUserTeams] = useState(false);
   const [loadingTournamentTeams, setLoadingTournamentTeams] = useState(false);
+
+  const combinedParticipants = useMemo(() => {
+    const list = [...participants];
+    const participantTeamIds = new Set(
+      list.map((p: any) => String(p.team_id || p.id))
+    );
+
+    tournamentTeams.forEach((t: any) => {
+      const tId = String(t.id || t.teamId);
+      if (!participantTeamIds.has(tId)) {
+        list.push({
+          id: t.id,
+          team_id: t.id,
+          team_name: t.teamName || t.name,
+          short_name: t.shortName,
+          city: t.city,
+          description: t.description,
+          logo: t.logo || t.image,
+          captain_name: t.captainName,
+          member_count: t.memberCount,
+          team_size: t.teamSize,
+          status: t.status || "REGISTERED",
+        });
+      }
+    });
+    return list;
+  }, [participants, tournamentTeams]);
+
+  const maxTeams = Number(
+    tournament?.config?.maxTeams || tournament?.max_teams || tournament?.maxTeams || 0
+  );
+  const registeredTeamsCount = Math.max(
+    combinedParticipants.length,
+    participants.length,
+    tournamentTeams.length
+  );
+  const isMaxTeamsReached = maxTeams > 0 && registeredTeamsCount >= maxTeams;
+
+  const handlePickTeamLogo = async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        showMessage({
+          message: "Permission Required",
+          description:
+            "Permission to access media gallery is required to pick a team logo.",
+          type: "warning",
+        });
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        setNewTeamLogo(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log("Error picking team logo:", e);
+    }
+  };
 
   // Team Details & Player Management Modal states
   const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
@@ -127,7 +198,7 @@ const TournamentDetailsScreen = () => {
     if (!tournamentId) return;
     try {
       setLoading(true);
-      const [tData, pData, fData, sData, aData] = await Promise.all([
+      const [tData, pData, fData, sData, aData, teamsRes] = await Promise.all([
         fetchTournamentControllerGetTournament({
           pathParams: { id: tournamentId },
         }).catch(() => null) as Promise<any>,
@@ -143,7 +214,14 @@ const TournamentDetailsScreen = () => {
         fetchTournamentControllerGetAnalytics({
           pathParams: { id: tournamentId },
         }).catch(() => null) as Promise<any>,
+        stackApiFetch<any, any, any, any, any, any>({
+          url: "/api/tournament/v1/{id}/teams",
+          method: "GET",
+          pathParams: { id: String(tournamentId) },
+        }).catch(() => null) as Promise<any>,
       ]);
+
+      if (teamsRes?.teams) setTournamentTeams(teamsRes.teams);
 
       if (tData) {
         setTournament(tData);
@@ -327,6 +405,13 @@ const TournamentDetailsScreen = () => {
 
   // Player Action: Register Team
   const handleRegisterTeam = () => {
+    if (isMaxTeamsReached) {
+      showMessage({
+        message: `Registration Closed: Maximum team limit (${registeredTeamsCount}/${maxTeams}) reached for this tournament.`,
+        type: "warning",
+      });
+      return;
+    }
     setActiveRegTab("my");
     setNewTeamName("");
     setShowRegisterModal(true);
@@ -335,6 +420,13 @@ const TournamentDetailsScreen = () => {
   };
 
   const registerMyTeam = async (teamId: number) => {
+    if (isMaxTeamsReached) {
+      showMessage({
+        message: `Registration Closed: Maximum team limit (${maxTeams}) has been reached.`,
+        type: "warning",
+      });
+      return;
+    }
     try {
       setActionLoading(true);
       setShowRegisterModal(false);
@@ -358,6 +450,13 @@ const TournamentDetailsScreen = () => {
   };
 
   const handleCreateTeamAndRegister = async () => {
+    if (isMaxTeamsReached) {
+      showMessage({
+        message: `Registration Closed: Maximum team limit (${maxTeams}) has been reached.`,
+        type: "warning",
+      });
+      return;
+    }
     if (!newTeamName.trim()) {
       showMessage({ message: "Please enter team name", type: "warning" });
       return;
@@ -369,13 +468,24 @@ const TournamentDetailsScreen = () => {
         url: "/api/tournament/v1/{id}/teams",
         method: "POST",
         pathParams: { id: String(tournamentId) },
-        body: { teamName: newTeamName.trim() },
+        body: {
+          teamName: newTeamName.trim(),
+          shortName: newTeamShortName.trim() || undefined,
+          city: newTeamCity.trim() || undefined,
+          description: newTeamDescription.trim() || undefined,
+          logo: newTeamLogo || undefined,
+          sportId: tournament?.sport_id || 1,
+        },
       });
       showMessage({
         message: "Team created and registered successfully!",
         type: "success",
       });
       setNewTeamName("");
+      setNewTeamShortName("");
+      setNewTeamCity("");
+      setNewTeamDescription("");
+      setNewTeamLogo("");
       loadAllData();
     } catch (err: any) {
       showMessage({
@@ -794,13 +904,36 @@ const TournamentDetailsScreen = () => {
         <SizedBox height={8} />
 
         {!isOrganizer && tournament.status === "UPCOMING" && (
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={handleRegisterTeam}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.primaryBtnText}>Register Your Team </Text>
-          </TouchableOpacity>
+          isMaxTeamsReached ? (
+            <View
+              style={[
+                styles.primaryBtn,
+                {
+                  backgroundColor: "rgba(239, 68, 68, 0.15)",
+                  borderColor: "#EF4444",
+                  borderWidth: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              ]}
+            >
+              <Ionicons name="lock-closed" size={18} color="#EF4444" style={{ marginRight: 6 }} />
+              <Text style={[styles.primaryBtnText, { color: "#EF4444" }]}>
+                Registration Full ({registeredTeamsCount}/{maxTeams} Teams)
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={handleRegisterTeam}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryBtnText}>
+                Register Your Team {maxTeams > 0 ? `(${registeredTeamsCount}/${maxTeams})` : ""}
+              </Text>
+            </TouchableOpacity>
+          )
         )}
 
         {isOrganizer && (
@@ -827,82 +960,175 @@ const TournamentDetailsScreen = () => {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <Text style={styles.sectionHeader}>
-            Registered Teams ({participants.length})
+            Registered Teams ({registeredTeamsCount}{maxTeams > 0 ? ` / ${maxTeams}` : ''})
           </Text>
           {tournament.status === "UPCOMING" && (
-            <TouchableOpacity
-              style={styles.addTeamBtn}
-              onPress={handleRegisterTeam}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="add-circle-outline" size={16} color="#FFF" />
-              <Text style={styles.addTeamBtnText}>Register Team</Text>
-            </TouchableOpacity>
+            isMaxTeamsReached ? (
+              <View
+                style={[
+                  styles.addTeamBtn,
+                  { backgroundColor: "rgba(239, 68, 68, 0.2)", borderColor: "rgba(239, 68, 68, 0.4)", borderWidth: 1, flexDirection: "row", alignItems: "center" },
+                ]}
+              >
+                <Ionicons name="lock-closed" size={14} color="#EF4444" style={{ marginRight: 4 }} />
+                <Text style={[styles.addTeamBtnText, { color: "#EF4444" }]}>Full</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.addTeamBtn}
+                onPress={handleRegisterTeam}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="add-circle-outline" size={16} color="#FFF" />
+                <Text style={styles.addTeamBtnText}>Register Team</Text>
+              </TouchableOpacity>
+            )
           )}
         </View>
 
-        {participants.length === 0 ? (
+        {combinedParticipants.length === 0 ? (
           <View style={styles.emptyTabBox}>
             <Text style={styles.emptyTabText}>No registered teams yet.</Text>
           </View>
         ) : (
-          participants.map((item, index) => (
-            <View key={item.id || index} style={styles.participantItem}>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => handleOpenTeamDetails(item)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.participantName}>{item.team_name}</Text>
-                <Text style={styles.participantDetails}>
-                  {item.captain_name ? `Captain: ${item.captain_name} • ` : ""}
-                  {item.member_count !== undefined ? `${item.member_count} Members • ` : ""}
-                  Status: {item.status}{" "}
-                  {item.seed ? `• Seed: ${item.seed}` : ""}{" "}
-                  {item.group_name ? `• Group: ${item.group_name}` : ""}
-                </Text>
-              </TouchableOpacity>
+          combinedParticipants.map((item, index) => {
+            const matchingTeam = tournamentTeams.find(
+              (t: any) => String(t.id || t.teamId) === String(item.team_id || item.id)
+            );
+            const logoUri =
+              item.logo ||
+              item.team_logo ||
+              item.image ||
+              item.teamLogo ||
+              item.team_details?.logo ||
+              matchingTeam?.logo ||
+              matchingTeam?.image;
+            const teamName =
+              item.team_name ||
+              item.name ||
+              item.teamName ||
+              matchingTeam?.teamName ||
+              matchingTeam?.name ||
+              "Team";
+            const shortName =
+              item.short_name ||
+              item.shortName ||
+              matchingTeam?.shortName ||
+              matchingTeam?.short_name;
+            const city = item.city || matchingTeam?.city;
+            const captainName =
+              item.captain_name ||
+              item.captainName ||
+              matchingTeam?.captainName;
+            const memberCount =
+              item.member_count ??
+              item.memberCount ??
+              matchingTeam?.memberCount;
+            const teamSize =
+              item.team_size ??
+              item.teamSize ??
+              matchingTeam?.teamSize;
+            const description =
+              item.description || matchingTeam?.description;
+            const status = item.status || matchingTeam?.status || "REGISTERED";
 
-              {(() => {
-                const currentUserId = userProfile?.user_id || userProfile?.id || userProfile?.userId;
-                const isCaptain = Number(item.captain_id) === Number(currentUserId);
-                const canRemove = isOrganizer || isCaptain || item.status === "PENDING";
+            return (
+              <View key={item.id || item.team_id || index} style={styles.participantItem}>
+                {/* Team Logo Avatar */}
+                <TouchableOpacity
+                  onPress={() => handleOpenTeamDetails(item)}
+                  activeOpacity={0.7}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: "rgba(108, 77, 246, 0.2)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginRight: 12,
+                    overflow: "hidden",
+                    borderWidth: 1,
+                    borderColor: "rgba(108, 77, 246, 0.4)",
+                  }}
+                >
+                  {logoUri ? (
+                    <Image source={{ uri: logoUri }} style={{ width: "100%", height: "100%" }} />
+                  ) : (
+                    <Ionicons name="shield-outline" size={22} color="#00D2FF" />
+                  )}
+                </TouchableOpacity>
 
-                return (
-                  <View style={styles.actionRow}>
-                    {!isCaptain && !isOrganizer && (
-                      <TouchableOpacity
-                        style={[styles.teamRegisterActionBtn, { backgroundColor: "#00D2FF" }]}
-                        onPress={() => handleJoinTeam(item.team_id || item.id)}
-                      >
-                        <Text style={styles.teamRegisterActionText}>Join</Text>
-                      </TouchableOpacity>
-                    )}
-                    {item.status === "PENDING" && isOrganizer && (
-                      <TouchableOpacity
-                        style={styles.checkBtn}
-                        onPress={() => handleApproveTeam(item.team_id)}
-                      >
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color="#00E676"
-                        />
-                      </TouchableOpacity>
-                    )}
-                    {canRemove && (
-                      <TouchableOpacity
-                        style={styles.checkBtn}
-                        onPress={() => handleCancelTeam(item.team_id)}
-                      >
-                        <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                      </TouchableOpacity>
-                    )}
+                <TouchableOpacity
+                  style={{ flex: 1 }}
+                  onPress={() => handleOpenTeamDetails(item)}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <Text style={styles.participantName}>{teamName}</Text>
+                    {shortName ? (
+                      <View style={{ backgroundColor: "rgba(0, 210, 255, 0.15)", paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4 }}>
+                        <Text style={{ color: "#00D2FF", fontSize: 10, fontWeight: "800" }}>
+                          {shortName}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
-                );
-              })()}
-            </View>
-          ))
+                  <Text style={styles.participantDetails}>
+                    {city ? `📍 ${city} • ` : ""}
+                    {captainName ? `👑 Captain: ${captainName} • ` : ""}
+                    {memberCount !== undefined && memberCount !== null ? `👥 ${memberCount}${teamSize ? `/${teamSize}` : ''} Players • ` : ""}
+                    Status: {status}
+                    {item.seed ? ` • Seed: ${item.seed}` : ""}
+                    {item.group_name ? ` • Group: ${item.group_name}` : ""}
+                  </Text>
+                  {description ? (
+                    <Text style={{ color: "#9CA3AF", fontSize: 11, fontStyle: "italic", marginTop: 2 }} numberOfLines={1}>
+                      "{description}"
+                    </Text>
+                  ) : null}
+                </TouchableOpacity>
+
+                {(() => {
+                  const currentUserId = userProfile?.user_id || userProfile?.id || userProfile?.userId;
+                  const isCaptain = Number(item.captain_id) === Number(currentUserId);
+                  const canRemove = isOrganizer || isCaptain || item.status === "PENDING";
+
+                  return (
+                    <View style={styles.actionRow}>
+                      {!isCaptain && !isOrganizer && (
+                        <TouchableOpacity
+                          style={[styles.teamRegisterActionBtn, { backgroundColor: "#00D2FF" }]}
+                          onPress={() => handleJoinTeam(item.team_id || item.id)}
+                        >
+                          <Text style={styles.teamRegisterActionText}>Join</Text>
+                        </TouchableOpacity>
+                      )}
+                      {item.status === "PENDING" && isOrganizer && (
+                        <TouchableOpacity
+                          style={styles.checkBtn}
+                          onPress={() => handleApproveTeam(item.team_id || item.id)}
+                        >
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={24}
+                            color="#00E676"
+                          />
+                        </TouchableOpacity>
+                      )}
+                      {canRemove && (
+                        <TouchableOpacity
+                          style={styles.checkBtn}
+                          onPress={() => handleCancelTeam(item.team_id || item.id)}
+                        >
+                          <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })()}
+              </View>
+            );
+          })
         )}
 
         {isOrganizer && participants.length > 0 && (
@@ -1419,7 +1645,7 @@ const TournamentDetailsScreen = () => {
           style={styles.modalOverlay}
         >
           <View
-            style={[styles.modalContent, { minHeight: 400, paddingBottom: 20 }]}
+            style={[styles.modalContent, { height: "85%", maxHeight: "88%", paddingBottom: 24 }]}
           >
             <Text style={styles.modalTitle}>Tournament Registration</Text>
 
@@ -1520,17 +1746,75 @@ const TournamentDetailsScreen = () => {
             )}
 
             {activeRegTab === "create" && (
-              <View style={{ flex: 1, marginTop: 20 }}>
+              <ScrollView style={{ flex: 1, marginTop: 15 }} showsVerticalScrollIndicator={false}>
                 <Text style={styles.modalSubTitle}>
                   Create a team for this tournament (0 members initially). You can add players manually or share a join link.
                 </Text>
+
+                {/* Team Logo Image Picker */}
+                <View style={{ alignItems: "center", marginVertical: 12 }}>
+                  <TouchableOpacity
+                    onPress={handlePickTeamLogo}
+                    activeOpacity={0.8}
+                    style={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: 36,
+                      backgroundColor: "#1F1B2E",
+                      borderWidth: 2,
+                      borderColor: "#6C4DF6",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {newTeamLogo ? (
+                      <Image source={{ uri: newTeamLogo }} style={{ width: "100%", height: "100%" }} />
+                    ) : (
+                      <View style={{ alignItems: "center" }}>
+                        <Ionicons name="camera-outline" size={24} color="#6C4DF6" />
+                        <Text style={{ color: "#9CA3AF", fontSize: 10, marginTop: 2 }}>Add Logo</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
                 <TextInput
                   style={styles.modalInput}
-                  placeholder="Enter Team Name"
+                  placeholder="Team Name (Required)"
                   placeholderTextColor="#9CA3AF"
                   value={newTeamName}
                   onChangeText={setNewTeamName}
                 />
+
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <TextInput
+                    style={[styles.modalInput, { flex: 1 }]}
+                    placeholder="Short Code (e.g. MUM)"
+                    placeholderTextColor="#9CA3AF"
+                    value={newTeamShortName}
+                    onChangeText={setNewTeamShortName}
+                    autoCapitalize="characters"
+                    maxLength={5}
+                  />
+                  <TextInput
+                    style={[styles.modalInput, { flex: 1 }]}
+                    placeholder="City (e.g. Mumbai)"
+                    placeholderTextColor="#9CA3AF"
+                    value={newTeamCity}
+                    onChangeText={setNewTeamCity}
+                  />
+                </View>
+
+                <TextInput
+                  style={[styles.modalInput, { height: 70, textAlignVertical: "top" }]}
+                  placeholder="Description / About Team"
+                  placeholderTextColor="#9CA3AF"
+                  value={newTeamDescription}
+                  onChangeText={setNewTeamDescription}
+                  multiline
+                />
+
                 <TouchableOpacity
                   style={[
                     styles.modalBtnSubmit,
@@ -1539,13 +1823,14 @@ const TournamentDetailsScreen = () => {
                       borderRadius: 12,
                       alignItems: "center",
                       marginTop: 10,
+                      marginBottom: 20,
                     },
                   ]}
                   onPress={handleCreateTeamAndRegister}
                 >
-                  <Text style={styles.modalSubmitText}>Create & Register</Text>
+                  <Text style={styles.modalSubmitText}>Create & Register Team</Text>
                 </TouchableOpacity>
-              </View>
+              </ScrollView>
             )}
 
             {activeRegTab === "join" && (
@@ -2113,10 +2398,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#0F0D1A",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     padding: 24,
-    maxHeight: "60%",
+    maxHeight: "85%",
   },
   modalTitle: {
     color: "#FFF",
