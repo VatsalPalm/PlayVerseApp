@@ -247,6 +247,26 @@
         "tags": ["Auth"]
       }
     },
+    "/api/auth/v1/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User logged out successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "tags": ["Auth"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/users/v1/profile": {
       "get": {
         "operationId": "UserController_getProfile",

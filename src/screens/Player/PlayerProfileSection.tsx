@@ -25,7 +25,9 @@ interface PlayerProfileSectionProps {
   onSignOut: () => void;
 }
 
-const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }) => {
+const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({
+  onSignOut,
+}) => {
   const [activeTab, setActiveTab] = useState<"profile" | "stats">("profile");
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,54 +47,55 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
     onError: (err) => {
       console.log("Logout API failed:", err);
       onSignOut();
-    }
+    },
   });
 
   // Update Profile Mutation
-  const { mutate: updateProfile, isPending: isSaving } = useUserControllerPatchProfile({
-    onSuccess: (data: any) => {
-      // Sync cache in storage
-      try {
-        const storedProfile = storage.getString("userProfile");
-        if (storedProfile) {
-          const currentProfileObj = JSON.parse(storedProfile);
-          const updatedProfileData = data?.data || data?.result || data || {};
-          const newProfileObj = {
-            ...currentProfileObj,
-            ...updatedProfileData,
-          };
-          storage.set("userProfile", JSON.stringify(newProfileObj));
+  const { mutate: updateProfile, isPending: isSaving } =
+    useUserControllerPatchProfile({
+      onSuccess: (data: any) => {
+        // Sync cache in storage
+        try {
+          const storedProfile = storage.getString("userProfile");
+          if (storedProfile) {
+            const currentProfileObj = JSON.parse(storedProfile);
+            const updatedProfileData = data?.data || data?.result || data || {};
+            const newProfileObj = {
+              ...currentProfileObj,
+              ...updatedProfileData,
+            };
+            storage.set("userProfile", JSON.stringify(newProfileObj));
+          }
+        } catch (e) {
+          console.log("Failed to sync cache:", e);
         }
-      } catch (e) {
-        console.log("Failed to sync cache:", e);
-      }
 
-      showMessage({
-        message: "Profile Saved",
-        description: "Your profile was updated successfully.",
-        type: "success",
-      });
+        showMessage({
+          message: "Profile Saved",
+          description: "Your profile was updated successfully.",
+          type: "success",
+        });
 
-      refetchProfile();
-    },
-    onError: (error: any) => {
-      console.log("Update profile error:", JSON.stringify(error, null, 2));
-      let errMsg = "Could not save profile changes.";
-      const payload = (error as any)?.payload || (error as any)?.response;
-      if (Array.isArray(payload?.message)) {
-        errMsg = payload.message.join(", ");
-      } else if (typeof payload?.message === "string") {
-        errMsg = payload.message;
-      } else if (typeof (error as any)?.message === "string") {
-        errMsg = (error as any).message;
-      }
-      showMessage({
-        message: "Save Failed",
-        description: errMsg,
-        type: "danger",
-      });
-    },
-  });
+        refetchProfile();
+      },
+      onError: (error: any) => {
+        console.log("Update profile error:", JSON.stringify(error, null, 2));
+        let errMsg = "Could not save profile changes.";
+        const payload = (error as any)?.payload || (error as any)?.response;
+        if (Array.isArray(payload?.message)) {
+          errMsg = payload.message.join(", ");
+        } else if (typeof payload?.message === "string") {
+          errMsg = payload.message;
+        } else if (typeof (error as any)?.message === "string") {
+          errMsg = (error as any).message;
+        }
+        showMessage({
+          message: "Save Failed",
+          description: errMsg,
+          type: "danger",
+        });
+      },
+    });
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -122,7 +125,11 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
       {/* Header bar */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Player Hub</Text>
-        <TouchableOpacity style={styles.signOutBtn} onPress={() => setIsLogoutModalVisible(true)} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.signOutBtn}
+          onPress={() => setIsLogoutModalVisible(true)}
+          activeOpacity={0.8}
+        >
           <Ionicons name="log-out-outline" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
@@ -130,11 +137,19 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
       {/* Tabs Row */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === "profile" && styles.tabBtnActive]}
+          style={[
+            styles.tabBtn,
+            activeTab === "profile" && styles.tabBtnActive,
+          ]}
           onPress={() => setActiveTab("profile")}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabBtnText, activeTab === "profile" && styles.tabBtnTextActive]}>
+          <Text
+            style={[
+              styles.tabBtnText,
+              activeTab === "profile" && styles.tabBtnTextActive,
+            ]}
+          >
             My Profile
           </Text>
         </TouchableOpacity>
@@ -143,7 +158,12 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
           onPress={() => setActiveTab("stats")}
           activeOpacity={0.8}
         >
-          <Text style={[styles.tabBtnText, activeTab === "stats" && styles.tabBtnTextActive]}>
+          <Text
+            style={[
+              styles.tabBtnText,
+              activeTab === "stats" && styles.tabBtnTextActive,
+            ]}
+          >
             AI Statistics
           </Text>
         </TouchableOpacity>
@@ -164,7 +184,11 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
         }
       >
         {activeTab === "profile" ? (
-          <MyProfileTab profile={profile} onSave={handleSaveProfile} isSaving={isSaving} />
+          <MyProfileTab
+            profile={profile}
+            onSave={handleSaveProfile}
+            isSaving={isSaving}
+          />
         ) : (
           <AiStatisticsTab playerId={playerId} />
         )}
@@ -183,7 +207,9 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
               <Ionicons name="log-out-outline" size={26} color="#EF4444" />
             </View>
             <Text style={styles.modalTitle}>Logout</Text>
-            <Text style={styles.modalMessage}>Are you sure you want to logout?</Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to logout?
+            </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.modalBtnCancel}
