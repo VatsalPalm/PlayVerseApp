@@ -964,7 +964,7 @@ export const useAiControllerGetPlayerStats = <TData = undefined,>(
 export type AiControllerFindGameError = Fetcher.ErrorWrapper<undefined>;
 
 export type AiControllerFindGameVariables = {
-  body?: Schemas.FindGameRequestDto;
+  body: Schemas.FindGameRequestDto;
 } & PlayVerseContext["fetcherOptions"];
 
 export const fetchAiControllerFindGame = (
@@ -2386,6 +2386,120 @@ export const useMatchControllerDeleteMatch = (
     mutationFn: (variables: MatchControllerDeleteMatchVariables) =>
       fetchMatchControllerDeleteMatch(deepMerge(fetcherOptions, variables)),
     ...options,
+  });
+};
+
+export type MatchControllerGetMatchRequestsPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerGetMatchRequestsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchRequestsVariables = {
+  pathParams: MatchControllerGetMatchRequestsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchRequests = (
+  variables: MatchControllerGetMatchRequestsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    undefined,
+    {},
+    {},
+    MatchControllerGetMatchRequestsPathParams
+  >({
+    url: "/api/match/v1/{matchId}/requests",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/{matchId}/requests",
+      operationId: "matchControllerGetMatchRequests",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchRequests(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchRequests = <TData = undefined,>(
+  variables: MatchControllerGetMatchRequestsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    TData
+  >({
+    ...matchControllerGetMatchRequestsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchRequests = <TData = undefined,>(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    TData
+  >({
+    ...matchControllerGetMatchRequestsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
   });
 };
 
@@ -8347,6 +8461,13 @@ export type QueryOperation =
       path: "/api/match/v1/{matchId}";
       operationId: "matchControllerGetMatchDetail";
       variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/{matchId}/requests";
+      operationId: "matchControllerGetMatchRequests";
+      variables:
+        | MatchControllerGetMatchRequestsVariables
+        | reactQuery.SkipToken;
     }
   | {
       path: "/api/grounds/v1";

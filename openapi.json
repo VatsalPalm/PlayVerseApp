@@ -1179,6 +1179,33 @@
         ]
       }
     },
+    "/api/match/v1/{matchId}/requests": {
+      "get": {
+        "operationId": "MatchController_getMatchRequests",
+        "summary": "Get all pending join requests for a match",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/grounds/v1": {
       "post": {
         "operationId": "GroundController_createGround",
@@ -3664,6 +3691,46 @@
           "token": {
             "type": "string",
             "example": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+          },
+          "fcm_token": {
+            "type": "string",
+            "example": "fcm_token_001",
+            "description": "FCM token of the device"
+          },
+          "os": {
+            "type": "string",
+            "example": "ANDROID",
+            "description": "Device os type"
+          },
+          "brand": {
+            "type": "string",
+            "example": "Samsung A50",
+            "description": "Device brand name"
+          },
+          "model_no": {
+            "type": "string",
+            "example": "SM-A12E",
+            "description": "Device model number"
+          },
+          "serial_number": {
+            "type": "string",
+            "example": "SA4545as45a4",
+            "description": "Device serial number"
+          },
+          "version_number": {
+            "type": "string",
+            "example": "1.0",
+            "description": "version number"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude coordinate",
+            "example": 23.0225
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude coordinate",
+            "example": 72.5714
           }
         },
         "required": ["mobile_number", "country_code", "otp", "token"]
@@ -3740,54 +3807,17 @@
             "type": "string",
             "description": "Natural language query representing player's intent",
             "example": "I want to play badminton today around 7 PM. I'm intermediate and need one player."
-          },
-          "sportId": {
-            "type": "number",
-            "description": "The ID of the sport",
-            "example": 1
-          },
-          "date": {
-            "type": "string",
-            "description": "Target play date (YYYY-MM-DD)",
-            "example": "2026-08-22"
-          },
-          "preferredTime": {
-            "type": "string",
-            "description": "Preferred start time (HH:MM)",
-            "example": "19:00"
-          },
-          "timeFlexibilityMinutes": {
-            "type": "number",
-            "description": "Time flexibility in minutes before or after preferred time",
-            "example": 60,
-            "default": 60
-          },
-          "skillLevel": {
-            "type": "string",
-            "description": "Required skill level of players: BEGINNER, INTERMEDIATE, ADVANCED",
-            "example": "INTERMEDIATE"
-          },
-          "playersNeeded": {
-            "type": "number",
-            "description": "Number of players needed",
-            "example": 1,
-            "default": 1
-          },
-          "radiusKm": {
-            "type": "number",
-            "description": "Maximum distance radius from the user's location in Km",
-            "example": 5,
-            "default": 5
           }
-        }
+        },
+        "required": ["prompt"]
       },
       "SendGameInviteDto": {
         "type": "object",
         "properties": {
-          "receiverId": {
+          "matchId": {
             "type": "number",
-            "description": "The User ID of the candidate player we matched with",
-            "example": 12
+            "description": "The ID of the match the user wants to join",
+            "example": 38
           },
           "slotId": {
             "type": "number",
@@ -3795,7 +3825,7 @@
             "example": 1001
           }
         },
-        "required": ["receiverId", "slotId"]
+        "required": ["matchId", "slotId"]
       },
       "CreateBookingDto": {
         "type": "object",

@@ -190,8 +190,8 @@ const CreateMatchScreen = () => {
     const bodyPayload = {
       sportId: 5, // Pickleball
       matchType,
-      homePlayerIds,
-      awayPlayerIds,
+      homePlayerIds: homePlayerIds.map(String),
+      awayPlayerIds: awayPlayerIds.map(String),
       groundId: selectedGround?.id || null,
       scheduledAt: `${scheduledDate}T${scheduledTime}:00Z`,
       pointsPerGame: points,

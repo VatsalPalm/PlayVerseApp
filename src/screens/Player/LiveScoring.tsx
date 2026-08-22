@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { storage } from "../../services/mmkv";
 import {
   StyleSheet,
@@ -23,6 +23,7 @@ import { showMessage } from "react-native-flash-message";
 import { useMatchSocket } from "../../hooks/useMatchSocket";
 import { fetchMatchControllerStartMatch } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
+import JoinRequestsModal from "../../Components/JoinRequestsModal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -35,6 +36,7 @@ const LiveScoringScreen = () => {
 
   const [userId, setUserId] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
 
   useEffect(() => {
     try {
@@ -96,6 +98,36 @@ const LiveScoringScreen = () => {
         match.away_team_name === "TBD"),
   );
 
+  // Check if current user is match organizer or team captain
+  const isOrganizerOrCaptain = useMemo(() => {
+    if (!match) return false;
+    const isMatchOrganizer =
+      userRole === "TOURNAMENT_ORGANIZER" ||
+      userRole === "ORGANIZER" ||
+      userRole === "ADMIN" ||
+      userRole === "GROUND_OWNER" ||
+      (userId &&
+        Number((match as any)?.tournament?.organizer_id) === Number(userId)) ||
+      (userId &&
+        Number((match as any)?.tournament?.created_by) === Number(userId)) ||
+      (userId && Number((match as any)?.organizer_id) === Number(userId)) ||
+      (userId && Number((match as any)?.created_by) === Number(userId));
+
+    const m = match as any;
+    const isCaptain = userId && (
+      Number(m?.homeTeam?.captain_id) === Number(userId) ||
+      Number(m?.homeTeam?.captainId) === Number(userId) ||
+      Number(m?.awayTeam?.captain_id) === Number(userId) ||
+      Number(m?.awayTeam?.captainId) === Number(userId) ||
+      Number(m?.home_team?.captain_id) === Number(userId) ||
+      Number(m?.home_team?.captainId) === Number(userId) ||
+      Number(m?.away_team?.captain_id) === Number(userId) ||
+      Number(m?.away_team?.captainId) === Number(userId)
+    );
+
+    return Boolean(isMatchOrganizer || isCaptain);
+  }, [match, userId, userRole]);
+
   // Determine if the user is authorized to perform scoring inputs
   const isAllowedToScore = (() => {
     if (isMatchTbd) return false;
@@ -119,19 +151,7 @@ const LiveScoringScreen = () => {
           (userId && Number(p.player_id) === Number(userId)),
       );
 
-    const isMatchOrganizer =
-      userRole === "TOURNAMENT_ORGANIZER" ||
-      userRole === "ORGANIZER" ||
-      userRole === "ADMIN" ||
-      userRole === "GROUND_OWNER" ||
-      (userId &&
-        Number((match as any)?.tournament?.organizer_id) === Number(userId)) ||
-      (userId &&
-        Number((match as any)?.tournament?.created_by) === Number(userId)) ||
-      (userId && Number((match as any)?.organizer_id) === Number(userId)) ||
-      (userId && Number((match as any)?.created_by) === Number(userId));
-
-    return Boolean(isPlayerInMatch || isMatchOrganizer);
+    return Boolean(isPlayerInMatch || isOrganizerOrCaptain);
   })();
 
   const handleStartMatchAction = async () => {
@@ -554,6 +574,17 @@ const LiveScoringScreen = () => {
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
 
+                {isOrganizerOrCaptain && (
+                  <TouchableOpacity
+                    style={styles.viewRequestsBtn}
+                    onPress={() => setShowRequestsModal(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="people-outline" size={18} color="#FFF" />
+                    <Text style={styles.viewRequestsBtnText}>View Join Requests</Text>
+                  </TouchableOpacity>
+                )}
+
                 {/* Match Not Started Banner Action */}
                 {match?.status !== "LIVE" && !isCompleted && (
                   <TouchableOpacity
@@ -839,6 +870,15 @@ const LiveScoringScreen = () => {
           )}
         </View>
       )}
+
+      <JoinRequestsModal
+        visible={showRequestsModal}
+        onClose={() => setShowRequestsModal(false)}
+        matchId={matchId}
+        onRosterUpdated={() => {
+          requestSync(); // Sync roster changes
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -1130,6 +1170,22 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     marginBottom: 12,
     textTransform: "uppercase",
+  },
+  viewRequestsBtn: {
+    backgroundColor: "#6C4DF6",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  viewRequestsBtnText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
   },
   controlsRow: {
     flexDirection: "row",

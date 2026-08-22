@@ -221,7 +221,8 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
               </Text>
 
               <View style={styles.fixtureActions}>
-                {item.status !== "COMPLETED" && (
+                {/* Start Match - Only organizer can start a scheduled match */}
+                {item.status === "SCHEDULED" && isOrganizer && (
                   <TouchableOpacity
                     style={styles.liveScoreBtn}
                     onPress={() => {
@@ -241,19 +242,39 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                         return;
                       }
 
-                      if (item.status === "SCHEDULED") {
-                        setLineupModalMatch(item);
-                      } else {
-                        navigation.navigate("LiveScoring", {
-                          matchId: item.id,
-                          canScore: true,
-                        });
-                      }
+                      setLineupModalMatch(item);
                     }}
                   >
-                    <Text style={styles.liveScoreBtnText}>
-                      {item.status === "SCHEDULED" ? "Start Match" : "Live Scoring"}
-                    </Text>
+                    <Text style={styles.liveScoreBtnText}>Start Match</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Live Scoring - All users can watch/score a live match */}
+                {item.status === "LIVE" && (
+                  <TouchableOpacity
+                    style={styles.liveScoreBtn}
+                    onPress={() => {
+                      const isTbd =
+                        !item.home_team_id ||
+                        !item.away_team_id ||
+                        item.home_team_name === "TBD" ||
+                        item.away_team_name === "TBD";
+
+                      if (isTbd) {
+                        showMessage({
+                          message: "Cannot open scoring: Opponents are not yet decided (TBD)",
+                          type: "warning",
+                        });
+                        return;
+                      }
+
+                      navigation.navigate("LiveScoring", {
+                        matchId: item.id,
+                        canScore: isOrganizer,
+                      });
+                    }}
+                  >
+                    <Text style={styles.liveScoreBtnText}>Live Scoring</Text>
                   </TouchableOpacity>
                 )}
 

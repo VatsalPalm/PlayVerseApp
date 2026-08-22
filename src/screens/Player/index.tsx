@@ -642,6 +642,31 @@ const PlayerHomeScreen = () => {
                 )}
               </View>
 
+              {/* AI Find Game Promoted Banner */}
+              <View style={[styles.section, { marginBottom: 4 }]}>
+                <TouchableOpacity
+                  style={styles.aiBannerCard}
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate("FindMatch")}
+                >
+                  <View style={styles.aiBannerLeft}>
+                    <View style={styles.aiBannerBadge}>
+                      <Ionicons name="sparkles" size={12} color="#FFF" />
+                      <Text style={styles.aiBannerBadgeText}>NEW FEATURE</Text>
+                    </View>
+                    <Text style={styles.aiBannerTitle}>Find Game with AI</Text>
+                    <Text style={styles.aiBannerSub}>
+                      Tell us when and what you want to play, and our AI will match you instantly.
+                    </Text>
+                  </View>
+                  <View style={styles.aiBannerRight}>
+                    <View style={styles.aiBannerIconCircle}>
+                      <Ionicons name="sparkles-sharp" size={20} color="#6C4DF6" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+
               {/* Quick Actions Grid */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -649,6 +674,7 @@ const PlayerHomeScreen = () => {
                   {[
                     { title: "Live Matches", icon: "⚡" },
                     { title: "Book Ground", icon: "🏟️" },
+                    { title: "Find Match", icon: "🔍" },
                     { title: "Tournaments", icon: "🏆" },
                     { title: "My Teams", icon: "👥" },
                   ].map((action, index) => (
@@ -665,6 +691,8 @@ const PlayerHomeScreen = () => {
                           navigation.navigate("TournamentList");
                         } else if (action.title === "My Teams") {
                           setShowMyTeamsModal(true);
+                        } else if (action.title === "Find Match") {
+                          navigation.navigate("FindMatch");
                         } else {
                           showMessage({
                             message: `${action.title} coming soon!`,
@@ -1470,6 +1498,63 @@ const styles = StyleSheet.create({
   tabBarLabelActive: {
     color: "#A78BFA",
     fontWeight: "700",
+  },
+  aiBannerCard: {
+    backgroundColor: "#1D113C",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.3)",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  aiBannerLeft: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  aiBannerBadge: {
+    backgroundColor: "#6C4DF6",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 4,
+    marginBottom: 6,
+  },
+  aiBannerBadgeText: {
+    color: "#FFF",
+    fontSize: 9,
+    fontWeight: "900",
+  },
+  aiBannerTitle: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+  aiBannerSub: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  aiBannerRight: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  aiBannerIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(108, 77, 246, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

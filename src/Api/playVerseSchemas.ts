@@ -222,6 +222,54 @@ export type ConfirmOtpDto = {
    * @example 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
    */
   token: string;
+  /**
+   * FCM token of the device
+   *
+   * @example fcm_token_001
+   */
+  fcm_token?: string;
+  /**
+   * Device os type
+   *
+   * @example ANDROID
+   */
+  os?: string;
+  /**
+   * Device brand name
+   *
+   * @example Samsung A50
+   */
+  brand?: string;
+  /**
+   * Device model number
+   *
+   * @example SM-A12E
+   */
+  model_no?: string;
+  /**
+   * Device serial number
+   *
+   * @example SA4545as45a4
+   */
+  serial_number?: string;
+  /**
+   * version number
+   *
+   * @example 1.0
+   */
+  version_number?: string;
+  /**
+   * Latitude coordinate
+   *
+   * @example 23.0225
+   */
+  latitude?: number;
+  /**
+   * Longitude coordinate
+   *
+   * @example 72.5714
+   */
+  longitude?: number;
 };
 
 export type ChangePasswordDto = {
@@ -280,61 +328,16 @@ export type FindGameRequestDto = {
    *
    * @example I want to play badminton today around 7 PM. I'm intermediate and need one player.
    */
-  prompt?: string;
-  /**
-   * The ID of the sport
-   *
-   * @example 1
-   */
-  sportId?: number;
-  /**
-   * Target play date (YYYY-MM-DD)
-   *
-   * @example 2026-08-22
-   */
-  date?: string;
-  /**
-   * Preferred start time (HH:MM)
-   *
-   * @example 19:00
-   */
-  preferredTime?: string;
-  /**
-   * Time flexibility in minutes before or after preferred time
-   *
-   * @example 60
-   * @default 60
-   */
-  timeFlexibilityMinutes?: number;
-  /**
-   * Required skill level of players: BEGINNER, INTERMEDIATE, ADVANCED
-   *
-   * @example INTERMEDIATE
-   */
-  skillLevel?: string;
-  /**
-   * Number of players needed
-   *
-   * @example 1
-   * @default 1
-   */
-  playersNeeded?: number;
-  /**
-   * Maximum distance radius from the user's location in Km
-   *
-   * @example 5
-   * @default 5
-   */
-  radiusKm?: number;
+  prompt: string;
 };
 
 export type SendGameInviteDto = {
   /**
-   * The User ID of the candidate player we matched with
+   * The ID of the match the user wants to join
    *
-   * @example 12
+   * @example 38
    */
-  receiverId: number;
+  matchId: number;
   /**
    * The ID of the ground slot
    *
@@ -410,13 +413,13 @@ export type CreateMatchDto = {
    *
    * @example 1
    */
-  homePlayerIds: (string | number)[];
+  homePlayerIds: string[];
   /**
    * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
    *
    * @example 2
    */
-  awayPlayerIds: (string | number)[];
+  awayPlayerIds: string[];
   /**
    * Match type: SINGLES or DOUBLES
    *
