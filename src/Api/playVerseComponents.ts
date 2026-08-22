@@ -4871,6 +4871,119 @@ export const useTeamControllerCreateTeam = (
   });
 };
 
+export type TeamControllerGetAllTeamsQueryParams = {
+  /**
+   * Page number
+   */
+  page?: string;
+  /**
+   * Records per page
+   */
+  limit?: string;
+  /**
+   * Search by team name or short name
+   */
+  search?: string;
+};
+
+export type TeamControllerGetAllTeamsError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerGetAllTeamsVariables = {
+  queryParams?: TeamControllerGetAllTeamsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerGetAllTeams = (
+  variables: TeamControllerGetAllTeamsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerGetAllTeamsError,
+    undefined,
+    {},
+    TeamControllerGetAllTeamsQueryParams,
+    {}
+  >({ url: "/api/teams/v1", method: "get", ...variables, signal });
+
+export function teamControllerGetAllTeamsQuery(
+  variables: TeamControllerGetAllTeamsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function teamControllerGetAllTeamsQuery(
+  variables: TeamControllerGetAllTeamsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function teamControllerGetAllTeamsQuery(
+  variables: TeamControllerGetAllTeamsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/teams/v1",
+      operationId: "teamControllerGetAllTeams",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTeamControllerGetAllTeams(variables, signal),
+  };
+}
+
+export const useSuspenseTeamControllerGetAllTeams = <TData = undefined,>(
+  variables: TeamControllerGetAllTeamsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetAllTeamsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TeamControllerGetAllTeamsError,
+    TData
+  >({
+    ...teamControllerGetAllTeamsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTeamControllerGetAllTeams = <TData = undefined,>(
+  variables: TeamControllerGetAllTeamsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TeamControllerGetAllTeamsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<undefined, TeamControllerGetAllTeamsError, TData>({
+    ...teamControllerGetAllTeamsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type TeamControllerInvitePlayerPathParams = {
   id: number;
 };
@@ -5888,6 +6001,127 @@ export const useMatchControllerCreateMatch = (
     mutationFn: (variables: MatchControllerCreateMatchVariables) =>
       fetchMatchControllerCreateMatch(deepMerge(fetcherOptions, variables)),
     ...options,
+  });
+};
+
+export type MatchControllerGetAllMatchesQueryParams = {
+  /**
+   * Page number
+   */
+  page?: string;
+  /**
+   * Records per page
+   */
+  limit?: string;
+  /**
+   * Search by team name or sport
+   */
+  search?: string;
+  /**
+   * Filter by status (SCHEDULED, LIVE, COMPLETED)
+   */
+  status?: string;
+};
+
+export type MatchControllerGetAllMatchesError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetAllMatchesVariables = {
+  queryParams?: MatchControllerGetAllMatchesQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetAllMatches = (
+  variables: MatchControllerGetAllMatchesVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    undefined,
+    {},
+    MatchControllerGetAllMatchesQueryParams,
+    {}
+  >({ url: "/api/match/v1", method: "get", ...variables, signal });
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1",
+      operationId: "matchControllerGetAllMatches",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetAllMatches(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetAllMatches = <TData = undefined,>(
+  variables: MatchControllerGetAllMatchesVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetAllMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    TData
+  >({
+    ...matchControllerGetAllMatchesQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetAllMatches = <TData = undefined,>(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetAllMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    TData
+  >({
+    ...matchControllerGetAllMatchesQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
   });
 };
 
@@ -7926,6 +8160,11 @@ export type QueryOperation =
         | reactQuery.SkipToken;
     }
   | {
+      path: "/api/teams/v1";
+      operationId: "teamControllerGetAllTeams";
+      variables: TeamControllerGetAllTeamsVariables | reactQuery.SkipToken;
+    }
+  | {
       path: "/api/teams/v1/{id}/matches";
       operationId: "teamControllerGetTeamMatches";
       variables: TeamControllerGetTeamMatchesVariables | reactQuery.SkipToken;
@@ -7951,6 +8190,11 @@ export type QueryOperation =
       variables:
         | CommunityControllerGetCommunityActivityVariables
         | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1";
+      operationId: "matchControllerGetAllMatches";
+      variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken;
     }
   | {
       path: "/api/match/v1/history";

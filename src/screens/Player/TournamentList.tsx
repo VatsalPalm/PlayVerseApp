@@ -231,7 +231,15 @@ const TournamentListScreen = () => {
           <View style={styles.teamBox}>
             <Ionicons name="people-outline" size={14} color="#9CA3AF" />
             <Text style={styles.footerVal}>
-              {item.max_teams || 16} slots
+              {(() => {
+                const max = item.max_teams ?? item.maxTeams;
+                if (max !== undefined && max !== null) return max;
+                try {
+                  const meta = typeof item.metadata === 'string' ? JSON.parse(item.metadata) : item.metadata;
+                  if (meta && (meta.max_teams || meta.maxTeams)) return meta.max_teams || meta.maxTeams;
+                } catch (e) {}
+                return 4;
+              })()} slots
             </Text>
           </View>
         </View>

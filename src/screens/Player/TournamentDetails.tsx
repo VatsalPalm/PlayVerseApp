@@ -115,6 +115,14 @@ const TournamentDetailsScreen = () => {
   const [loadingUserTeams, setLoadingUserTeams] = useState(false);
   const [loadingTournamentTeams, setLoadingTournamentTeams] = useState(false);
 
+  // Team Details & Player Management Modal states
+  const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
+  const [selectedTeamForDetails, setSelectedTeamForDetails] = useState<any>(null);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [loadingTeamMembers, setLoadingTeamMembers] = useState(false);
+  const [newPlayerInput, setNewPlayerInput] = useState("");
+  const [addingPlayer, setAddingPlayer] = useState(false);
+
   const loadAllData = useCallback(async () => {
     if (!tournamentId) return;
     try {
@@ -141,10 +149,19 @@ const TournamentDetailsScreen = () => {
         setTournament(tData);
         // Check if current user is the organizer
         const storedProfile = storage.getString("userProfile");
+        const storedRole = storage.getString("userRole") || "PLAYER";
         if (storedProfile) {
           const profile = JSON.parse(storedProfile);
           setUserProfile(profile);
-          setIsOrganizer(tData.organizer_id === profile.id);
+          const pId = profile.user_id ?? profile.id ?? profile.userId;
+          const isCreatorOrOrg =
+            Number(tData.organizer_id) === Number(pId) ||
+            storedRole === "TOURNAMENT_ORGANIZER" ||
+            storedRole === "ORGANIZER" ||
+            storedRole === "ADMIN";
+          setIsOrganizer(Boolean(isCreatorOrOrg));
+        } else {
+          setIsOrganizer(storedRole === "TOURNAMENT_ORGANIZER" || storedRole === "ORGANIZER" || storedRole === "ADMIN");
         }
       }
       if (pData) {
@@ -205,6 +222,71 @@ const TournamentDetailsScreen = () => {
     } finally {
       setLoadingTournamentTeams(false);
     }
+  };
+
+  const loadTeamMembers = async (teamId: number) => {
+    try {
+      setLoadingTeamMembers(true);
+      const res = await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members",
+        method: "GET",
+        pathParams: { id: String(teamId) },
+      });
+      const list = Array.isArray(res) ? res : (res?.members || res?.data || []);
+      setTeamMembers(list);
+    } catch (err: any) {
+      console.log("Error loading team members:", err.message);
+      setTeamMembers([]);
+    } finally {
+      setLoadingTeamMembers(false);
+    }
+  };
+
+  const handleOpenTeamDetails = (team: any) => {
+    const tId = team.id || team.team_id;
+    const tName = team.name || team.team_name;
+    if (tId) {
+      setShowRegisterModal(false);
+      navigation.navigate("TeamDetails", { teamId: tId, teamName: tName });
+    }
+  };
+
+  const handleDeleteUserTeam = (teamId: number, teamName: string) => {
+    Alert.alert(
+      "Delete Team",
+      `Are you sure you want to delete or leave "${teamName}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              try {
+                await stackApiFetch<any, any, any, any, any, any>({
+                  url: "/api/teams/v1/{id}",
+                  method: "DELETE",
+                  pathParams: { id: String(teamId) },
+                });
+              } catch (e) {
+                await stackApiFetch<any, any, any, any, any, any>({
+                  url: "/api/teams/v1/{id}/members/me",
+                  method: "DELETE",
+                  pathParams: { id: String(teamId) },
+                });
+              }
+              showMessage({ message: "Team deleted / removed successfully", type: "success" });
+              loadUserTeams();
+            } catch (err: any) {
+              showMessage({ message: err.message || "Failed to delete team", type: "danger" });
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDeleteTournament = () => {
@@ -747,7 +829,7 @@ const TournamentDetailsScreen = () => {
           <Text style={styles.sectionHeader}>
             Registered Teams ({participants.length})
           </Text>
-          {tournament.config?.registrationType === "TEAM" && tournament.status === "UPCOMING" && (
+          {tournament.status === "UPCOMING" && (
             <TouchableOpacity
               style={styles.addTeamBtn}
               onPress={handleRegisterTeam}
@@ -765,8 +847,12 @@ const TournamentDetailsScreen = () => {
           </View>
         ) : (
           participants.map((item, index) => (
-            <View key={index} style={styles.participantItem}>
-              <View style={{ flex: 1 }}>
+            <View key={item.id || index} style={styles.participantItem}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => handleOpenTeamDetails(item)}
+                activeOpacity={0.7}
+              >
                 <Text style={styles.participantName}>{item.team_name}</Text>
                 <Text style={styles.participantDetails}>
                   {item.captain_name ? `Captain: ${item.captain_name} • ` : ""}
@@ -775,33 +861,51 @@ const TournamentDetailsScreen = () => {
                   {item.seed ? `• Seed: ${item.seed}` : ""}{" "}
                   {item.group_name ? `• Group: ${item.group_name}` : ""}
                 </Text>
-              </View>
+              </TouchableOpacity>
 
-              {item.status === "PENDING" && (
-                <View style={styles.actionRow}>
-                  <TouchableOpacity
-                    style={styles.checkBtn}
-                    onPress={() => handleApproveTeam(item.team_id)}
-                  >
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color="#00E676"
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.checkBtn}
-                    onPress={() => handleCancelTeam(item.team_id)}
-                  >
-                    <Ionicons name="close-circle" size={24} color="#EF4444" />
-                  </TouchableOpacity>
-                </View>
-              )}
+              {(() => {
+                const currentUserId = userProfile?.user_id || userProfile?.id || userProfile?.userId;
+                const isCaptain = Number(item.captain_id) === Number(currentUserId);
+                const canRemove = isOrganizer || isCaptain || item.status === "PENDING";
+
+                return (
+                  <View style={styles.actionRow}>
+                    {!isCaptain && !isOrganizer && (
+                      <TouchableOpacity
+                        style={[styles.teamRegisterActionBtn, { backgroundColor: "#00D2FF" }]}
+                        onPress={() => handleJoinTeam(item.team_id || item.id)}
+                      >
+                        <Text style={styles.teamRegisterActionText}>Join</Text>
+                      </TouchableOpacity>
+                    )}
+                    {item.status === "PENDING" && isOrganizer && (
+                      <TouchableOpacity
+                        style={styles.checkBtn}
+                        onPress={() => handleApproveTeam(item.team_id)}
+                      >
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color="#00E676"
+                        />
+                      </TouchableOpacity>
+                    )}
+                    {canRemove && (
+                      <TouchableOpacity
+                        style={styles.checkBtn}
+                        onPress={() => handleCancelTeam(item.team_id)}
+                      >
+                        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })()}
             </View>
           ))
         )}
 
-        {participants.length > 0 && (
+        {isOrganizer && participants.length > 0 && (
           <View style={styles.organizerTools}>
             <Text style={styles.toolsTitle}>
               Seeding & Groupings (Organizer Only)
@@ -1369,22 +1473,45 @@ const TournamentDetailsScreen = () => {
                   >
                     {userTeams.map((team) => (
                       <View key={team.id} style={styles.teamRegisterItem}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.teamRegisterName}>
-                            {team.name}
-                          </Text>
-                          <Text style={styles.teamRegisterSub}>
-                            {team.memberCount} Members • ID: {team.id}
-                          </Text>
-                        </View>
                         <TouchableOpacity
-                          style={styles.teamRegisterActionBtn}
-                          onPress={() => registerMyTeam(team.id)}
+                          style={{ flex: 1 }}
+                          onPress={() => handleOpenTeamDetails(team)}
+                          activeOpacity={0.7}
                         >
-                          <Text style={styles.teamRegisterActionText}>
-                            Register
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                            <Text style={styles.teamRegisterName}>{team.name}</Text>
+                            {team.isCaptain && (
+                              <View style={styles.captainBadge}>
+                                <Text style={styles.captainBadgeText}>👑 Captain</Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.teamRegisterSub}>
+                            {team.memberCount || team.members?.length || 1} Members • Tap to manage
                           </Text>
                         </TouchableOpacity>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <TouchableOpacity
+                            style={styles.teamRegisterActionBtn}
+                            onPress={() => registerMyTeam(team.id)}
+                          >
+                            <Text style={styles.teamRegisterActionText}>Register</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[
+                              styles.teamRegisterActionBtn,
+                              {
+                                backgroundColor: "rgba(239, 68, 68, 0.15)",
+                                borderWidth: 1,
+                                borderColor: "rgba(239, 68, 68, 0.3)",
+                                paddingHorizontal: 10,
+                              },
+                            ]}
+                            onPress={() => handleDeleteUserTeam(team.id, team.name)}
+                          >
+                            <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     ))}
                   </ScrollView>
@@ -1395,8 +1522,7 @@ const TournamentDetailsScreen = () => {
             {activeRegTab === "create" && (
               <View style={{ flex: 1, marginTop: 20 }}>
                 <Text style={styles.modalSubTitle}>
-                  Create a new team for this tournament. You will automatically
-                  become the captain.
+                  Create a team for this tournament (0 members initially). You can add players manually or share a join link.
                 </Text>
                 <TextInput
                   style={styles.modalInput}
@@ -2141,6 +2267,57 @@ const styles = StyleSheet.create({
   addTeamBtnText: {
     color: '#FFF',
     fontSize: 12,
+    fontWeight: '700',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingBottom: 12,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  addPlayerBox: {
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 12,
+  },
+  addPlayerTitle: {
+    color: '#00D2FF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  captainBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  captainBadgeText: {
+    color: '#F59E0B',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  doneBtn: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  doneBtnText: {
+    color: '#FFF',
+    fontSize: 14,
     fontWeight: '700',
   },
 });

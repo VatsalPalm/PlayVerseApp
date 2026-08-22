@@ -27,6 +27,7 @@ export type HomeStackParamList = {
     TournamentList: undefined;
     TournamentDetails: { tournamentId: number };
     CreateTournament: undefined;
+    TeamDetails: { teamId: number; teamName?: string };
 }
 
 export type RootStackParamList = {

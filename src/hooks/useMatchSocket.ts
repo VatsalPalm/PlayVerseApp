@@ -7,13 +7,14 @@ import { fetchMatchControllerGetMatchDetail } from '../Api/playVerseComponents';
 // Extract the base host URL without /api suffix for Socket.IO connection
 const getSocketURL = (): string => {
   const url = getURL(env);
-  if (url.endsWith('/api')) {
-    return url.substring(0, url.length - 4);
+  let baseUrl = url;
+  if (baseUrl.endsWith('/api')) {
+    baseUrl = baseUrl.substring(0, baseUrl.length - 4);
+  } else if (baseUrl.endsWith('/api/')) {
+    baseUrl = baseUrl.substring(0, baseUrl.length - 5);
   }
-  if (url.endsWith('/api/')) {
-    return url.substring(0, url.length - 5);
-  }
-  return url;
+  baseUrl = baseUrl.replace(/\/+$/, '');
+  return `${baseUrl}/match`;
 };
 
 export interface MatchState {
@@ -60,32 +61,40 @@ export const useMatchSocket = (matchId: number) => {
     const matchObj = data.match || data;
     if (!matchObj || !matchObj.id) return null;
 
+    const meta = (() => {
+      try {
+        return typeof matchObj.metadata === 'string' ? JSON.parse(matchObj.metadata) : (matchObj.metadata || {});
+      } catch (e) {
+        return {};
+      }
+    })();
+
     return {
       id: matchObj.id,
       sport_id: matchObj.sport_id,
       status: matchObj.status,
-      home_team_id: matchObj.home_team_id,
-      away_team_id: matchObj.away_team_id,
+      home_team_id: matchObj.home_team_id ?? matchObj.homeTeamId ?? meta.homeTeamId,
+      away_team_id: matchObj.away_team_id ?? matchObj.awayTeamId ?? meta.awayTeamId,
       home_team_name: matchObj.home_team_name || matchObj.homeTeamName || data.home_team_name || data.homeTeamName,
       away_team_name: matchObj.away_team_name || matchObj.awayTeamName || data.away_team_name || data.awayTeamName,
       scheduled_at: matchObj.scheduled_at,
       started_at: matchObj.started_at,
       ended_at: matchObj.ended_at,
-      winner_team_id: matchObj.winner_team_id,
-      pointsPerGame: matchObj.points_per_game ?? matchObj.pointsPerGame ?? 11,
-      winByTwo: matchObj.win_by_two === 1 || matchObj.win_by_two === true || matchObj.winByTwo === true,
-      gamesToWin: matchObj.games_to_win ?? matchObj.gamesToWin ?? 2,
-      matchType: matchObj.match_type || matchObj.matchType || 'SINGLES',
-      homePlayers: data.players?.filter((p: any) => p.team_id === matchObj.home_team_id) || matchObj.homePlayers || [],
-      awayPlayers: data.players?.filter((p: any) => p.team_id === matchObj.away_team_id) || matchObj.awayPlayers || [],
+      winner_team_id: matchObj.winner_team_id ?? matchObj.winnerTeamId ?? meta.winnerTeamId ?? null,
+      pointsPerGame: matchObj.points_per_game ?? matchObj.pointsPerGame ?? meta.pointsPerGame ?? 11,
+      winByTwo: matchObj.win_by_two === 1 || matchObj.win_by_two === true || matchObj.winByTwo === true || meta.winByTwo === true,
+      gamesToWin: matchObj.games_to_win ?? matchObj.gamesToWin ?? meta.gamesToWin ?? 2,
+      matchType: matchObj.match_type || matchObj.matchType || meta.matchType || 'SINGLES',
+      homePlayers: data.players?.filter((p: any) => p.team_id === (matchObj.home_team_id ?? meta.homeTeamId)) || matchObj.homePlayers || [],
+      awayPlayers: data.players?.filter((p: any) => p.team_id === (matchObj.away_team_id ?? meta.awayTeamId)) || matchObj.awayPlayers || [],
       periods: data.periods || matchObj.periods || [],
       events: data.events || matchObj.events || [],
-      activeServerId: matchObj.active_server_id ?? matchObj.activeServerId,
-      serverNumber: matchObj.server_number ?? matchObj.serverNumber,
-      servingTeamId: matchObj.serving_team_id ?? matchObj.servingTeamId,
-      serverSide: matchObj.server_side ?? matchObj.serverSide,
-      version: matchObj.version ?? 1,
-      tournamentId: matchObj.tournament_id ?? matchObj.tournamentId,
+      activeServerId: matchObj.active_server_id ?? matchObj.activeServerId ?? meta.currentServerId ?? meta.activeServerId ?? null,
+      serverNumber: matchObj.server_number ?? matchObj.serverNumber ?? meta.serverNumber ?? null,
+      servingTeamId: matchObj.serving_team_id ?? matchObj.servingTeamId ?? meta.servingTeamId ?? null,
+      serverSide: matchObj.server_side ?? matchObj.serverSide ?? meta.serverSide ?? null,
+      version: matchObj.version ?? data.version ?? meta.version ?? 1,
+      tournamentId: matchObj.tournament_id ?? matchObj.tournamentId ?? meta.tournamentId ?? null,
     };
   }, []);
 
@@ -145,7 +154,7 @@ export const useMatchSocket = (matchId: number) => {
     console.log(`Connecting to Socket.IO server at: ${socketUrl} for match: ${matchId}`);
 
     const socket = io(socketUrl, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       autoConnect: true,
       auth: {
         token: token ? `Bearer ${token}` : undefined,

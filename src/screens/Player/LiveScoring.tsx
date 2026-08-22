@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { storage } from '../../services/mmkv';
+import React, { useEffect, useState } from "react";
+import { storage } from "../../services/mmkv";
 import {
   StyleSheet,
   Text,
@@ -10,23 +10,26 @@ import {
   StatusBar,
   ScrollView,
   Modal,
-} from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
-import FloatingOrbs from '../../Components/atoms/FloatingOrbs';
-import { showMessage } from 'react-native-flash-message';
-import { useMatchSocket } from '../../hooks/useMatchSocket';
-import SizedBox from '../../Components/atoms/SizeBox';
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import FloatingOrbs from "../../Components/atoms/FloatingOrbs";
+import { showMessage } from "react-native-flash-message";
+import { useMatchSocket } from "../../hooks/useMatchSocket";
+import SizedBox from "../../Components/atoms/SizeBox";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const LiveScoringScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
-  
+
   const { matchId } = (route.params || {}) as { matchId: number };
 
   const [userId, setUserId] = useState<number | null>(null);
@@ -37,7 +40,8 @@ const LiveScoringScreen = () => {
       const stored = storage.getString('userProfile');
       if (stored) {
         const userObj = JSON.parse(stored);
-        setUserId(userObj.id);
+        const resolvedId = userObj.user_id ?? userObj.id ?? userObj.userId ?? null;
+        setUserId(resolvedId);
       }
       const role = storage.getString('userRole');
       setUserRole(role || 'PLAYER');
@@ -77,48 +81,76 @@ const LiveScoringScreen = () => {
 
   // Extract variables
   const match = matchState;
-  const isCompleted = match?.status === 'COMPLETED';
+  const isCompleted = match?.status === "COMPLETED";
 
   // Determine if the user is authorized to perform scoring inputs
   const isAllowedToScore = (() => {
     if (route.params?.canScore !== undefined) {
-      return route.params.canScore;
+      return Boolean(route.params.canScore);
     }
-    if (match?.tournamentId) {
-      return userRole === 'TOURNAMENT_ORGANIZER' || userRole === 'PLAYER';
-    }
-    if (match) {
-      const isPlayer = match.homePlayers?.some((p: any) => p.user_id === userId) || 
-                       match.awayPlayers?.some((p: any) => p.user_id === userId);
-      return isPlayer || userRole === 'TOURNAMENT_ORGANIZER' || userRole === 'ADMIN' || userRole === 'PLAYER';
-    }
-    return false;
+    if (!match) return false;
+
+    // Check if current logged-in user is an assigned player in this match
+    const isPlayerInMatch =
+      match.homePlayers?.some(
+        (p: any) =>
+          (userId && Number(p.user_id) === Number(userId)) ||
+          (userId && Number(p.id) === Number(userId)) ||
+          (userId && Number(p.player_id) === Number(userId))
+      ) ||
+      match.awayPlayers?.some(
+        (p: any) =>
+          (userId && Number(p.user_id) === Number(userId)) ||
+          (userId && Number(p.id) === Number(userId)) ||
+          (userId && Number(p.player_id) === Number(userId))
+      );
+
+    const isMatchOrganizer =
+      userRole === "TOURNAMENT_ORGANIZER" ||
+      userRole === "ORGANIZER" ||
+      userRole === "ADMIN" ||
+      userRole === "GROUND_OWNER";
+
+    return Boolean(isPlayerInMatch || isMatchOrganizer);
   })();
 
   // Get player names
-  const homePlayerNames = match?.homePlayers?.map((p: any) => p.display_name || p.name || `Player ${p.id}`) || [];
-  const awayPlayerNames = match?.awayPlayers?.map((p: any) => p.display_name || p.name || `Player ${p.id}`) || [];
+  const homePlayerNames =
+    match?.homePlayers?.map(
+      (p: any) => p.display_name || p.name || `Player ${p.id}`,
+    ) || [];
+  const awayPlayerNames =
+    match?.awayPlayers?.map(
+      (p: any) => p.display_name || p.name || `Player ${p.id}`,
+    ) || [];
 
-  const homeNames = homePlayerNames.join(' & ') || 'Home Team';
-  const awayNames = awayPlayerNames.join(' & ') || 'Away Team';
+  const homeNames = homePlayerNames.join(" & ") || "Home Team";
+  const awayNames = awayPlayerNames.join(" & ") || "Away Team";
 
-  const homeTeamDisplayName = (match as any)?.home_team_name || (match as any)?.homeTeamName || homeNames;
-  const awayTeamDisplayName = (match as any)?.away_team_name || (match as any)?.awayTeamName || awayNames;
+  const homeTeamDisplayName =
+    (match as any)?.home_team_name || (match as any)?.homeTeamName || homeNames;
+  const awayTeamDisplayName =
+    (match as any)?.away_team_name || (match as any)?.awayTeamName || awayNames;
 
   // Active score calculation
   const periods = match?.periods || [];
-  const currentPeriod = periods.find((p: any) => !p.ended_at) || periods[periods.length - 1] || {
-    home_score: 0,
-    away_score: 0,
-    period_number: 1,
-  };
+  const currentPeriod = periods.find((p: any) => !p.ended_at) ||
+    periods[periods.length - 1] || {
+      home_score: 0,
+      away_score: 0,
+      period_number: 1,
+    };
 
   const currentHomeScore = currentPeriod.home_score ?? 0;
   const currentAwayScore = currentPeriod.away_score ?? 0;
 
   // Games won count
-  const homeGamesWon = periods.filter((p: any) => p.winner_team_id && p.winner_team_id === match?.home_team_id).length;
-  const awayGamesWon = periods.filter((p: any) => p.winner_team_id && p.winner_team_id === match?.away_team_id).length;
+  const homeGamesWon = periods.filter(
+    (p: any) => p.winner_team_id && p.winner_team_id === match?.home_team_id,
+  ).length;
+  const awayGamesWon = periods.filter(
+    (p: any) => p.winner_team_id && p.winner_team_id === match?.away_team_id,
+  ).length;
 
   const isServingTeamHome = match?.servingTeamId === match?.home_team_id;
   const isServingTeamAway = match?.servingTeamId === match?.away_team_id;
@@ -126,13 +158,17 @@ const LiveScoringScreen = () => {
   // Render player list inside court positions
   // In a standard Singles or Doubles court, players are stationed on Left or Right courts.
   // We determine position highlighting based on `servingTeamId` and `serverSide`
-  const isHomeLeftHighlighted = isServingTeamHome && match?.serverSide === 'LEFT';
-  const isHomeRightHighlighted = isServingTeamHome && match?.serverSide === 'RIGHT';
-  const isAwayLeftHighlighted = isServingTeamAway && match?.serverSide === 'LEFT';
-  const isAwayRightHighlighted = isServingTeamAway && match?.serverSide === 'RIGHT';
+  const isHomeLeftHighlighted =
+    isServingTeamHome && match?.serverSide === "LEFT";
+  const isHomeRightHighlighted =
+    isServingTeamHome && match?.serverSide === "RIGHT";
+  const isAwayLeftHighlighted =
+    isServingTeamAway && match?.serverSide === "LEFT";
+  const isAwayRightHighlighted =
+    isServingTeamAway && match?.serverSide === "RIGHT";
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="light-content" />
 
       {/* Background Gradient */}
@@ -164,12 +200,23 @@ const LiveScoringScreen = () => {
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Authoritative Scoring</Text>
           <View style={styles.connectionStatus}>
-            <View style={[styles.statusDot, { backgroundColor: isConnected ? '#10B981' : '#EF4444' }]} />
-            <Text style={styles.statusText}>{isConnected ? 'LIVE SYNC' : 'OFFLINE'}</Text>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: isConnected ? "#10B981" : "#EF4444" },
+              ]}
+            />
+            <Text style={styles.statusText}>
+              {isConnected ? "LIVE SYNC" : "OFFLINE"}
+            </Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.syncBtn} onPress={requestSync} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.syncBtn}
+          onPress={requestSync}
+          activeOpacity={0.7}
+        >
           <Ionicons name="sync" size={20} color="#6C4DF6" />
         </TouchableOpacity>
       </View>
@@ -190,22 +237,33 @@ const LiveScoringScreen = () => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
-            
+          <ScrollView
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: insets.bottom + 40 },
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Set Games Score Header */}
             <View style={styles.gamesWinsCard}>
               <View style={styles.teamWinBox}>
-                <Text style={styles.teamWinLabel} numberOfLines={1}>{homeTeamDisplayName}</Text>
+                <Text style={styles.teamWinLabel} numberOfLines={1}>
+                  {homeTeamDisplayName}
+                </Text>
                 <Text style={styles.gamesCount}>{homeGamesWon} Games</Text>
               </View>
               <View style={styles.vsBox}>
                 <Text style={styles.vsText}>VS</Text>
                 <View style={styles.gameNoBadge}>
-                  <Text style={styles.gameNoText}>Game {currentPeriod.period_number}</Text>
+                  <Text style={styles.gameNoText}>
+                    Game {currentPeriod.period_number}
+                  </Text>
                 </View>
               </View>
               <View style={styles.teamWinBox}>
-                <Text style={styles.teamWinLabel} numberOfLines={1}>{awayTeamDisplayName}</Text>
+                <Text style={styles.teamWinLabel} numberOfLines={1}>
+                  {awayTeamDisplayName}
+                </Text>
                 <Text style={styles.gamesCount}>{awayGamesWon} Games</Text>
               </View>
             </View>
@@ -213,58 +271,94 @@ const LiveScoringScreen = () => {
             {/* Authoritative Live Scoreboard Card */}
             <View style={styles.scoreboardContainer}>
               {/* Home Score */}
-              <View style={[styles.scoreBox, isServingTeamHome && styles.servingScoreBox]}>
+              <View
+                style={[
+                  styles.scoreBox,
+                  isServingTeamHome && styles.servingScoreBox,
+                ]}
+              >
                 {isServingTeamHome && (
                   <View style={styles.serveBallBadge}>
                     <Text style={styles.serveBallText}>🎾 SERVE</Text>
                   </View>
                 )}
                 <Text style={styles.scoreText}>{currentHomeScore}</Text>
-                <Text style={styles.scoreLabel} numberOfLines={1}>{homeTeamDisplayName}</Text>
+                <Text style={styles.scoreLabel} numberOfLines={1}>
+                  {homeTeamDisplayName}
+                </Text>
               </View>
 
               {/* Score Divider / Doubles Server Info */}
               <View style={styles.scoreDividerBox}>
                 <Text style={styles.dashText}>—</Text>
-                {match.matchType === 'DOUBLES' && match.serverNumber && (
+                {match.matchType === "DOUBLES" && match.serverNumber && (
                   <View style={styles.serverNumberBadge}>
-                    <Text style={styles.serverNumberText}>Server {match.serverNumber}</Text>
+                    <Text style={styles.serverNumberText}>
+                      Server {match.serverNumber}
+                    </Text>
                   </View>
                 )}
               </View>
 
               {/* Away Score */}
-              <View style={[styles.scoreBox, isServingTeamAway && styles.servingScoreBox]}>
+              <View
+                style={[
+                  styles.scoreBox,
+                  isServingTeamAway && styles.servingScoreBox,
+                ]}
+              >
                 {isServingTeamAway && (
                   <View style={styles.serveBallBadge}>
                     <Text style={styles.serveBallText}>🎾 SERVE</Text>
                   </View>
                 )}
                 <Text style={styles.scoreText}>{currentAwayScore}</Text>
-                <Text style={styles.scoreLabel} numberOfLines={1}>{awayTeamDisplayName}</Text>
+                <Text style={styles.scoreLabel} numberOfLines={1}>
+                  {awayTeamDisplayName}
+                </Text>
               </View>
             </View>
 
             {/* VISUAL PICKLEBALL COURT */}
             <View style={styles.courtWrapper}>
-              <Text style={styles.courtHeaderTitle}>Pickleball Court Layout</Text>
-              
+              <Text style={styles.courtHeaderTitle}>
+                Pickleball Court Layout
+              </Text>
+
               <View style={styles.courtBorder}>
                 {/* AWAY COURT (Top half) */}
                 <View style={styles.courtHalf}>
-                  <View style={[styles.courtQuadrant, isAwayLeftHighlighted && styles.courtQuadrantActive]}>
-                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{awayTeamDisplayName} Left</Text>
+                  <View
+                    style={[
+                      styles.courtQuadrant,
+                      isAwayLeftHighlighted && styles.courtQuadrantActive,
+                    ]}
+                  >
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>
+                      {awayTeamDisplayName} Left
+                    </Text>
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
                       {awayPlayerNames[1] || awayTeamDisplayName}
                     </Text>
-                    {isAwayLeftHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
+                    {isAwayLeftHighlighted && (
+                      <Text style={styles.servingIndicator}>🎾 Serving</Text>
+                    )}
                   </View>
-                  <View style={[styles.courtQuadrant, isAwayRightHighlighted && styles.courtQuadrantActive]}>
-                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{awayTeamDisplayName} Right</Text>
+                  <View
+                    style={[
+                      styles.courtQuadrant,
+                      isAwayRightHighlighted && styles.courtQuadrantActive,
+                    ]}
+                  >
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>
+                      {awayTeamDisplayName} Right
+                    </Text>
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
                       {awayPlayerNames[0] || awayTeamDisplayName}
                     </Text>
-                    {isAwayRightHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
+                    {isAwayRightHighlighted && (
+                      <Text style={styles.servingIndicator}>🎾 Serving</Text>
+                    )}
                   </View>
                 </View>
 
@@ -276,19 +370,37 @@ const LiveScoringScreen = () => {
 
                 {/* HOME COURT (Bottom half) */}
                 <View style={styles.courtHalf}>
-                  <View style={[styles.courtQuadrant, isHomeLeftHighlighted && styles.courtQuadrantActive]}>
-                    {isHomeLeftHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
+                  <View
+                    style={[
+                      styles.courtQuadrant,
+                      isHomeLeftHighlighted && styles.courtQuadrantActive,
+                    ]}
+                  >
+                    {isHomeLeftHighlighted && (
+                      <Text style={styles.servingIndicator}>🎾 Serving</Text>
+                    )}
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
                       {homePlayerNames[1] || homeTeamDisplayName}
                     </Text>
-                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{homeTeamDisplayName} Left</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>
+                      {homeTeamDisplayName} Left
+                    </Text>
                   </View>
-                  <View style={[styles.courtQuadrant, isHomeRightHighlighted && styles.courtQuadrantActive]}>
-                    {isHomeRightHighlighted && <Text style={styles.servingIndicator}>🎾 Serving</Text>}
+                  <View
+                    style={[
+                      styles.courtQuadrant,
+                      isHomeRightHighlighted && styles.courtQuadrantActive,
+                    ]}
+                  >
+                    {isHomeRightHighlighted && (
+                      <Text style={styles.servingIndicator}>🎾 Serving</Text>
+                    )}
                     <Text style={styles.courtPlayerName} numberOfLines={1}>
                       {homePlayerNames[0] || homeTeamDisplayName}
                     </Text>
-                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>{homeTeamDisplayName} Right</Text>
+                    <Text style={styles.courtQuadrantLabel} numberOfLines={1}>
+                      {homeTeamDisplayName} Right
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -300,19 +412,34 @@ const LiveScoringScreen = () => {
             {isAllowedToScore ? (
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
-                
+
                 {/* Scoring Rule Explanation Banner */}
                 <View style={styles.scoringExplanationBanner}>
-                  <Ionicons name="information-circle-outline" size={16} color="#A78BFA" />
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={16}
+                    color="#A78BFA"
+                  />
                   <Text style={styles.scoringExplanationText}>
-                    In official rules, only the team on <Text style={{ color: '#00E676', fontWeight: '800' }}>🎾 SERVE</Text> gains points. If receiving team wins a rally, serve switches (<Text style={{ color: '#F59E0B', fontWeight: '800' }}>Side Out</Text>).
+                    In official rules, only the team on{" "}
+                    <Text style={{ color: "#00E676", fontWeight: "800" }}>
+                      🎾 SERVE
+                    </Text>{" "}
+                    gains points. If receiving team wins a rally, serve switches
+                    (
+                    <Text style={{ color: "#F59E0B", fontWeight: "800" }}>
+                      Side Out
+                    </Text>
+                    ).
                   </Text>
                 </View>
 
                 <View style={styles.controlsRow}>
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.homePointBtn]}
-                    onPress={() => scorePoint(match.home_team_id!, undefined, 'POINT')}
+                    onPress={() =>
+                      scorePoint(match.home_team_id!, undefined, "POINT")
+                    }
                     activeOpacity={0.8}
                   >
                     <Text style={styles.controlBtnIcon}>➕</Text>
@@ -323,7 +450,9 @@ const LiveScoringScreen = () => {
 
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.awayPointBtn]}
-                    onPress={() => scorePoint(match.away_team_id!, undefined, 'POINT')}
+                    onPress={() =>
+                      scorePoint(match.away_team_id!, undefined, "POINT")
+                    }
                     activeOpacity={0.8}
                   >
                     <Text style={styles.controlBtnIcon}>➕</Text>
@@ -338,7 +467,14 @@ const LiveScoringScreen = () => {
                 <View style={styles.controlsRow}>
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.faultBtn]}
-                    onPress={() => scorePoint(match.servingTeamId!, undefined, 'FAULT')}
+                    onPress={() => {
+                      const nonServingTeamId = match.servingTeamId === match.home_team_id 
+                        ? match.away_team_id 
+                        : match.home_team_id;
+                      if (nonServingTeamId) {
+                        scorePoint(nonServingTeamId, userId || undefined, 'FAULT');
+                      }
+                    }}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.controlBtnIcon}>❌</Text>
@@ -362,26 +498,36 @@ const LiveScoringScreen = () => {
                     <View style={styles.spectatorPulseDot} />
                     <Text style={styles.spectatorLiveText}>LIVE BROADCAST</Text>
                   </View>
-                  <Text style={styles.spectatorSyncText}>👁️ Spectator Mode</Text>
+                  <Text style={styles.spectatorSyncText}>
+                    👁️ Spectator Mode
+                  </Text>
                 </View>
 
                 <SizedBox height={16} />
 
                 <Text style={styles.spectatorStatusTitle}>
-                  {match.status === 'LIVE' ? 'Match is active and in progress' : 'Waiting for match to start'}
+                  {match.status === "LIVE"
+                    ? "Match is active and in progress"
+                    : "Waiting for match to start"}
                 </Text>
 
                 <View style={styles.spectatorInfoGrid}>
                   <View style={styles.spectatorInfoBox}>
                     <Text style={styles.spectatorInfoLabel}>Serving Team</Text>
                     <Text style={styles.spectatorInfoValue}>
-                      {match.servingTeamId === match.home_team_id ? 'Home Team' : match.servingTeamId === match.away_team_id ? 'Away Team' : 'None'}
+                      {match.servingTeamId === match.home_team_id
+                        ? "Home Team"
+                        : match.servingTeamId === match.away_team_id
+                          ? "Away Team"
+                          : "None"}
                     </Text>
                   </View>
 
                   <View style={styles.spectatorInfoBox}>
                     <Text style={styles.spectatorInfoLabel}>Format</Text>
-                    <Text style={styles.spectatorInfoValue}>{match.matchType || 'SINGLES'}</Text>
+                    <Text style={styles.spectatorInfoValue}>
+                      {match.matchType || "SINGLES"}
+                    </Text>
                   </View>
                 </View>
 
@@ -392,7 +538,7 @@ const LiveScoringScreen = () => {
                       {(() => {
                         const lastEv = match.events[match.events.length - 1];
                         const isHome = lastEv.team_id === match.home_team_id;
-                        return `${isHome ? 'Home' : 'Away'} scored ${lastEv.event_type || 'POINT'}`;
+                        return `${isHome ? "Home" : "Away"} scored ${lastEv.event_type || "POINT"}`;
                       })()}
                     </Text>
                   </View>
@@ -404,22 +550,31 @@ const LiveScoringScreen = () => {
             <View style={styles.feedBox}>
               <Text style={styles.feedHeader}>Scoring Event Log</Text>
               {match.events && match.events.length > 0 ? (
-                match.events.slice(-5).reverse().map((ev: any, idx: number) => {
-                  const isHomeEvent = ev.team_id === match.home_team_id;
-                  const teamName = isHomeEvent ? 'Home' : 'Away';
-                  return (
-                    <View key={ev.id || idx} style={styles.feedItem}>
-                      <Text style={styles.feedItemText}>
-                        🟢 {teamName} scored: {ev.event_type}
-                      </Text>
-                      <Text style={styles.feedItemTime}>
-                        {new Date(ev.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </Text>
-                    </View>
-                  );
-                })
+                match.events
+                  .slice(-5)
+                  .reverse()
+                  .map((ev: any, idx: number) => {
+                    const isHomeEvent = ev.team_id === match.home_team_id;
+                    const teamName = isHomeEvent ? "Home" : "Away";
+                    return (
+                      <View key={ev.id || idx} style={styles.feedItem}>
+                        <Text style={styles.feedItemText}>
+                          🟢 {teamName} scored: {ev.event_type}
+                        </Text>
+                        <Text style={styles.feedItemTime}>
+                          {new Date(ev.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
+                        </Text>
+                      </View>
+                    );
+                  })
               ) : (
-                <Text style={styles.emptyFeedText}>No score events logged yet. Let the serving begin!</Text>
+                <Text style={styles.emptyFeedText}>
+                  No score events logged yet. Let the serving begin!
+                </Text>
               )}
             </View>
 
@@ -428,21 +583,32 @@ const LiveScoringScreen = () => {
 
           {/* CELEBRATORY COMPLETION OVERLAY */}
           {isCompleted && (
-            <Modal transparent={true} visible={isCompleted} animationType="fade">
+            <Modal
+              transparent={true}
+              visible={isCompleted}
+              animationType="fade"
+            >
               <View style={styles.completionOverlay}>
                 <View style={styles.completionCard}>
                   <Text style={styles.congratsIcon}>🏆</Text>
                   <Text style={styles.congratsTitle}>Match Completed!</Text>
-                  <Text style={styles.congratsSubtitle}>authoritative final score</Text>
+                  <Text style={styles.congratsSubtitle}>
+                    authoritative final score
+                  </Text>
 
                   <View style={styles.completionScoreBox}>
                     <Text style={styles.completedTeamName}>{homeNames}</Text>
-                    <Text style={styles.completedFinalScore}>{homeGamesWon} - {awayGamesWon}</Text>
+                    <Text style={styles.completedFinalScore}>
+                      {homeGamesWon} - {awayGamesWon}
+                    </Text>
                     <Text style={styles.completedTeamName}>{awayNames}</Text>
                   </View>
 
                   <Text style={styles.winnerText}>
-                    Winner: {match.winner_team_id === match.home_team_id ? homeNames : awayNames}
+                    Winner:{" "}
+                    {match.winner_team_id === match.home_team_id
+                      ? homeNames
+                      : awayNames}
                   </Text>
 
                   <SizedBox height={20} />
@@ -454,7 +620,9 @@ const LiveScoringScreen = () => {
                     }}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.closeOverlayText}>Back to Match Center</Text>
+                    <Text style={styles.closeOverlayText}>
+                      Back to Match Center
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -469,31 +637,31 @@ const LiveScoringScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0914',
+    backgroundColor: "#0B0914",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     height: 56,
     borderBottomWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: "rgba(255, 255, 255, 0.06)",
   },
   backBtn: {
     padding: 8,
   },
   headerCenter: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
   },
   connectionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
   statusDot: {
@@ -504,8 +672,8 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 9,
-    color: '#9CA3AF',
-    fontWeight: '700',
+    color: "#9CA3AF",
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   syncBtn: {
@@ -516,68 +684,68 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   syncingOverlay: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(108, 77, 246, 0.15)',
+    flexDirection: "row",
+    backgroundColor: "rgba(108, 77, 246, 0.15)",
     paddingVertical: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderBottomWidth: 1,
-    borderColor: 'rgba(108, 77, 246, 0.3)',
+    borderColor: "rgba(108, 77, 246, 0.3)",
   },
   syncingText: {
-    color: '#6C4DF6',
+    color: "#6C4DF6",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     marginLeft: 8,
   },
   loadingBox: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     marginTop: 12,
     fontSize: 14,
   },
   gamesWinsCard: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    flexDirection: "row",
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: "rgba(255,255,255,0.06)",
     borderRadius: 14,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   teamWinBox: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   teamWinLabel: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   gamesCount: {
-    color: '#6C4DF6',
+    color: "#6C4DF6",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 4,
   },
   vsBox: {
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 12,
   },
   vsText: {
     fontSize: 11,
-    color: '#4B5563',
-    fontWeight: '700',
+    color: "#4B5563",
+    fontWeight: "700",
   },
   gameNoBadge: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: "rgba(255,255,255,0.06)",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -585,66 +753,66 @@ const styles = StyleSheet.create({
   },
   gameNoText: {
     fontSize: 10,
-    color: '#FFF',
-    fontWeight: '700',
+    color: "#FFF",
+    fontWeight: "700",
   },
   scoreboardContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   scoreBox: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: "rgba(255, 255, 255, 0.08)",
     paddingVertical: 18,
-    alignItems: 'center',
-    position: 'relative',
+    alignItems: "center",
+    position: "relative",
   },
   servingScoreBox: {
-    backgroundColor: 'rgba(108, 77, 246, 0.08)',
-    borderColor: 'rgba(108, 77, 246, 0.3)',
+    backgroundColor: "rgba(108, 77, 246, 0.08)",
+    borderColor: "rgba(108, 77, 246, 0.3)",
   },
   serveBallBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: -8,
-    backgroundColor: '#00E676',
+    backgroundColor: "#00E676",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
   },
   serveBallText: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#0B0914',
+    fontWeight: "800",
+    color: "#0B0914",
   },
   scoreText: {
     fontSize: 48,
-    fontWeight: '900',
-    color: '#FFF',
+    fontWeight: "900",
+    color: "#FFF",
   },
   scoreLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#9CA3AF',
+    fontWeight: "600",
+    color: "#9CA3AF",
     marginTop: 4,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   scoreDividerBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginHorizontal: 16,
   },
   dashText: {
     fontSize: 24,
-    color: '#4B5563',
-    fontWeight: '700',
+    color: "#4B5563",
+    fontWeight: "700",
   },
   serverNumberBadge: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: "rgba(255,255,255,0.06)",
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 6,
@@ -652,8 +820,8 @@ const styles = StyleSheet.create({
   },
   serverNumberText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
   },
   // Visual Court Styles
   courtWrapper: {
@@ -661,126 +829,126 @@ const styles = StyleSheet.create({
   },
   courtHeaderTitle: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#9CA3AF',
+    fontWeight: "600",
+    color: "#9CA3AF",
     marginBottom: 10,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   courtBorder: {
-    backgroundColor: 'rgba(34, 197, 94, 0.05)',
+    backgroundColor: "rgba(34, 197, 94, 0.05)",
     borderWidth: 3,
-    borderColor: '#00E676',
+    borderColor: "#00E676",
     borderRadius: 12,
     padding: 6,
   },
   courtHalf: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 100,
   },
   courtQuadrant: {
     flex: 1,
     borderWidth: 1,
-    borderColor: 'rgba(0, 230, 118, 0.3)',
+    borderColor: "rgba(0, 230, 118, 0.3)",
     margin: 3,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.01)',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.01)",
   },
   courtQuadrantActive: {
-    backgroundColor: 'rgba(0, 230, 118, 0.15)',
-    borderColor: '#00E676',
+    backgroundColor: "rgba(0, 230, 118, 0.15)",
+    borderColor: "#00E676",
     borderWidth: 1.5,
   },
   courtQuadrantLabel: {
     fontSize: 9,
-    fontWeight: '600',
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#9CA3AF",
+    textTransform: "uppercase",
   },
   courtPlayerName: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
     marginVertical: 4,
-    textAlign: 'center',
-    width: '90%',
+    textAlign: "center",
+    width: "90%",
   },
   servingIndicator: {
     fontSize: 9,
-    color: '#00E676',
-    fontWeight: '800',
+    color: "#00E676",
+    fontWeight: "800",
   },
   kitchenZone: {
     height: 50,
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderColor: "rgba(239, 68, 68, 0.3)",
     margin: 3,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   kitchenLabel: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#EF4444',
+    fontWeight: "800",
+    color: "#EF4444",
     letterSpacing: 1,
   },
   netLine: {
-    position: 'absolute',
+    position: "absolute",
     top: 24,
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     opacity: 0.6,
   },
   // Controls Styles
   controlsCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: "rgba(255,255,255,0.06)",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
   },
   controlsHeader: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#9CA3AF',
+    fontWeight: "600",
+    color: "#9CA3AF",
     marginBottom: 12,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   controlsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   controlBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 12,
     marginHorizontal: 6,
   },
   homePointBtn: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
   },
   awayPointBtn: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
   },
   faultBtn: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: "rgba(239, 68, 68, 0.2)",
   },
   undoBtn: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
   controlBtnIcon: {
     fontSize: 16,
@@ -788,61 +956,61 @@ const styles = StyleSheet.create({
   },
   controlBtnText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
   },
   // Event Feed Styles
   feedBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: "rgba(255, 255, 255, 0.06)",
     padding: 16,
   },
   feedHeader: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#9CA3AF',
+    fontWeight: "600",
+    color: "#9CA3AF",
     marginBottom: 12,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   feedItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+    borderBottomColor: "rgba(255, 255, 255, 0.04)",
   },
   feedItemText: {
     fontSize: 13,
-    color: '#FFF',
+    color: "#FFF",
   },
   feedItemTime: {
     fontSize: 11,
-    color: '#4B5563',
+    color: "#4B5563",
   },
   emptyFeedText: {
-    textAlign: 'center',
-    color: '#4B5563',
+    textAlign: "center",
+    color: "#4B5563",
     paddingVertical: 10,
     fontSize: 13,
   },
   // Completion Modal Styles
   completionOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
   completionCard: {
-    backgroundColor: '#0F0D1C',
+    backgroundColor: "#0F0D1C",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    width: '100%',
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    width: "100%",
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   congratsIcon: {
     fontSize: 60,
@@ -850,75 +1018,75 @@ const styles = StyleSheet.create({
   },
   congratsTitle: {
     fontSize: 22,
-    fontWeight: '800',
-    color: '#00E676',
+    fontWeight: "800",
+    color: "#00E676",
   },
   congratsSubtitle: {
     fontSize: 12,
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
+    color: "#9CA3AF",
+    textTransform: "uppercase",
     letterSpacing: 1,
     marginTop: 4,
   },
   completionScoreBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
     borderRadius: 16,
     padding: 16,
     marginVertical: 20,
-    width: '100%',
-    justifyContent: 'space-between',
+    width: "100%",
+    justifyContent: "space-between",
   },
   completedTeamName: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#FFF',
+    fontWeight: "700",
+    color: "#FFF",
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
   },
   completedFinalScore: {
     fontSize: 32,
-    fontWeight: '900',
-    color: '#6C4DF6',
+    fontWeight: "900",
+    color: "#6C4DF6",
     marginHorizontal: 12,
   },
   winnerText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
-    textAlign: 'center',
+    fontWeight: "700",
+    color: "#FFF",
+    textAlign: "center",
     marginBottom: 20,
   },
   closeOverlayBtn: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
     borderRadius: 12,
     paddingVertical: 14,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   closeOverlayText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   spectatorCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: "rgba(255, 255, 255, 0.06)",
     borderRadius: 18,
     padding: 18,
     marginBottom: 20,
   },
   spectatorHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   spectatorLiveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -927,85 +1095,85 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#EF4444',
+    backgroundColor: "#EF4444",
     marginRight: 6,
   },
   spectatorLiveText: {
-    color: '#EF4444',
+    color: "#EF4444",
     fontSize: 9,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 0.5,
   },
   spectatorSyncText: {
-    color: '#00D2FF',
+    color: "#00D2FF",
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   spectatorStatusTitle: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: 12,
   },
   spectatorInfoGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 14,
     gap: 10,
   },
   spectatorInfoBox: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.01)',
+    backgroundColor: "rgba(255,255,255,0.01)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
+    borderColor: "rgba(255,255,255,0.03)",
     borderRadius: 12,
     padding: 10,
   },
   spectatorInfoLabel: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   spectatorInfoValue: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: 2,
   },
   latestActionBox: {
     marginTop: 14,
-    backgroundColor: 'rgba(108, 77, 246, 0.05)',
+    backgroundColor: "rgba(108, 77, 246, 0.05)",
     borderWidth: 1,
-    borderColor: 'rgba(108, 77, 246, 0.1)',
+    borderColor: "rgba(108, 77, 246, 0.1)",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   latestActionLabel: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   latestActionText: {
-    color: '#6C4DF6',
+    color: "#6C4DF6",
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   scoringExplanationBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(167, 139, 250, 0.08)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(167, 139, 250, 0.08)",
     borderWidth: 1,
-    borderColor: 'rgba(167, 139, 250, 0.15)',
+    borderColor: "rgba(167, 139, 250, 0.15)",
     borderRadius: 10,
     padding: 10,
     marginBottom: 12,
     gap: 8,
   },
   scoringExplanationText: {
-    color: '#D1D5DB',
+    color: "#D1D5DB",
     fontSize: 11,
     lineHeight: 15,
     flex: 1,

@@ -101,12 +101,11 @@ const CreateMatchScreen = () => {
   const [matchType, setMatchType] = useState<"SINGLES" | "DOUBLES">("SINGLES");
 
   // Selection states
-  // We automatically set current user as Home Player 1
-  const [homePlayer1, setHomePlayer1] = useState<any>(
-    currentUser
-      ? { id: currentUser.id, name: currentUser.display_name }
-      : { id: 1, name: "Rajesh Kumar" },
-  );
+  // Do NOT automatically add current user as Home Player 1
+  const [homePlayer1, setHomePlayer1] = useState<any>({
+    id: 1,
+    name: "Rajesh Kumar",
+  });
   const [homePlayer2, setHomePlayer2] = useState<any>(null);
   const [awayPlayer1, setAwayPlayer1] = useState<any>({
     id: 2,

@@ -9,7 +9,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTeamControllerGetMyTeams } from '../Api/playVerseComponents';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { request } from '../services/request';
+import { METHODS, HomeStackParamList } from '../utils/types';
 
 interface MyTeamsModalProps {
   visible: boolean;
@@ -17,12 +20,32 @@ interface MyTeamsModalProps {
 }
 
 const MyTeamsModal: React.FC<MyTeamsModalProps> = ({ visible, onClose }) => {
-  const { data: response, isLoading } = useTeamControllerGetMyTeams<any>(
-    {},
-    { enabled: visible }
-  );
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const [teams, setTeams] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
-  const teams = Array.isArray(response) ? response : response?.data || [];
+  React.useEffect(() => {
+    if (!visible) return;
+    let active = true;
+    const fetchTeams = async () => {
+      try {
+        setLoading(true);
+        const res: any = await request(METHODS.GET, '/api/teams/v1/my-teams');
+        if (active) {
+          const list = Array.isArray(res) ? res : (res?.teams || res?.data || []);
+          setTeams(list);
+        }
+      } catch (err) {
+        console.log('Error fetching my teams in modal:', err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    fetchTeams();
+    return () => {
+      active = false;
+    };
+  }, [visible]);
 
   return (
     <Modal
@@ -45,7 +68,7 @@ const MyTeamsModal: React.FC<MyTeamsModalProps> = ({ visible, onClose }) => {
           </View>
 
           {/* Body */}
-          {isLoading ? (
+          {loading ? (
             <View style={styles.centerBox}>
               <ActivityIndicator size="small" color="#6C4DF6" />
               <Text style={styles.subText}>Loading teams...</Text>
@@ -60,23 +83,36 @@ const MyTeamsModal: React.FC<MyTeamsModalProps> = ({ visible, onClose }) => {
               style={{ maxHeight: 340, marginTop: 12 }}
               showsVerticalScrollIndicator={false}
             >
-              {teams.map((t: any) => (
-                <View key={t.id || t.team_id} style={styles.teamCard}>
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={styles.teamName}>{t.name || t.team_name}</Text>
-                      {t.isCaptain && (
-                        <View style={styles.captainBadge}>
-                          <Text style={styles.captainBadgeText}>👑 Captain</Text>
-                        </View>
-                      )}
+              {teams.map((t: any) => {
+                const tId = t.id || t.team_id;
+                const tName = t.name || t.team_name;
+                return (
+                  <TouchableOpacity
+                    key={tId}
+                    style={styles.teamCard}
+                    onPress={() => {
+                      onClose();
+                      navigation.navigate("TeamDetails", { teamId: tId, teamName: tName });
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={styles.teamName}>{tName}</Text>
+                        {t.isCaptain && (
+                          <View style={styles.captainBadge}>
+                            <Text style={styles.captainBadgeText}>👑 Captain</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.teamMeta}>
+                        {t.memberCount || t.members?.length || 1} Members • Tap to view roster
+                      </Text>
                     </View>
-                    <Text style={styles.teamMeta}>
-                      {t.memberCount || t.members?.length || 1} Members • ID: {t.id || t.team_id}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+                    <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           )}
 

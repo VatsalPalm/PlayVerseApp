@@ -35,13 +35,16 @@ const GroundOwnerHomeScreen = () => {
   const [userName, setUserName] = useState("Owner");
 
   // Fetch grounds to get AI insights
-  const { data: myGroundsData, isLoading, refetch } =
-    useGroundControllerGetMyGrounds<any>({
-      queryParams: {
-        page: 1,
-        limit: 10,
-      },
-    });
+  const {
+    data: myGroundsData,
+    isLoading,
+    refetch,
+  } = useGroundControllerGetMyGrounds<any>({
+    queryParams: {
+      page: 1,
+      limit: 10,
+    },
+  });
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -61,8 +64,8 @@ const GroundOwnerHomeScreen = () => {
     myGroundsData?.ai_insights || myGroundsData?.data?.ai_insights;
 
   // Extract owner price and market average dynamically
-  const ownerPrice = aiInsights?.price_analysis?.owner_price ?? 500;
-  const marketPrice = aiInsights?.price_analysis?.market_average ?? 650;
+  const ownerPrice = aiInsights?.price_analysis?.owner_price;
+  const marketPrice = aiInsights?.price_analysis?.market_average;
 
   // Calculate relative positions for visual gauge (range: 0 to maxPrice * 1.3)
   const maxScaleVal = Math.max(ownerPrice, marketPrice, 100) * 1.3;
@@ -103,7 +106,7 @@ const GroundOwnerHomeScreen = () => {
         console.log("Failed to parse user profile:", e);
       }
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   const orb1X = useSharedValue(SCREEN_WIDTH * 0.2);
