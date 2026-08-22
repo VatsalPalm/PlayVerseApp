@@ -410,45 +410,6 @@ export const useAuthControllerRefreshToken = (
   });
 };
 
-export type AuthControllerLogoutError = Fetcher.ErrorWrapper<undefined>;
-
-export type AuthControllerLogoutVariables = {} & PlayVerseContext["fetcherOptions"];
-
-export const fetchAuthControllerLogout = (
-  variables: AuthControllerLogoutVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    AuthControllerLogoutError,
-    undefined,
-    {},
-    {},
-    {}
-  >({ url: "/api/auth/v1/logout", method: "post", ...variables, signal });
-
-export const useAuthControllerLogout = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      AuthControllerLogoutError,
-      AuthControllerLogoutVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    AuthControllerLogoutError,
-    AuthControllerLogoutVariables
-  >({
-    mutationFn: (variables: AuthControllerLogoutVariables) =>
-      fetchAuthControllerLogout(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
 export type UserControllerGetProfileError = Fetcher.ErrorWrapper<undefined>;
 
 export type UserControllerGetProfileVariables =
@@ -7171,7 +7132,6 @@ export type TournamentControllerRegisterTeamError =
   Fetcher.ErrorWrapper<undefined>;
 
 export type TournamentControllerRegisterTeamVariables = {
-  body: Schemas.RegisterTeamDto;
   pathParams: TournamentControllerRegisterTeamPathParams;
 } & PlayVerseContext["fetcherOptions"];
 
@@ -7182,7 +7142,7 @@ export const fetchTournamentControllerRegisterTeam = (
   playVerseFetch<
     undefined,
     TournamentControllerRegisterTeamError,
-    Schemas.RegisterTeamDto,
+    undefined,
     {},
     {},
     TournamentControllerRegisterTeamPathParams
@@ -7211,6 +7171,62 @@ export const useTournamentControllerRegisterTeam = (
   >({
     mutationFn: (variables: TournamentControllerRegisterTeamVariables) =>
       fetchTournamentControllerRegisterTeam(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type TournamentControllerRegisterIndividualPathParams = {
+  /**
+   * Tournament ID
+   */
+  id: number;
+};
+
+export type TournamentControllerRegisterIndividualError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerRegisterIndividualVariables = {
+  pathParams: TournamentControllerRegisterIndividualPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerRegisterIndividual = (
+  variables: TournamentControllerRegisterIndividualVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerRegisterIndividualError,
+    undefined,
+    {},
+    {},
+    TournamentControllerRegisterIndividualPathParams
+  >({
+    url: "/api/tournament/v1/{id}/register-individual",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTournamentControllerRegisterIndividual = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TournamentControllerRegisterIndividualError,
+      TournamentControllerRegisterIndividualVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TournamentControllerRegisterIndividualError,
+    TournamentControllerRegisterIndividualVariables
+  >({
+    mutationFn: (variables: TournamentControllerRegisterIndividualVariables) =>
+      fetchTournamentControllerRegisterIndividual(
         deepMerge(fetcherOptions, variables),
       ),
     ...options,

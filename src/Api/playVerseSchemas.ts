@@ -662,6 +662,10 @@ export type CreateTeamDto = {
    * @example We love to play!
    */
   description?: string;
+  /**
+   * @example true
+   */
+  skipAutoAddMember?: boolean;
 };
 
 export type TeamInvitationDto = {

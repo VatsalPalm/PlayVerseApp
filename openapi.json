@@ -2980,7 +2980,7 @@
     "/api/tournament/v1/{id}/register": {
       "post": {
         "operationId": "TournamentController_registerTeam",
-        "summary": "Register a team to the tournament",
+        "summary": "Register a team or individual player to the tournament",
         "parameters": [
           {
             "name": "id",
@@ -2992,16 +2992,34 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterTeamDto"
-              }
-            }
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/tournament/v1/{id}/register-individual": {
+      "post": {
+        "operationId": "TournamentController_registerIndividual",
+        "summary": "Register an individual player to the tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -4154,6 +4172,10 @@
           "description": {
             "type": "string",
             "example": "We love to play!"
+          },
+          "skipAutoAddMember": {
+            "type": "boolean",
+            "example": true
           }
         },
         "required": ["sportId", "name"]
