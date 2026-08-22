@@ -17,7 +17,7 @@ import MyProfileTab from "./components/MyProfileTab";
 import AiStatisticsTab from "./components/AiStatisticsTab";
 import {
   useUserControllerGetProfile,
-  useUserControllerUpdateProfile,
+  useUserControllerPatchProfile,
   useAuthControllerLogout,
 } from "../../Api/playVerseComponents";
 
@@ -49,7 +49,7 @@ const PlayerProfileSection: React.FC<PlayerProfileSectionProps> = ({ onSignOut }
   });
 
   // Update Profile Mutation
-  const { mutate: updateProfile, isPending: isSaving } = useUserControllerUpdateProfile({
+  const { mutate: updateProfile, isPending: isSaving } = useUserControllerPatchProfile({
     onSuccess: (data: any) => {
       // Sync cache in storage
       try {
