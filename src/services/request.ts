@@ -2,7 +2,7 @@ import { api } from "../utils/api";
 import { METHODS } from "../utils/types";
 import axios, { AxiosProgressEvent, InternalAxiosRequestConfig } from "axios";
 
-export const env = 3;
+export const env = 2;
 
 export const getURL = (env: number) => {
   if (env === 3) return "https://8lqg2hx4-3339.inc1.devtunnels.ms/";
