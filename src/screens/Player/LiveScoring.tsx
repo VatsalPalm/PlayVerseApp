@@ -21,6 +21,7 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import FloatingOrbs from "../../Components/atoms/FloatingOrbs";
 import { showMessage } from "react-native-flash-message";
 import { useMatchSocket } from "../../hooks/useMatchSocket";
+import { fetchMatchControllerStartMatch } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -83,6 +84,9 @@ const LiveScoringScreen = () => {
   const match = matchState;
   const isCompleted = match?.status === "COMPLETED";
 
+  const [startingMatchLoading, setStartingMatchLoading] = useState(false);
+  const [completionModalDismissed, setCompletionModalDismissed] = useState(false);
+
   // Determine if the user is authorized to perform scoring inputs
   const isAllowedToScore = (() => {
     if (route.params?.canScore !== undefined) {
@@ -109,10 +113,57 @@ const LiveScoringScreen = () => {
       userRole === "TOURNAMENT_ORGANIZER" ||
       userRole === "ORGANIZER" ||
       userRole === "ADMIN" ||
-      userRole === "GROUND_OWNER";
+      userRole === "GROUND_OWNER" ||
+      (userId && Number((match as any)?.tournament?.organizer_id) === Number(userId)) ||
+      (userId && Number((match as any)?.tournament?.created_by) === Number(userId)) ||
+      (userId && Number((match as any)?.organizer_id) === Number(userId)) ||
+      (userId && Number((match as any)?.created_by) === Number(userId));
 
     return Boolean(isPlayerInMatch || isMatchOrganizer);
   })();
+
+  const handleStartMatchAction = async () => {
+    try {
+      setStartingMatchLoading(true);
+      await fetchMatchControllerStartMatch({
+        pathParams: { matchId },
+      });
+      showMessage({
+        message: "Match is now LIVE!",
+        type: "success",
+      });
+      requestSync();
+    } catch (err: any) {
+      console.log("Error starting match:", err);
+      showMessage({
+        message: err?.message || "Failed to start match",
+        type: "danger",
+      });
+    } finally {
+      setStartingMatchLoading(false);
+    }
+  };
+
+  const handleSafeScorePoint = async (teamId: number, playerId?: number, type: 'POINT' | 'FAULT' = 'POINT') => {
+    if (match?.status !== 'LIVE') {
+      try {
+        setStartingMatchLoading(true);
+        await fetchMatchControllerStartMatch({
+          pathParams: { matchId },
+        });
+        showMessage({
+          message: "Match started!",
+          type: "success",
+        });
+        requestSync();
+      } catch (err: any) {
+        console.log("Error auto-starting match before score:", err);
+      } finally {
+        setStartingMatchLoading(false);
+      }
+    }
+    scorePoint(teamId, playerId, type);
+  };
 
   // Get player names
   const homePlayerNames =
@@ -413,6 +464,37 @@ const LiveScoringScreen = () => {
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
 
+                {/* Match Not Started Banner Action */}
+                {match?.status !== "LIVE" && !isCompleted && (
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#10B981",
+                      borderRadius: 12,
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "row",
+                      gap: 8,
+                      marginBottom: 16,
+                    }}
+                    onPress={handleStartMatchAction}
+                    disabled={startingMatchLoading}
+                    activeOpacity={0.8}
+                  >
+                    {startingMatchLoading ? (
+                      <ActivityIndicator color="#FFF" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="play-circle-outline" size={20} color="#FFF" />
+                        <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "800" }}>
+                          Start Match (Make Live)
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
+
                 {/* Scoring Rule Explanation Banner */}
                 <View style={styles.scoringExplanationBanner}>
                   <Ionicons
@@ -438,7 +520,7 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.homePointBtn]}
                     onPress={() =>
-                      scorePoint(match.home_team_id!, undefined, "POINT")
+                      handleSafeScorePoint(match.home_team_id!, undefined, "POINT")
                     }
                     activeOpacity={0.8}
                   >
@@ -451,7 +533,7 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.awayPointBtn]}
                     onPress={() =>
-                      scorePoint(match.away_team_id!, undefined, "POINT")
+                      handleSafeScorePoint(match.away_team_id!, undefined, "POINT")
                     }
                     activeOpacity={0.8}
                   >
@@ -472,7 +554,7 @@ const LiveScoringScreen = () => {
                         ? match.away_team_id 
                         : match.home_team_id;
                       if (nonServingTeamId) {
-                        scorePoint(nonServingTeamId, userId || undefined, 'FAULT');
+                        handleSafeScorePoint(nonServingTeamId, userId || undefined, 'FAULT');
                       }
                     }}
                     activeOpacity={0.8}
@@ -582,48 +664,82 @@ const LiveScoringScreen = () => {
           </ScrollView>
 
           {/* CELEBRATORY COMPLETION OVERLAY */}
-          {isCompleted && (
+          {isCompleted && !completionModalDismissed && (
             <Modal
               transparent={true}
-              visible={isCompleted}
+              visible={isCompleted && !completionModalDismissed}
               animationType="fade"
+              onRequestClose={() => setCompletionModalDismissed(true)}
             >
               <View style={styles.completionOverlay}>
                 <View style={styles.completionCard}>
                   <Text style={styles.congratsIcon}>🏆</Text>
                   <Text style={styles.congratsTitle}>Match Completed!</Text>
                   <Text style={styles.congratsSubtitle}>
-                    authoritative final score
+                    Authoritative Final Score
                   </Text>
 
-                  <View style={styles.completionScoreBox}>
-                    <Text style={styles.completedTeamName}>{homeNames}</Text>
-                    <Text style={styles.completedFinalScore}>
-                      {homeGamesWon} - {awayGamesWon}
-                    </Text>
-                    <Text style={styles.completedTeamName}>{awayNames}</Text>
-                  </View>
+                  {(() => {
+                    const isHWon = match.winner_team_id === match.home_team_id;
+                    const isAWon = match.winner_team_id === match.away_team_id;
+                    let hScore = homeGamesWon;
+                    let aScore = awayGamesWon;
+                    if (hScore === 0 && aScore === 0) {
+                      if (isHWon) { hScore = 1; aScore = 0; }
+                      else if (isAWon) { aScore = 1; hScore = 0; }
+                    }
+                    return (
+                      <View style={styles.completionScoreBox}>
+                        <Text style={styles.completedTeamName}>{homeNames}</Text>
+                        <Text style={styles.completedFinalScore}>
+                          {hScore} - {aScore}
+                        </Text>
+                        <Text style={styles.completedTeamName}>{awayNames}</Text>
+                      </View>
+                    );
+                  })()}
 
                   <Text style={styles.winnerText}>
                     Winner:{" "}
                     {match.winner_team_id === match.home_team_id
                       ? homeNames
-                      : awayNames}
+                      : match.winner_team_id === match.away_team_id
+                        ? awayNames
+                        : "Match Concluded"}
                   </Text>
 
                   <SizedBox height={20} />
 
-                  <TouchableOpacity
-                    style={styles.closeOverlayBtn}
-                    onPress={() => {
-                      navigation.goBack();
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.closeOverlayText}>
-                      Back to Match Center
-                    </Text>
-                  </TouchableOpacity>
+                  <View style={{ gap: 10, width: "100%" }}>
+                    <TouchableOpacity
+                      style={styles.closeOverlayBtn}
+                      onPress={() => setCompletionModalDismissed(true)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.closeOverlayText}>
+                        View Match Scorecard
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.closeOverlayBtn,
+                        {
+                          backgroundColor: "transparent",
+                          borderColor: "rgba(255,255,255,0.2)",
+                          borderWidth: 1,
+                        },
+                      ]}
+                      onPress={() => {
+                        navigation.goBack();
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.closeOverlayText, { color: "#9CA3AF" }]}>
+                        Back to Match Center
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </Modal>

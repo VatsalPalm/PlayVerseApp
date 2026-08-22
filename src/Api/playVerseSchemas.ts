@@ -310,6 +310,181 @@ export type UpdateUserProfileDto = {
   sports?: string[];
 };
 
+export type FindGameRequestDto = {
+  /**
+   * Natural language query representing player's intent
+   *
+   * @example I want to play badminton today around 7 PM. I'm intermediate and need one player.
+   */
+  prompt?: string;
+  /**
+   * The ID of the sport
+   *
+   * @example 1
+   */
+  sportId?: number;
+  /**
+   * Target play date (YYYY-MM-DD)
+   *
+   * @example 2026-08-22
+   */
+  date?: string;
+  /**
+   * Preferred start time (HH:MM)
+   *
+   * @example 19:00
+   */
+  preferredTime?: string;
+  /**
+   * Time flexibility in minutes before or after preferred time
+   *
+   * @example 60
+   * @default 60
+   */
+  timeFlexibilityMinutes?: number;
+  /**
+   * Required skill level of players: BEGINNER, INTERMEDIATE, ADVANCED
+   *
+   * @example INTERMEDIATE
+   */
+  skillLevel?: string;
+  /**
+   * Number of players needed
+   *
+   * @example 1
+   * @default 1
+   */
+  playersNeeded?: number;
+  /**
+   * Maximum distance radius from the user's location in Km
+   *
+   * @example 5
+   * @default 5
+   */
+  radiusKm?: number;
+};
+
+export type SendGameInviteDto = {
+  /**
+   * The User ID of the candidate player we matched with
+   *
+   * @example 12
+   */
+  receiverId: number;
+  /**
+   * The ID of the ground slot
+   *
+   * @example 1001
+   */
+  slotId: number;
+};
+
+export type CreateBookingDto = {
+  /**
+   * Ground ID to book
+   *
+   * @example 1
+   */
+  groundId: number;
+  /**
+   * Slot ID to book
+   *
+   * @example 5
+   */
+  slotId: number;
+  /**
+   * Booking date (YYYY-MM-DD)
+   *
+   * @example 2026-08-20
+   */
+  bookingDate: string;
+  /**
+   * Sport ID (if ground supports multiple)
+   *
+   * @example 1
+   */
+  sportId?: number;
+  /**
+   * Optional notes for the booking
+   */
+  notes?: string;
+};
+
+export type CreateMatchDto = {
+  /**
+   * The ID of the sport
+   *
+   * @example 1
+   */
+  sportId: number;
+  /**
+   * Tournament ID, if applicable
+   *
+   * @example null
+   */
+  tournamentId?: number;
+  /**
+   * Ground ID, if applicable
+   *
+   * @example null
+   */
+  groundId?: number;
+  /**
+   * Home Team ID, if already created
+   *
+   * @example null
+   */
+  homeTeamId?: number;
+  /**
+   * Away Team ID, if already created
+   *
+   * @example null
+   */
+  awayTeamId?: number;
+  /**
+   * List of Home Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 1
+   */
+  homePlayerIds: string[];
+  /**
+   * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 2
+   */
+  awayPlayerIds: string[];
+  /**
+   * Match type: SINGLES or DOUBLES
+   *
+   * @example SINGLES
+   */
+  matchType: string;
+  /**
+   * Scheduled time
+   *
+   * @example 2026-08-25T18:00:00Z
+   */
+  scheduledAt?: string;
+  /**
+   * Points required to win a game (default 11)
+   *
+   * @example 11
+   */
+  pointsPerGame?: number;
+  /**
+   * Whether team must win by 2 points (default true)
+   *
+   * @example true
+   */
+  winByTwo?: boolean;
+  /**
+   * Number of games/periods needed to win the match (default 2)
+   *
+   * @example 2
+   */
+  gamesToWin?: number;
+};
+
 export type GroundSlotDto = {
   /**
    * Day of week: 0=Sunday … 6=Saturday
@@ -495,37 +670,6 @@ export type GroundImageDto = {
   url: string;
 };
 
-export type CreateBookingDto = {
-  /**
-   * Ground ID to book
-   *
-   * @example 1
-   */
-  groundId: number;
-  /**
-   * Slot ID to book
-   *
-   * @example 5
-   */
-  slotId: number;
-  /**
-   * Booking date (YYYY-MM-DD)
-   *
-   * @example 2026-08-20
-   */
-  bookingDate: string;
-  /**
-   * Sport ID (if ground supports multiple)
-   *
-   * @example 1
-   */
-  sportId?: number;
-  /**
-   * Optional notes for the booking
-   */
-  notes?: string;
-};
-
 export type CreateTeamDto = {
   /**
    * @example 1
@@ -551,6 +695,10 @@ export type CreateTeamDto = {
    * @example We love to play!
    */
   description?: string;
+  /**
+   * @example true
+   */
+  skipAutoAddMember?: boolean;
 };
 
 export type TeamInvitationDto = {
@@ -573,81 +721,6 @@ export type ChallengeDto = {
    * @example 2026-08-25T10:00:00
    */
   scheduledAt: string;
-};
-
-export type CreateMatchDto = {
-  /**
-   * The ID of the sport
-   *
-   * @example 1
-   */
-  sportId: number;
-  /**
-   * Tournament ID, if applicable
-   *
-   * @example null
-   */
-  tournamentId?: number;
-  /**
-   * Ground ID, if applicable
-   *
-   * @example null
-   */
-  groundId?: number;
-  /**
-   * Home Team ID, if already created
-   *
-   * @example null
-   */
-  homeTeamId?: number;
-  /**
-   * Away Team ID, if already created
-   *
-   * @example null
-   */
-  awayTeamId?: number;
-  /**
-   * List of Home Team Player User IDs (1 for Singles, 2 for Doubles)
-   *
-   * @example 1
-   */
-  homePlayerIds: string[];
-  /**
-   * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
-   *
-   * @example 2
-   */
-  awayPlayerIds: string[];
-  /**
-   * Match type: SINGLES or DOUBLES
-   *
-   * @example SINGLES
-   */
-  matchType: string;
-  /**
-   * Scheduled time
-   *
-   * @example 2026-08-25T18:00:00Z
-   */
-  scheduledAt?: string;
-  /**
-   * Points required to win a game (default 11)
-   *
-   * @example 11
-   */
-  pointsPerGame?: number;
-  /**
-   * Whether team must win by 2 points (default true)
-   *
-   * @example true
-   */
-  winByTwo?: boolean;
-  /**
-   * Number of games/periods needed to win the match (default 2)
-   *
-   * @example 2
-   */
-  gamesToWin?: number;
 };
 
 export type CreateTournamentDto = {

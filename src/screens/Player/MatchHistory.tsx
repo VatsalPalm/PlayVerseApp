@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { storage } from '../../services/mmkv';
 import {
   StyleSheet,
   Text,
@@ -9,6 +10,8 @@ import {
   ActivityIndicator,
   StatusBar,
   Alert,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,10 +25,12 @@ import {
   useMatchControllerDeleteMatch,
 } from '../../Api/playVerseComponents';
 import SizedBox from '../../Components/atoms/SizeBox';
+import TeamAvatar from '../../Components/Tournament/TeamAvatar';
+import StartMatchLineupModal from '../../Components/Match/StartMatchLineupModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const TABS = ['ALL', 'SCHEDULED', 'LIVE', 'COMPLETED'];
+const TABS = ['LIVE', 'COMPLETED', 'SCHEDULED'];
 
 const statusColor: Record<string, string> = {
   SCHEDULED: '#F59E0B',
@@ -64,14 +69,27 @@ const formatTime = (raw: string): string => {
 
 const MatchHistoryScreen = () => {
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState('ALL');
+  const [activeTab, setActiveTab] = useState('LIVE');
   const [refreshing, setRefreshing] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [selectedMatchForStats, setSelectedMatchForStats] = useState<any | null>(null);
+  const [lineupModalMatch, setLineupModalMatch] = useState<any | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = storage.getString('userProfile');
+      if (stored) {
+        const userObj = JSON.parse(stored);
+        const resolvedId = userObj.user_id ?? userObj.id ?? userObj.userId ?? null;
+        setUserId(resolvedId);
+      }
+    } catch (e) {
+      console.log('Error reading userProfile:', e);
+    }
+  }, []);
 
   // Queries
-  const queryParams: any = { limit: 100 };
-  if (activeTab !== 'ALL') {
-    queryParams.status = activeTab;
-  }
+  const queryParams: any = { limit: 100, status: activeTab };
 
   const { data: historyResponse, isLoading, refetch } = useMatchControllerGetMatchHistory<any>({
     queryParams,
@@ -164,17 +182,137 @@ const MatchHistoryScreen = () => {
     const isScheduled = item.status === 'SCHEDULED';
 
     // Calculate score details if completed or live
-    // e.g. sum of period scores or specific summaries
     const periods = item.periods || [];
-    const homeGamesWon = periods.filter((p: any) => p.winner_team_id && p.winner_team_id === item.home_team_id).length;
-    const awayGamesWon = periods.filter((p: any) => p.winner_team_id && p.winner_team_id === item.away_team_id).length;
+    const homeTeamId = item.home_team_id || item.homeTeamId;
+    const awayTeamId = item.away_team_id || item.awayTeamId;
+
+    const homeGamesWon = periods.filter(
+      (p: any) =>
+        (p.winner_team_id || p.winnerTeamId) &&
+        Number(p.winner_team_id || p.winnerTeamId) === Number(homeTeamId)
+    ).length;
+    const awayGamesWon = periods.filter(
+      (p: any) =>
+        (p.winner_team_id || p.winnerTeamId) &&
+        Number(p.winner_team_id || p.winnerTeamId) === Number(awayTeamId)
+    ).length;
+
+    const totalHomePoints = periods.reduce(
+      (sum: number, p: any) => sum + (p.home_score ?? p.homeScore ?? 0),
+      0
+    );
+    const totalAwayPoints = periods.reduce(
+      (sum: number, p: any) => sum + (p.away_score ?? p.awayScore ?? 0),
+      0
+    );
+
+    const displayHomeScore =
+      homeGamesWon > 0 || awayGamesWon > 0
+        ? homeGamesWon
+        : (item.home_score ??
+          item.homeScore ??
+          (item.metadata as any)?.homeGameWins ??
+          (periods.length > 0 ? totalHomePoints : 0));
+
+    const displayAwayScore =
+      homeGamesWon > 0 || awayGamesWon > 0
+        ? awayGamesWon
+        : (item.away_score ??
+          item.awayScore ??
+          (item.metadata as any)?.awayGameWins ??
+          (periods.length > 0 ? totalAwayPoints : 0));
+
+    const rawDate =
+      item.scheduled_at ||
+      item.started_at ||
+      item.ended_at ||
+      item.created_at ||
+      item.createdAt;
+
+    const isMyMatchCard = (() => {
+      if (!userId) return false;
+      const numUid = Number(userId);
+      const playersList = [
+        ...(item.players || []),
+        ...(item.homePlayers || []),
+        ...(item.awayPlayers || []),
+        ...(item.home_players || []),
+        ...(item.away_players || []),
+        ...(item.match_players || []),
+        ...(item.matchPlayers || []),
+      ];
+      const isPlayerInMatch = playersList.some((p: any) => {
+        const pId = p.user_id ?? p.userId ?? p.id ?? p.player_id;
+        return Number(pId) === numUid;
+      });
+      const isCaptainOrOrg =
+        Number(item.home_team_captain_id || item.homeTeamCaptainId) === numUid ||
+        Number(item.away_team_captain_id || item.awayTeamCaptainId) === numUid ||
+        Number(item.created_by || item.createdBy) === numUid ||
+        Number(item.organizer_id || item.organizerId) === numUid ||
+        Number(item.tournament?.organizer_id || item.tournament?.created_by) === numUid;
+
+      return Boolean(isPlayerInMatch || isCaptainOrOrg);
+    })();
+
+    const homeTeamObj = item.home_team || item.homeTeam || { logo: item.home_team_logo || item.homeTeamLogo, name: homeTeamDisplayName };
+    const awayTeamObj = item.away_team || item.awayTeam || { logo: item.away_team_logo || item.awayTeamLogo, name: awayTeamDisplayName };
+
+    const winnerTeamId =
+      item.winner_team_id ??
+      item.winnerTeamId ??
+      (item.metadata as any)?.winnerTeamId;
+    const isHomeWinner = Boolean(
+      winnerTeamId && Number(winnerTeamId) === Number(homeTeamId)
+    );
+    const isAwayWinner = Boolean(
+      winnerTeamId && Number(winnerTeamId) === Number(awayTeamId)
+    );
+
+    let homeScoreVal = displayHomeScore;
+    let awayScoreVal = displayAwayScore;
+
+    if (isCompleted && homeScoreVal === 0 && awayScoreVal === 0) {
+      if (isHomeWinner) {
+        homeScoreVal = 1;
+        awayScoreVal = 0;
+      } else if (isAwayWinner) {
+        awayScoreVal = 1;
+        homeScoreVal = 0;
+      }
+    }
+
+    const isHomeTeamWinning = isCompleted
+      ? isHomeWinner || homeScoreVal > awayScoreVal
+      : homeScoreVal > awayScoreVal;
+    const isAwayTeamWinning = isCompleted
+      ? isAwayWinner || awayScoreVal > homeScoreVal
+      : awayScoreVal > homeScoreVal;
 
     return (
       <View style={styles.glassCard}>
         {/* Card Header */}
         <View style={styles.cardHeader}>
-          <View style={styles.formatBadge}>
-            <Text style={styles.formatText}>{item.matchType} • PICKLEBALL</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View style={styles.formatBadge}>
+              <Text style={styles.formatText}>{item.matchType || "SINGLES"} • PICKLEBALL</Text>
+            </View>
+            {isMyMatchCard && (
+              <View
+                style={{
+                  backgroundColor: "rgba(108, 77, 246, 0.2)",
+                  borderColor: "rgba(108, 77, 246, 0.5)",
+                  borderWidth: 1,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#A78BFA", fontSize: 10, fontWeight: "800" }}>
+                  👤 My Match
+                </Text>
+              </View>
+            )}
           </View>
           <View style={[styles.statusBadge, { backgroundColor: statusBg[item.status] || 'rgba(255,255,255,0.05)' }]}>
             {isLive && <View style={styles.liveDot} />}
@@ -186,7 +324,7 @@ const MatchHistoryScreen = () => {
 
         {/* Date / Location */}
         <Text style={styles.dateTimeText}>
-          📅 {formatDate(item.scheduled_at)} • {formatTime(item.scheduled_at)}
+          📅 {formatDate(rawDate)} • {formatTime(rawDate)}
         </Text>
         {item.ground_name && (
           <Text style={styles.groundText}>
@@ -198,19 +336,81 @@ const MatchHistoryScreen = () => {
 
         {/* Competitors Scoreboard Row */}
         <View style={styles.matchTeamsRow}>
-          <View style={[styles.teamContainer, isCompleted && homeGamesWon > awayGamesWon && styles.winnerTeam]}>
-            <Text style={styles.teamNameText} numberOfLines={2}>{homeTeamDisplayName}</Text>
-            {isCompleted && (
-              <Text style={styles.gameScoreText}>{homeGamesWon} {homeGamesWon > awayGamesWon && '🏆'}</Text>
+          <View
+            style={[
+              styles.teamContainer,
+              isCompleted && isHomeTeamWinning && styles.winnerTeam,
+            ]}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 4,
+              }}
+            >
+              <TeamAvatar team={homeTeamObj} size={24} />
+              <Text
+                style={[
+                  styles.teamNameText,
+                  { flex: 1 },
+                  isCompleted && isHomeTeamWinning && { color: "#10B981", fontWeight: "800" },
+                ]}
+                numberOfLines={2}
+              >
+                {homeTeamDisplayName}
+              </Text>
+            </View>
+            {(isCompleted || isLive) && (
+              <Text
+                style={[
+                  styles.gameScoreText,
+                  isCompleted && isHomeTeamWinning && { color: "#10B981" },
+                ]}
+              >
+                {homeScoreVal} {isCompleted && isHomeTeamWinning ? "🏆" : ""}
+              </Text>
             )}
           </View>
 
           <Text style={styles.vsText}>VS</Text>
 
-          <View style={[styles.teamContainer, isCompleted && awayGamesWon > homeGamesWon && styles.winnerTeam]}>
-            <Text style={styles.teamNameText} numberOfLines={2}>{awayTeamDisplayName}</Text>
-            {isCompleted && (
-              <Text style={styles.gameScoreText}>{awayGamesWon} {awayGamesWon > homeGamesWon && '🏆'}</Text>
+          <View
+            style={[
+              styles.teamContainer,
+              isCompleted && isAwayTeamWinning && styles.winnerTeam,
+            ]}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 4,
+              }}
+            >
+              <TeamAvatar team={awayTeamObj} size={24} />
+              <Text
+                style={[
+                  styles.teamNameText,
+                  { flex: 1 },
+                  isCompleted && isAwayTeamWinning && { color: "#10B981", fontWeight: "800" },
+                ]}
+                numberOfLines={2}
+              >
+                {awayTeamDisplayName}
+              </Text>
+            </View>
+            {(isCompleted || isLive) && (
+              <Text
+                style={[
+                  styles.gameScoreText,
+                  isCompleted && isAwayTeamWinning && { color: "#10B981" },
+                ]}
+              >
+                {awayScoreVal} {isCompleted && isAwayTeamWinning ? "🏆" : ""}
+              </Text>
             )}
           </View>
         </View>
@@ -238,7 +438,7 @@ const MatchHistoryScreen = () => {
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
               style={[styles.actionBtn, { flex: 4 }]}
-              onPress={() => handleStartMatch(item.id)}
+              onPress={() => setLineupModalMatch(item)}
               disabled={startMatchMutation.isPending || deleteMatchMutation.isPending}
               activeOpacity={0.8}
             >
@@ -267,12 +467,23 @@ const MatchHistoryScreen = () => {
 
         {isCompleted && (
           <View style={styles.completedFooter}>
-            <Text style={styles.completedLabel}>Match Ended</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Ionicons name="checkmark-done-circle" size={16} color="#10B981" />
+              <Text style={styles.completedLabel}>
+                {isHomeWinner
+                  ? `${homeTeamDisplayName} Won`
+                  : isAwayWinner
+                    ? `${awayTeamDisplayName} Won`
+                    : "Match Ended"}
+              </Text>
+            </View>
             <TouchableOpacity
-              style={styles.detailsBtn}
-              onPress={() => showMessage({ message: 'Scorecard expanded details', type: 'info' })}
+              style={[styles.detailsBtn, { flexDirection: "row", alignItems: "center", gap: 4 }]}
+              onPress={() => setSelectedMatchForStats(item)}
+              activeOpacity={0.7}
             >
               <Text style={styles.detailsBtnText}>View Stats</Text>
+              <Ionicons name="chevron-forward" size={14} color="#A78BFA" />
             </TouchableOpacity>
           </View>
         )}
@@ -280,7 +491,11 @@ const MatchHistoryScreen = () => {
     );
   };
 
-  const matches = historyResponse?.data || [];
+  const rawMatches: any[] = Array.isArray(historyResponse)
+    ? historyResponse
+    : historyResponse?.data || historyResponse?.matches || [];
+
+  const matches = rawMatches;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -372,6 +587,251 @@ const MatchHistoryScreen = () => {
           onRefresh={handleRefresh}
         />
       )}
+
+      {/* MATCH STATS & SUMMARY MODAL */}
+      {selectedMatchForStats && (
+        <Modal
+          visible={Boolean(selectedMatchForStats)}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setSelectedMatchForStats(null)}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "flex-end" }}>
+            <View
+              style={{
+                backgroundColor: "#161325",
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                maxHeight: "85%",
+                paddingHorizontal: 20,
+                paddingTop: 16,
+                paddingBottom: 32,
+                borderWidth: 1,
+                borderColor: "rgba(108, 77, 246, 0.3)",
+              }}
+            >
+              {/* Header Bar */}
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={{ color: "#FFF", fontSize: 18, fontWeight: "800" }}>
+                    Match Summary
+                  </Text>
+                  <View style={[styles.statusBadge, { backgroundColor: statusBg[selectedMatchForStats.status] || 'rgba(255,255,255,0.05)' }]}>
+                    <Text style={[styles.statusText, { color: statusColor[selectedMatchForStats.status] || '#FFF' }]}>
+                      {selectedMatchForStats.status}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setSelectedMatchForStats(null)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="close" size={20} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {(() => {
+                  const m = selectedMatchForStats;
+                  const homeP = m.homePlayers?.map((p: any) => p.display_name || p.name).filter(Boolean).join(" & ");
+                  const awayP = m.awayPlayers?.map((p: any) => p.display_name || p.name).filter(Boolean).join(" & ");
+                  const hName = m.home_team_name || m.homeTeamName || homeP || "Home Team";
+                  const aName = m.away_team_name || m.awayTeamName || awayP || "Away Team";
+                  const hId = m.home_team_id || m.homeTeamId;
+                  const aId = m.away_team_id || m.awayTeamId;
+
+                  const pList = m.periods || [];
+                  const hWins = pList.filter((p: any) => (p.winner_team_id || p.winnerTeamId) && Number(p.winner_team_id || p.winnerTeamId) === Number(hId)).length;
+                  const aWins = pList.filter((p: any) => (p.winner_team_id || p.winnerTeamId) && Number(p.winner_team_id || p.winnerTeamId) === Number(aId)).length;
+                  const winId = m.winner_team_id ?? m.winnerTeamId ?? (m.metadata as any)?.winnerTeamId;
+                  const isHWon = Boolean(winId && Number(winId) === Number(hId));
+                  const isAWon = Boolean(winId && Number(winId) === Number(aId));
+
+                  let hScore = hWins > 0 || aWins > 0 ? hWins : (m.home_score ?? m.homeScore ?? (pList.length > 0 ? pList[0]?.home_score : 0));
+                  let aScore = hWins > 0 || aWins > 0 ? aWins : (m.away_score ?? m.awayScore ?? (pList.length > 0 ? pList[0]?.away_score : 0));
+                  if (m.status === 'COMPLETED' && hScore === 0 && aScore === 0) {
+                    if (isHWon) { hScore = 1; aScore = 0; }
+                    else if (isAWon) { aScore = 1; hScore = 0; }
+                  }
+
+                  const mDate = m.scheduled_at || m.started_at || m.ended_at || m.created_at;
+                  const hObj = m.home_team || m.homeTeam || { logo: m.home_team_logo || m.homeTeamLogo, name: hName };
+                  const aObj = m.away_team || m.awayTeam || { logo: m.away_team_logo || m.awayTeamLogo, name: aName };
+
+                  return (
+                    <View>
+                      {/* Winner Banner */}
+                      {m.status === "COMPLETED" && (isHWon || isAWon) && (
+                        <View
+                          style={{
+                            backgroundColor: "rgba(16, 185, 129, 0.12)",
+                            borderColor: "#10B981",
+                            borderWidth: 1,
+                            borderRadius: 16,
+                            padding: 14,
+                            alignItems: "center",
+                            marginBottom: 16,
+                          }}
+                        >
+                          <Text style={{ fontSize: 24, marginBottom: 2 }}>🏆</Text>
+                          <Text style={{ color: "#10B981", fontSize: 16, fontWeight: "800" }}>
+                            Winner: {isHWon ? hName : aName}
+                          </Text>
+                          <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                            {isHWon ? `${hName} defeated ${aName}` : `${aName} defeated ${hName}`}
+                          </Text>
+                        </View>
+                      )}
+
+                      {/* Main Scorecard Card */}
+                      <View
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.04)",
+                          borderRadius: 18,
+                          padding: 16,
+                          borderWidth: 1,
+                          borderColor: "rgba(255,255,255,0.08)",
+                          marginBottom: 16,
+                        }}
+                      >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                          {/* Home */}
+                          <View style={{ flex: 1, alignItems: "center" }}>
+                            <TeamAvatar team={hObj} size={42} style={{ marginBottom: 8 }} />
+                            <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", textAlign: "center" }} numberOfLines={2}>
+                              {hName}
+                            </Text>
+                            <Text style={{ color: isHWon ? "#10B981" : "#FFF", fontSize: 28, fontWeight: "900", marginTop: 6 }}>
+                              {hScore}
+                            </Text>
+                          </View>
+
+                          <View style={{ alignItems: "center", paddingHorizontal: 12 }}>
+                            <Text style={{ color: "#9CA3AF", fontSize: 12, fontWeight: "800" }}>VS</Text>
+                            <Text style={{ color: "#6C4DF6", fontSize: 11, fontWeight: "700", marginTop: 4 }}>
+                              {m.matchType || "SINGLES"}
+                            </Text>
+                          </View>
+
+                          {/* Away */}
+                          <View style={{ flex: 1, alignItems: "center" }}>
+                            <TeamAvatar team={aObj} size={42} style={{ marginBottom: 8 }} />
+                            <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", textAlign: "center" }} numberOfLines={2}>
+                              {aName}
+                            </Text>
+                            <Text style={{ color: isAWon ? "#10B981" : "#FFF", fontSize: 28, fontWeight: "900", marginTop: 6 }}>
+                              {aScore}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      {/* Match Meta Information */}
+                      <View
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.03)",
+                          borderRadius: 14,
+                          padding: 14,
+                          borderWidth: 1,
+                          borderColor: "rgba(255,255,255,0.06)",
+                          marginBottom: 16,
+                          gap: 8,
+                        }}
+                      >
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <Text style={{ fontSize: 14 }}>📅</Text>
+                          <Text style={{ color: "#D1D5DB", fontSize: 13 }}>
+                            {formatDate(mDate)} at {formatTime(mDate)}
+                          </Text>
+                        </View>
+                        {m.ground_name && (
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                            <Text style={{ fontSize: 14 }}>🏟️</Text>
+                            <Text style={{ color: "#D1D5DB", fontSize: 13 }}>{m.ground_name}</Text>
+                          </View>
+                        )}
+                        {m.tournament_name && (
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                            <Text style={{ fontSize: 14 }}>🏆</Text>
+                            <Text style={{ color: "#D1D5DB", fontSize: 13 }}>{m.tournament_name}</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Period / Game Score Breakdown */}
+                      {pList.length > 0 && (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", marginBottom: 8 }}>
+                            Game Scores Breakdown
+                          </Text>
+                          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                            {pList.map((p: any, idx: number) => (
+                              <View
+                                key={p.id || idx}
+                                style={{
+                                  backgroundColor: "rgba(108, 77, 246, 0.12)",
+                                  borderColor: "rgba(108, 77, 246, 0.3)",
+                                  borderWidth: 1,
+                                  borderRadius: 10,
+                                  paddingHorizontal: 12,
+                                  paddingVertical: 8,
+                                }}
+                              >
+                                <Text style={{ color: "#A78BFA", fontSize: 11, fontWeight: "700" }}>
+                                  Game {p.period_number}
+                                </Text>
+                                <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "800", marginTop: 2 }}>
+                                  {p.home_score} - {p.away_score}
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Close Button */}
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: "#6C4DF6",
+                          borderRadius: 14,
+                          paddingVertical: 14,
+                          alignItems: "center",
+                          marginTop: 8,
+                        }}
+                        onPress={() => setSelectedMatchForStats(null)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "800" }}>
+                          Close Summary
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })()}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* START MATCH LINEUP & PLAYERS SELECTION MODAL */}
+      <StartMatchLineupModal
+        visible={Boolean(lineupModalMatch)}
+        match={lineupModalMatch}
+        onClose={() => setLineupModalMatch(null)}
+        onConfirmStart={(matchId, matchType, homePlayerIds, awayPlayerIds) => {
+          setLineupModalMatch(null);
+          handleStartMatch(matchId);
+        }}
+        loading={startMatchMutation.isPending}
+      />
     </SafeAreaView>
   );
 };

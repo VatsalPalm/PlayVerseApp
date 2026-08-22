@@ -13,7 +13,10 @@ import {
   Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -29,7 +32,13 @@ const TeamDetailsScreen = () => {
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const insets = useSafeAreaInsets();
   const route = useRoute<TeamDetailsRouteProp>();
-  const { teamId, teamName: initialTeamName } = route.params || {};
+  const rawParams = (route.params || {}) as any;
+  const rawTeamId = rawParams.teamId;
+  const teamId =
+    typeof rawTeamId === "object" && rawTeamId !== null
+      ? rawTeamId.teamId || rawTeamId.id
+      : rawTeamId;
+  const initialTeamName = rawParams.teamName;
 
   const [loading, setLoading] = useState(true);
   const [teamDetails, setTeamDetails] = useState<any>(null);
@@ -206,7 +215,9 @@ const TeamDetailsScreen = () => {
               });
             }
             showMessage({
-              message: isCaptain ? "Team deleted successfully" : "Left team successfully",
+              message: isCaptain
+                ? "Team deleted successfully"
+                : "Left team successfully",
               type: "success",
             });
             navigation.goBack();
@@ -255,16 +266,28 @@ const TeamDetailsScreen = () => {
       if (typeof val.name === "string") return val.name;
       if (typeof val.username === "string") return val.username;
       if (typeof val.user_name === "string") return val.user_name;
-      if (val.id !== undefined && (typeof val.id === "string" || typeof val.id === "number")) return String(val.id);
-      if (val.playerId !== undefined && (typeof val.playerId === "string" || typeof val.playerId === "number")) return String(val.playerId);
-      if (val.userId !== undefined && (typeof val.userId === "string" || typeof val.userId === "number")) return String(val.userId);
+      if (
+        val.id !== undefined &&
+        (typeof val.id === "string" || typeof val.id === "number")
+      )
+        return String(val.id);
+      if (
+        val.playerId !== undefined &&
+        (typeof val.playerId === "string" || typeof val.playerId === "number")
+      )
+        return String(val.playerId);
+      if (
+        val.userId !== undefined &&
+        (typeof val.userId === "string" || typeof val.userId === "number")
+      )
+        return String(val.userId);
     }
     return fallback;
   };
 
   const displayName = safeStr(
     teamDetails?.name || teamDetails?.team_name || initialTeamName,
-    "Team Details"
+    "Team Details",
   );
   const rawCaptain =
     teamDetails?.captain_name ||
@@ -273,10 +296,14 @@ const TeamDetailsScreen = () => {
     teamDetails?.captain;
   const captainName = safeStr(
     rawCaptain,
-    teamDetails?.captain_id ? `Captain #${safeStr(teamDetails.captain_id)}` : "Not Assigned"
+    teamDetails?.captain_id
+      ? `Captain #${safeStr(teamDetails.captain_id)}`
+      : "Not Assigned",
   );
 
-  const teamShortName = safeStr(teamDetails?.short_name || teamDetails?.shortName);
+  const teamShortName = safeStr(
+    teamDetails?.short_name || teamDetails?.shortName,
+  );
   const teamCity = safeStr(teamDetails?.city);
   const teamDesc = safeStr(teamDetails?.description);
 
@@ -341,28 +368,65 @@ const TeamDetailsScreen = () => {
                       style={{ width: "100%", height: "100%" }}
                     />
                   ) : (
-                    <Ionicons name="shield-checkmark" size={30} color="#00D2FF" />
+                    <Ionicons
+                      name="shield-checkmark"
+                      size={30}
+                      color="#00D2FF"
+                    />
                   )}
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
                     <Text style={styles.teamTitle}>{displayName}</Text>
                     {(teamDetails?.short_name || teamDetails?.shortName) && (
-                      <View style={{ backgroundColor: "rgba(0, 210, 255, 0.15)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: "#00D2FF" }}>
-                        <Text style={{ color: "#00D2FF", fontSize: 11, fontWeight: "800" }}>
+                      <View
+                        style={{
+                          backgroundColor: "rgba(0, 210, 255, 0.15)",
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 6,
+                          borderWidth: 1,
+                          borderColor: "#00D2FF",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "#00D2FF",
+                            fontSize: 11,
+                            fontWeight: "800",
+                          }}
+                        >
                           {teamDetails?.short_name || teamDetails?.shortName}
                         </Text>
                       </View>
                     )}
                   </View>
                   <Text style={styles.teamSub}>
-                    Team ID: #{teamId} {teamDetails?.city ? `• 📍 ${teamDetails.city}` : ""}
+                    Team ID: #
+                    {typeof teamId === "object"
+                      ? teamId?.teamId || teamId?.id || ""
+                      : teamId}{" "}
+                    {teamDetails?.city ? `• 📍 ${teamDetails.city}` : ""}
                   </Text>
                 </View>
               </View>
 
               {teamDetails?.description ? (
-                <Text style={{ color: "#D1D5DB", fontSize: 13, marginTop: 10, lineHeight: 18, fontStyle: "italic" }}>
+                <Text
+                  style={{
+                    color: "#D1D5DB",
+                    fontSize: 13,
+                    marginTop: 10,
+                    lineHeight: 18,
+                    fontStyle: "italic",
+                  }}
+                >
                   "{teamDetails.description}"
                 </Text>
               ) : null}
@@ -372,7 +436,14 @@ const TeamDetailsScreen = () => {
               <View style={styles.infoGrid}>
                 <View style={styles.infoItem}>
                   <Text style={styles.infoLabel}>Captain / Organizer</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      marginTop: 2,
+                    }}
+                  >
                     <Text style={styles.infoValue}>{captainName}</Text>
                     {isCaptain && (
                       <View style={styles.captainBadge}>
@@ -391,16 +462,37 @@ const TeamDetailsScreen = () => {
 
             {/* Self Join Team Banner for non-members */}
             {!isAlreadyMember && !isCaptain && (
-              <View style={[styles.card, { backgroundColor: "rgba(108, 77, 246, 0.15)", borderColor: "#6C4DF6", borderWidth: 1 }]}>
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: "rgba(108, 77, 246, 0.15)",
+                    borderColor: "#6C4DF6",
+                    borderWidth: 1,
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <View style={{ flex: 1, marginRight: 12 }}>
-                    <Text style={[styles.sectionTitle, { color: "#FFF" }]}>Join this Team</Text>
+                    <Text style={[styles.sectionTitle, { color: "#FFF" }]}>
+                      Join this Team
+                    </Text>
                     <Text style={styles.shareSubText}>
-                      You are viewing this team as a player. Tap to join this team!
+                      You are viewing this team as a player. Tap to join this
+                      team!
                     </Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.shareButton, { backgroundColor: "#00D2FF", paddingHorizontal: 16 }]}
+                    style={[
+                      styles.shareButton,
+                      { backgroundColor: "#00D2FF", paddingHorizontal: 16 },
+                    ]}
                     onPress={handleSelfJoinTeam}
                     disabled={actionLoading}
                     activeOpacity={0.8}
@@ -409,8 +501,17 @@ const TeamDetailsScreen = () => {
                       <ActivityIndicator size="small" color="#0F0D1A" />
                     ) : (
                       <>
-                        <Ionicons name="person-add-outline" size={16} color="#0F0D1A" />
-                        <Text style={[styles.shareButtonText, { color: "#0F0D1A", fontWeight: "900" }]}>
+                        <Ionicons
+                          name="person-add-outline"
+                          size={16}
+                          color="#0F0D1A"
+                        />
+                        <Text
+                          style={[
+                            styles.shareButtonText,
+                            { color: "#0F0D1A", fontWeight: "900" },
+                          ]}
+                        >
                           Join Team
                         </Text>
                       </>
@@ -422,8 +523,21 @@ const TeamDetailsScreen = () => {
 
             {/* Share Team Link Card */}
             <View style={styles.card}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    flex: 1,
+                  }}
+                >
                   <View style={styles.shareIconBox}>
                     <Ionicons name="share-social" size={20} color="#6C4DF6" />
                   </View>
@@ -448,12 +562,22 @@ const TeamDetailsScreen = () => {
 
             {/* Add Player Box */}
             <View style={styles.card}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
                 <Ionicons name="person-add" size={20} color="#6C4DF6" />
-                <Text style={styles.sectionTitle}>Add Player by Mobile / ID</Text>
+                <Text style={styles.sectionTitle}>
+                  Add Player by Mobile / ID
+                </Text>
               </View>
               <Text style={[styles.shareSubText, { marginBottom: 12 }]}>
-                Enter player's 10-digit mobile number or User ID to add them to the team
+                Enter player's 10-digit mobile number or User ID to add them to
+                the team
               </Text>
 
               <View style={styles.addPlayerRow}>
@@ -482,22 +606,43 @@ const TeamDetailsScreen = () => {
 
             {/* Team Roster / Players List */}
             <View style={styles.card}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
                   <Ionicons name="people" size={20} color="#00D2FF" />
-                  <Text style={styles.sectionTitle}>Player Roster ({members.length})</Text>
+                  <Text style={styles.sectionTitle}>
+                    Player Roster ({members.length})
+                  </Text>
                 </View>
               </View>
 
               {members.length === 0 ? (
                 <View style={styles.emptyBox}>
                   <Text style={styles.emptyIcon}>👥</Text>
-                  <Text style={styles.emptyTitle}>Team Created with 0 Members</Text>
+                  <Text style={styles.emptyTitle}>
+                    Team Created with 0 Members
+                  </Text>
                   <Text style={styles.emptyText}>
-                    The tournament organizer is not automatically added. Add players manually above or share the invitation link.
+                    The tournament organizer is not automatically added. Add
+                    players manually above or share the invitation link.
                   </Text>
                   <TouchableOpacity
-                    style={[styles.shareButton, { marginTop: 12, backgroundColor: "#6C4DF6", alignSelf: "center" }]}
+                    style={[
+                      styles.shareButton,
+                      {
+                        marginTop: 12,
+                        backgroundColor: "#6C4DF6",
+                        alignSelf: "center",
+                      },
+                    ]}
                     onPress={handleShareTeamLink}
                   >
                     <Ionicons name="share-social" size={16} color="#FFF" />
@@ -506,29 +651,54 @@ const TeamDetailsScreen = () => {
                 </View>
               ) : (
                 members.map((member, index) => {
-                  const rawId = member.user_id || member.id || member.player_id || member.user;
+                  const rawId =
+                    member.user_id ||
+                    member.id ||
+                    member.player_id ||
+                    member.user;
                   const mId = safeStr(rawId, String(index + 1));
-                  const rawName = member.user_name || member.name || member.username || member.display_name || member.user;
+                  const rawName =
+                    member.user_name ||
+                    member.name ||
+                    member.username ||
+                    member.display_name ||
+                    member.user;
                   const mName = safeStr(rawName, `Player #${mId}`);
                   const isCap =
                     member.role === "CAPTAIN" ||
                     member.isCaptain ||
                     Number(mId) === Number(safeStr(teamDetails?.captain_id));
-                  const mRole = safeStr(member.role, isCap ? "Captain" : "Player");
+                  const mRole = safeStr(
+                    member.role,
+                    isCap ? "Captain" : "Player",
+                  );
                   const mStatus = safeStr(member.status, "ACTIVE");
 
                   return (
-                    <View key={safeStr(member.id, String(index))} style={styles.memberRow}>
+                    <View
+                      key={safeStr(member.id, String(index))}
+                      style={styles.memberRow}
+                    >
                       <View style={styles.avatarCircle}>
-                        <Text style={styles.avatarText}>{(mName ? mName.charAt(0).toUpperCase() : "P")}</Text>
+                        <Text style={styles.avatarText}>
+                          {mName ? mName.charAt(0).toUpperCase() : "P"}
+                        </Text>
                       </View>
 
                       <View style={{ flex: 1, marginLeft: 12 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
                           <Text style={styles.memberName}>{mName}</Text>
                           {isCap && (
                             <View style={styles.captainBadge}>
-                              <Text style={styles.captainBadgeText}>👑 Captain</Text>
+                              <Text style={styles.captainBadgeText}>
+                                👑 Captain
+                              </Text>
                             </View>
                           )}
                         </View>
@@ -540,9 +710,15 @@ const TeamDetailsScreen = () => {
                       {!isCap && (
                         <TouchableOpacity
                           style={styles.removeMemberBtn}
-                          onPress={() => handleRemovePlayer(Number(mId) || 0, mName)}
+                          onPress={() =>
+                            handleRemovePlayer(Number(mId) || 0, mName)
+                          }
                         >
-                          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                          <Ionicons
+                            name="trash-outline"
+                            size={18}
+                            color="#EF4444"
+                          />
                         </TouchableOpacity>
                       )}
                     </View>

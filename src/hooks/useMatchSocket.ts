@@ -69,14 +69,110 @@ export const useMatchSocket = (matchId: number) => {
       }
     })();
 
+    const homeTeamId = matchObj.home_team_id ?? matchObj.homeTeamId ?? meta.homeTeamId;
+    const awayTeamId = matchObj.away_team_id ?? matchObj.awayTeamId ?? meta.awayTeamId;
+
+    const rawPlayers = data.players || matchObj.players || [];
+    const homePlayers =
+      data.homePlayers ||
+      matchObj.homePlayers ||
+      rawPlayers.filter(
+        (p: any) =>
+          (homeTeamId && (p.team_id === homeTeamId || p.teamId === homeTeamId)) ||
+          p.side === 'HOME' ||
+          p.team === 'HOME' ||
+          p.is_home === true ||
+          p.isHome === true
+      );
+    const awayPlayers =
+      data.awayPlayers ||
+      matchObj.awayPlayers ||
+      rawPlayers.filter(
+        (p: any) =>
+          (awayTeamId && (p.team_id === awayTeamId || p.teamId === awayTeamId)) ||
+          p.side === 'AWAY' ||
+          p.team === 'AWAY' ||
+          p.is_home === false ||
+          p.isHome === false
+      );
+
+    const homeTeamObj =
+      data.homeTeam ||
+      data.home_team ||
+      matchObj.homeTeam ||
+      matchObj.home_team ||
+      (data.teams || matchObj.teams || []).find((t: any) => t.id === homeTeamId);
+    const awayTeamObj =
+      data.awayTeam ||
+      data.away_team ||
+      matchObj.awayTeam ||
+      matchObj.away_team ||
+      (data.teams || matchObj.teams || []).find((t: any) => t.id === awayTeamId);
+
+    const homePlayerNames = homePlayers
+      .map(
+        (p: any) =>
+          p.display_name ||
+          p.displayName ||
+          p.name ||
+          p.user_name ||
+          p.user?.display_name ||
+          p.user?.name ||
+          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+      )
+      .filter(Boolean)
+      .join(' & ');
+
+    const awayPlayerNames = awayPlayers
+      .map(
+        (p: any) =>
+          p.display_name ||
+          p.displayName ||
+          p.name ||
+          p.user_name ||
+          p.user?.display_name ||
+          p.user?.name ||
+          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+      )
+      .filter(Boolean)
+      .join(' & ');
+
+    const resolvedHomeTeamName =
+      matchObj.home_team_name ||
+      matchObj.homeTeamName ||
+      matchObj.home_team?.name ||
+      matchObj.homeTeam?.name ||
+      data.home_team_name ||
+      data.homeTeamName ||
+      data.home_team?.name ||
+      data.homeTeam?.name ||
+      homeTeamObj?.name ||
+      homeTeamObj?.team_name ||
+      homePlayerNames ||
+      undefined;
+
+    const resolvedAwayTeamName =
+      matchObj.away_team_name ||
+      matchObj.awayTeamName ||
+      matchObj.away_team?.name ||
+      matchObj.awayTeam?.name ||
+      data.away_team_name ||
+      data.awayTeamName ||
+      data.away_team?.name ||
+      data.awayTeam?.name ||
+      awayTeamObj?.name ||
+      awayTeamObj?.team_name ||
+      awayPlayerNames ||
+      undefined;
+
     return {
       id: matchObj.id,
       sport_id: matchObj.sport_id,
       status: matchObj.status,
-      home_team_id: matchObj.home_team_id ?? matchObj.homeTeamId ?? meta.homeTeamId,
-      away_team_id: matchObj.away_team_id ?? matchObj.awayTeamId ?? meta.awayTeamId,
-      home_team_name: matchObj.home_team_name || matchObj.homeTeamName || data.home_team_name || data.homeTeamName,
-      away_team_name: matchObj.away_team_name || matchObj.awayTeamName || data.away_team_name || data.awayTeamName,
+      home_team_id: homeTeamId,
+      away_team_id: awayTeamId,
+      home_team_name: resolvedHomeTeamName,
+      away_team_name: resolvedAwayTeamName,
       scheduled_at: matchObj.scheduled_at,
       started_at: matchObj.started_at,
       ended_at: matchObj.ended_at,
@@ -85,8 +181,8 @@ export const useMatchSocket = (matchId: number) => {
       winByTwo: matchObj.win_by_two === 1 || matchObj.win_by_two === true || matchObj.winByTwo === true || meta.winByTwo === true,
       gamesToWin: matchObj.games_to_win ?? matchObj.gamesToWin ?? meta.gamesToWin ?? 2,
       matchType: matchObj.match_type || matchObj.matchType || meta.matchType || 'SINGLES',
-      homePlayers: data.players?.filter((p: any) => p.team_id === (matchObj.home_team_id ?? meta.homeTeamId)) || matchObj.homePlayers || [],
-      awayPlayers: data.players?.filter((p: any) => p.team_id === (matchObj.away_team_id ?? meta.awayTeamId)) || matchObj.awayPlayers || [],
+      homePlayers,
+      awayPlayers,
       periods: data.periods || matchObj.periods || [],
       events: data.events || matchObj.events || [],
       activeServerId: matchObj.active_server_id ?? matchObj.activeServerId ?? meta.currentServerId ?? meta.activeServerId ?? null,

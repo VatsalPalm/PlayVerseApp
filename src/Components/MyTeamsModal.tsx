@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { request } from '../services/request';
 import { METHODS, HomeStackParamList } from '../utils/types';
+import TeamAvatar from './Tournament/TeamAvatar';
 
 interface MyTeamsModalProps {
   visible: boolean;
@@ -84,18 +85,22 @@ const MyTeamsModal: React.FC<MyTeamsModalProps> = ({ visible, onClose }) => {
               showsVerticalScrollIndicator={false}
             >
               {teams.map((t: any) => {
-                const tId = t.id || t.team_id;
+                let tId = t.id || t.team_id;
+                if (typeof tId === 'object' && tId !== null) {
+                  tId = tId.teamId || tId.id;
+                }
                 const tName = t.name || t.team_name;
                 return (
                   <TouchableOpacity
-                    key={tId}
+                    key={String(tId)}
                     style={styles.teamCard}
                     onPress={() => {
                       onClose();
-                      navigation.navigate("TeamDetails", { teamId: tId, teamName: tName });
+                      navigation.navigate("TeamDetails", { teamId: Number(tId), teamName: tName });
                     }}
                     activeOpacity={0.7}
                   >
+                    <TeamAvatar team={t} size={36} style={{ marginRight: 10 }} />
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Text style={styles.teamName}>{tName}</Text>

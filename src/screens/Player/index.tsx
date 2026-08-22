@@ -172,27 +172,40 @@ const PlayerHomeScreen = () => {
   // Combine initial REST match data with real-time Socket.IO match state updates
   const currentLiveMatch = useMemo(() => {
     if (!activeSportMatch) return null;
-    if (!socketMatchState) return activeSportMatch;
+    const baseObj = socketMatchState
+      ? { ...activeSportMatch, ...socketMatchState }
+      : activeSportMatch;
+
+    const homeTeamName =
+      socketMatchState?.home_team_name ||
+      activeSportMatch.home_team_name ||
+      activeSportMatch.homeTeamName ||
+      activeSportMatch.home_team?.name ||
+      activeSportMatch.homeTeam?.name;
+
+    const awayTeamName =
+      socketMatchState?.away_team_name ||
+      activeSportMatch.away_team_name ||
+      activeSportMatch.awayTeamName ||
+      activeSportMatch.away_team?.name ||
+      activeSportMatch.awayTeam?.name;
+
     return {
-      ...activeSportMatch,
-      ...socketMatchState,
-      home_team_name:
-        socketMatchState.home_team_name ||
-        activeSportMatch.home_team_name ||
-        activeSportMatch.homeTeamName,
-      away_team_name:
-        socketMatchState.away_team_name ||
-        activeSportMatch.away_team_name ||
-        activeSportMatch.awayTeamName,
-      homePlayers: socketMatchState.homePlayers?.length
-        ? socketMatchState.homePlayers
-        : activeSportMatch.homePlayers,
-      awayPlayers: socketMatchState.awayPlayers?.length
-        ? socketMatchState.awayPlayers
-        : activeSportMatch.awayPlayers,
-      periods: socketMatchState.periods?.length
-        ? socketMatchState.periods
-        : activeSportMatch.periods,
+      ...baseObj,
+      home_team_name: homeTeamName,
+      away_team_name: awayTeamName,
+      homePlayers:
+        (socketMatchState?.homePlayers?.length
+          ? socketMatchState.homePlayers
+          : activeSportMatch.homePlayers) || [],
+      awayPlayers:
+        (socketMatchState?.awayPlayers?.length
+          ? socketMatchState.awayPlayers
+          : activeSportMatch.awayPlayers) || [],
+      periods:
+        (socketMatchState?.periods?.length
+          ? socketMatchState.periods
+          : activeSportMatch.periods) || [],
     };
   }, [activeSportMatch, socketMatchState]);
 
@@ -462,24 +475,41 @@ const PlayerHomeScreen = () => {
                 {currentLiveMatch ? (
                   (() => {
                     const homePlayerNames = currentLiveMatch.homePlayers
-                      ?.map((p: any) => p.display_name || p.name)
+                      ?.map(
+                        (p: any) =>
+                          p.display_name ||
+                          p.displayName ||
+                          p.name ||
+                          p.user_name ||
+                          p.user?.display_name ||
+                          p.user?.name ||
+                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                      )
                       .filter(Boolean)
                       .join(" & ");
                     const awayPlayerNames = currentLiveMatch.awayPlayers
-                      ?.map((p: any) => p.display_name || p.name)
+                      ?.map(
+                        (p: any) =>
+                          p.display_name ||
+                          p.displayName ||
+                          p.name ||
+                          p.user_name ||
+                          p.user?.display_name ||
+                          p.user?.name ||
+                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                      )
                       .filter(Boolean)
                       .join(" & ");
 
                     const homeName =
                       currentLiveMatch.home_team_name ||
                       currentLiveMatch.homeTeamName ||
-                      homePlayerNames;
-                    // "Team 1";
+                      (homePlayerNames ? homePlayerNames : "Team 1");
+
                     const awayName =
                       currentLiveMatch.away_team_name ||
                       currentLiveMatch.awayTeamName ||
-                      awayPlayerNames;
-                    // "Team 2";
+                      (awayPlayerNames ? awayPlayerNames : "Team 2");
 
                     const periods = currentLiveMatch.periods || [];
                     const currentPeriod = periods.find(
@@ -933,7 +963,7 @@ const PlayerHomeScreen = () => {
             <Ionicons
               name={activeBottomTab === "dashboard" ? "grid" : "grid-outline"}
               size={20}
-              color={activeBottomTab === "dashboard" ? "#00D2FF" : "#9CA3AF"}
+              color={activeBottomTab === "dashboard" ? "#A78BFA" : "#9CA3AF"}
             />
             <Text
               style={[
@@ -956,7 +986,7 @@ const PlayerHomeScreen = () => {
             <Ionicons
               name={activeBottomTab === "profile" ? "person" : "person-outline"}
               size={20}
-              color={activeBottomTab === "profile" ? "#00D2FF" : "#9CA3AF"}
+              color={activeBottomTab === "profile" ? "#A78BFA" : "#9CA3AF"}
             />
             <Text
               style={[
@@ -1411,9 +1441,9 @@ const styles = StyleSheet.create({
   },
   bottomTabBar: {
     flexDirection: "row",
-    backgroundColor: "rgba(18, 14, 46, 0.95)",
+    backgroundColor: "rgba(22, 14, 42, 0.98)",
     borderTopWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: "rgba(108, 77, 246, 0.25)",
     paddingTop: 10,
     paddingHorizontal: 30,
     justifyContent: "space-around",
@@ -1428,8 +1458,8 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   tabBarItemActive: {
-    backgroundColor: "rgba(0, 210, 255, 0.12)",
-    borderColor: "rgba(0, 210, 255, 0.3)",
+    backgroundColor: "rgba(108, 77, 246, 0.18)",
+    borderColor: "rgba(167, 139, 250, 0.4)",
   },
   tabBarLabel: {
     color: "#9CA3AF",
@@ -1438,7 +1468,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tabBarLabelActive: {
-    color: "#00D2FF",
+    color: "#A78BFA",
     fontWeight: "700",
   },
 });
