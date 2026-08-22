@@ -6,6 +6,7 @@ interface CustomImageProps extends FastImageProps {
     showLoader?: boolean;
 }
 const CImage = (props: CustomImageProps) => {
+    // console.log("🚀 ~ CImage ~ props:", props)
     const [loading, setLoading] = useState(false);
     return (
         <FastImage

@@ -49,7 +49,7 @@ const LoginScreen = () => {
           storage.set('userProfile', JSON.stringify(data?.result || data));
           const primaryRole = data?.result?.roles?.[0]?.name || 'PLAYER';
           storage.set('userRole', primaryRole);
-          
+
           showMessage({
             message: 'Welcome Back!',
             description: `Logged in successfully.`,
@@ -93,7 +93,7 @@ const LoginScreen = () => {
       } else if (typeof error?.payload === 'string') {
         errMsg = error.payload;
       }
-      
+
       if (errMsg.toLowerCase().includes('not verified') || error?.statusCode === 403) {
         showMessage({
           message: 'Verification Required',
@@ -145,7 +145,7 @@ const LoginScreen = () => {
     if (requestLocationPermission) {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        
+
         if (status === 'granted') {
           // Check if Location Services are enabled on the device
           try {
@@ -155,7 +155,7 @@ const LoginScreen = () => {
           }
 
           let loc: Location.LocationObject | null = null;
-          
+
           try {
             loc = await Promise.race([
               Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
@@ -291,7 +291,7 @@ const LoginScreen = () => {
           </View>
         </View>
       </Modal>
-      
+
       {/* Background Gradient */}
       <View style={StyleSheet.absoluteFill}>
         <Svg height="100%" width="100%">
@@ -315,10 +315,10 @@ const LoginScreen = () => {
         >
           <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContainer, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
             <SizedBox height={20} />
-            
+
             {/* Top Logo */}
             <CImage source={Icons.crmLogo} style={styles.logoImage} resizeMode="contain" />
-            
+
             <View style={styles.titleContainer}>
               <Text style={styles.title}>Sign In</Text>
               <Text style={styles.subtitle}>Welcome back! Enter your phone number to access your account.</Text>
@@ -328,16 +328,16 @@ const LoginScreen = () => {
 
             {/* Form */}
             <View style={styles.form}>
-              <CTextInput 
-                label="Phone Number" 
-                placeholder="Enter 10-digit number" 
+              <CTextInput
+                label="Phone Number"
+                placeholder="Enter 10-digit number"
                 value={phone}
                 onChangeTextValue={(text) => setPhone(text.replace(/[^0-9]/g, ''))}
                 keyboardType="phone-pad"
                 autoCapitalize="none"
                 maxLength={10}
               />
-              
+
               <SizedBox height={30} />
 
               <CButton

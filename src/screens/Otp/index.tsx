@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, Text, View, Dimensions, TouchableOpacity, ActivityIndicator, StatusBar, ScrollView, KeyboardAvoidingView, Platform, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -27,6 +27,24 @@ const OtpScreen = () => {
   const initialToken = route.params?.token || '';
 
   const [otp, setOtp] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const handleOtpChange = (value: string) => {
+    const cleanValue = value.replace(/[^0-9]/g, '');
+    setOtp(cleanValue);
+    
+    if (cleanValue.length === 6) {
+      verifyOtp({
+        body: {
+          mobile_number: mobileNumber,
+          country_code: '+91',
+          otp: cleanValue,
+          token: initialToken || '00000000-0000-0000-0000-000000000000',
+        }
+      });
+    }
+  };
 
   const { mutate: verifyOtp, isPending } = useAuthControllerVerifyOtp({
     onSuccess: (data: any) => {
@@ -172,13 +190,42 @@ const OtpScreen = () => {
             <SizedBox height={30} />
 
             <View style={styles.form}>
-              <CTextInput 
-                label="OTP Code" 
-                placeholder="Enter code" 
+              <Text style={styles.otpLabel}>Enter 6-Digit OTP</Text>
+              
+              <View style={styles.otpBoxesRow}>
+                {Array.from({ length: 6 }).map((_, i) => {
+                  const char = otp[i] || '';
+                  const isFull = otp.length === 6;
+                  // Active box is either the current input position, the last box when full, or all boxes when completed.
+                  const isActive = (isInputFocused && i === otp.length) || (isInputFocused && i === 5 && otp.length === 6) || isFull;
+
+                  return (
+                    <Pressable
+                      key={i}
+                      style={[
+                        styles.otpBox,
+                        isActive && styles.otpBoxActive,
+                        char !== '' && styles.otpBoxFilled,
+                      ]}
+                      onPress={() => inputRef.current?.focus()}
+                    >
+                      <Text style={styles.otpBoxText}>{char}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <TextInput
+                ref={inputRef}
+                style={styles.hiddenInput}
                 value={otp}
-                onChangeTextValue={setOtp}
+                onChangeText={handleOtpChange}
                 keyboardType="number-pad"
                 maxLength={6}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                caretHidden
+                autoFocus={true}
               />
 
               <SizedBox height={30} />
@@ -304,5 +351,49 @@ const styles = StyleSheet.create({
     color: '#6C4DF6',
     fontSize: 14,
     fontWeight: '700',
+  },
+  otpLabel: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  otpBoxesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: 14,
+    gap: 8,
+  },
+  otpBox: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  otpBoxActive: {
+    borderColor: '#6C4DF6',
+    borderWidth: 2,
+    backgroundColor: 'transparent',
+  },
+  otpBoxFilled: {
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  otpBoxText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  hiddenInput: {
+    position: 'absolute',
+    left: -9999,
+    width: 0,
+    height: 0,
+    opacity: 0,
   },
 });

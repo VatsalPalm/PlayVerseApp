@@ -11,6 +11,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -77,7 +78,7 @@ const CButton: React.FC<CButtonProps> = ({
         onPress();
       }, 0);
     }
-    
+
     // Auto reset if parent does not enter loading state within 300ms (covers sync warnings/validation errors)
     setTimeout(() => {
       if (!loading && isCompleted.value) {
@@ -208,9 +209,7 @@ const CButton: React.FC<CButtonProps> = ({
             {loading ? (
               <ActivityIndicator color={backgroundColor} size="small" />
             ) : (
-              <Text style={[styles.handleIcon, { color: backgroundColor }]}>
-                {Platform.OS === "ios" ? "〉" : "≫"}
-              </Text>
+              <Ionicons name="chevron-forward" size={24} color={backgroundColor} style={{ marginLeft: 2 }} />
             )}
           </Animated.View>
         </PanGestureHandler>
