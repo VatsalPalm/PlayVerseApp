@@ -333,17 +333,11 @@ export type FindGameRequestDto = {
 
 export type SendGameInviteDto = {
   /**
-   * The ID of the match the user wants to join
+   * The ID of the tournament the user wants to join
    *
-   * @example 38
+   * @example 24
    */
-  matchId: number;
-  /**
-   * The ID of the ground slot
-   *
-   * @example 1001
-   */
-  slotId: number;
+  tournamentId: number;
 };
 
 export type CreateBookingDto = {

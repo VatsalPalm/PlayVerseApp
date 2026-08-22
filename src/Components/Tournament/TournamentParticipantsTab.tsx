@@ -36,6 +36,9 @@ interface TournamentParticipantsTabProps {
   handleAutoRandomizeSeedingAndGroups: () => void;
   isTournamentEnded?: boolean;
   actionLoading: boolean;
+  teamPendingMembers?: Record<number, any[]>;
+  handleApproveTeamPlayer?: (teamId: number, playerId: number, playerName: string) => void;
+  handleRejectTeamPlayer?: (teamId: number, playerId: number, playerName: string) => void;
   styles: any;
 }
 
@@ -64,6 +67,9 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
   handleAutoRandomizeSeedingAndGroups,
   isTournamentEnded,
   actionLoading,
+  teamPendingMembers = {},
+  handleApproveTeamPlayer,
+  handleRejectTeamPlayer,
   styles,
 }) => {
   return (
@@ -171,8 +177,9 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
               {/* Top Info Section */}
               <TouchableOpacity
                 style={{ flexDirection: "row", alignItems: "center" }}
-                onPress={() => handleOpenTeamDetails(item)}
-                activeOpacity={0.7}
+                onPress={() => !isIndividual && handleOpenTeamDetails(item)}
+                activeOpacity={isIndividual ? 1.0 : 0.7}
+                disabled={isIndividual}
               >
                 {/* Team Logo / Avatar */}
                 <TeamAvatar
@@ -438,6 +445,113 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
                   </View>
                 );
               })()}
+
+              {/* Roster Pending Requests for this Team */}
+              {/*
+              {(() => {
+                const teamId = item.team_id || item.id;
+                const requests = teamPendingMembers[teamId];
+                if (!requests || requests.length === 0) return null;
+
+                return (
+                  <View
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTopWidth: 1,
+                      borderColor: "rgba(255, 255, 255, 0.06)",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                        marginBottom: 10,
+                      }}
+                    >
+                      <Ionicons name="notifications-outline" size={16} color="#F59E0B" />
+                      <Text style={{ color: "#F59E0B", fontSize: 13, fontWeight: "700" }}>
+                        Roster Join Requests ({requests.length})
+                      </Text>
+                    </View>
+                    
+                    {requests.map((req: any, reqIdx: number) => {
+                      const reqId = req.player_id || req.id || req.user_id;
+                      const reqName = req.display_name || req.user_name || req.name || `Player #${reqId}`;
+                      
+                      return (
+                        <View
+                          key={`pending-roster-${reqId}-${reqIdx}`}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            backgroundColor: "rgba(245, 158, 11, 0.05)",
+                            borderColor: "rgba(245, 158, 11, 0.15)",
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            padding: 8,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: "#FFF", fontSize: 13, fontWeight: "600" }}>
+                               {reqName}
+                            </Text>
+                            {req.mobile_number ? (
+                              <Text style={{ color: "#9CA3AF", fontSize: 11, marginTop: 2 }}>
+                                {req.mobile_number}
+                              </Text>
+                            ) : null}
+                          </View>
+
+                          <View style={{ flexDirection: "row", gap: 6 }}>
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: "#00E676",
+                                paddingHorizontal: 10,
+                                height: 26,
+                                borderRadius: 6,
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                              onPress={() =>
+                                handleApproveTeamPlayer && handleApproveTeamPlayer(teamId, reqId, reqName)
+                              }
+                              disabled={actionLoading}
+                            >
+                              <Text style={{ color: "#0F0D1A", fontSize: 11, fontWeight: "700" }}>
+                                Accept
+                              </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: "rgba(239, 68, 68, 0.15)",
+                                borderColor: "rgba(239, 68, 68, 0.4)",
+                                borderWidth: 1,
+                                width: 26,
+                                height: 26,
+                                borderRadius: 6,
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                              onPress={() =>
+                                handleRejectTeamPlayer && handleRejectTeamPlayer(teamId, reqId, reqName)
+                              }
+                              disabled={actionLoading}
+                            >
+                              <Ionicons name="close" size={14} color="#EF4444" />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              })()}
+              */}
             </View>
           );
         })

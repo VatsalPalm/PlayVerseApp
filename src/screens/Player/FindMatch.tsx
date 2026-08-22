@@ -102,16 +102,24 @@ const FindMatchScreen = () => {
     }
   };
 
-  const handleJoinSlot = (match: any, slot: any) => {
-    const matchId = match.id || match.matchId;
-    const slotId = slot.id || slot.slotId;
-    const sportName = match.sport_name || match.sportName || "Game";
-    const slotTime = `${slot.start_time || slot.startTime || ""} - ${slot.end_time || slot.endTime || ""}`;
-    const slotDate = formatDate(slot.date || slot.bookingDate || slot.booking_date || "");
+  const handleJoinMatch = (match: any) => {
+    const tournamentId = match.tournament_id || match.tournamentId;
+    const sportName = match.game_name || match.sport_name || match.sportName || "Game";
+    
+    const formatTime = (t: string) => {
+      if (!t) return "";
+      const parts = t.split(":");
+      if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+      return t;
+    };
+    const matchTime = formatTime(match.match_time || match.matchTime || "");
+    const matchDate = formatDate(
+      match.match_date || match.matchDate || "",
+    );
 
     Alert.alert(
       "Join Request",
-      `Would you like to join the ${sportName} match on ${slotDate} at ${slotTime}?`,
+      `Would you like to join the ${sportName} match on ${matchDate} at ${matchTime}?`,
       [
         {
           text: "Cancel",
@@ -122,14 +130,14 @@ const FindMatchScreen = () => {
           onPress: async () => {
             try {
               await invitePlayerMutation.mutateAsync({
-                body: { matchId: Number(matchId), slotId: Number(slotId) },
+                body: { tournamentId: Number(tournamentId) },
               });
               showMessage({
                 message: "Join request sent successfully!",
                 type: "success",
               });
             } catch (err: any) {
-              console.log("Error joining slot:", err);
+              console.log("Error joining match:", err);
               showMessage({
                 message: err?.message || "Failed to send join request. Try again.",
                 type: "danger",
@@ -275,10 +283,19 @@ const FindMatchScreen = () => {
             <>
               <Text style={styles.sectionTitle}>Matching Games</Text>
               {matches.map((item, index) => {
-                const sportName = item.sport_name || item.sportName || "Game";
+                const sportName = item.game_name || item.sport_name || item.sportName || "Game";
                 const matchFormat = item.match_type || item.matchType || "Singles";
                 const groundName = item.ground_name || item.groundName || "TBD Venue";
-                const slots = item.available_slots || item.availableSlots || [];
+                const groundLocation = item.ground_location || item.groundLocation || "";
+                const tournamentName = item.tournament_name || item.tournamentName || "";
+                const matchDate = formatDate(item.match_date || item.matchDate || "");
+                const formatTime = (t: string) => {
+                  if (!t) return "";
+                  const parts = t.split(":");
+                  if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+                  return t;
+                };
+                const matchTime = formatTime(item.match_time || item.matchTime || "");
 
                 return (
                   <View key={item.id || index} style={styles.matchCard}>
@@ -290,6 +307,11 @@ const FindMatchScreen = () => {
                         <View>
                           <Text style={styles.matchSportName}>{sportName}</Text>
                           <Text style={styles.matchFormatText}>{matchFormat}</Text>
+                          {tournamentName ? (
+                            <Text style={styles.tournamentNameText} numberOfLines={1}>
+                              🏆 {tournamentName}
+                            </Text>
+                          ) : null}
                         </View>
                       </View>
                       {item.status && (
@@ -303,40 +325,40 @@ const FindMatchScreen = () => {
                       <Ionicons name="location-outline" size={16} color="#9CA3AF" />
                       <Text style={styles.venueText} numberOfLines={1}>
                         {groundName}
+                        {groundLocation ? ` (${groundLocation})` : ""}
                       </Text>
                     </View>
 
-                    {slots.length > 0 ? (
-                      <View style={styles.slotsSection}>
-                        <Text style={styles.slotsTitle}>Select a Slot to Join:</Text>
-                        <View style={styles.slotsGrid}>
-                          {slots.map((slot: any, sIdx: number) => {
-                            const slotDate = formatDate(slot.date || slot.bookingDate || slot.booking_date || "");
-                            const slotTime = `${slot.start_time || slot.startTime || ""} - ${slot.end_time || slot.endTime || ""}`;
-                            return (
-                              <TouchableOpacity
-                                key={slot.id || sIdx}
-                                style={styles.slotPill}
-                                onPress={() => handleJoinSlot(item, slot)}
-                                activeOpacity={0.7}
-                              >
-                                <View style={styles.slotIconRow}>
-                                  <Ionicons name="calendar-outline" size={12} color="#A78BFA" />
-                                  <Text style={styles.slotDateText}>{slotDate}</Text>
-                                </View>
-                                <View style={styles.slotIconRow}>
-                                  <Ionicons name="time-outline" size={12} color="#00E676" />
-                                  <Text style={styles.slotTimeText}>{slotTime}</Text>
-                                </View>
-                                <Text style={styles.joinText}>Tap to Join</Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                        </View>
+                    <View style={{ flexDirection: "row", gap: 16, marginTop: 12 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <Ionicons name="calendar-outline" size={14} color="#A78BFA" />
+                        <Text style={{ color: "#D1D5DB", fontSize: 13, fontWeight: "500" }}>
+                          {matchDate}
+                        </Text>
                       </View>
-                    ) : (
-                      <Text style={styles.noSlotsText}>No slots available for this match</Text>
-                    )}
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <Ionicons name="time-outline" size={14} color="#00E676" />
+                        <Text style={{ color: "#D1D5DB", fontSize: 13, fontWeight: "600" }}>
+                          {matchTime}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#6C4DF6",
+                        borderRadius: 12,
+                        paddingVertical: 12,
+                        alignItems: "center",
+                        marginTop: 16,
+                      }}
+                      onPress={() => handleJoinMatch(item)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "800" }}>
+                        Request to Join
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 );
               })}
@@ -528,6 +550,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginTop: 2,
+  },
+  tournamentNameText: {
+    color: "#00D2FF",
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 4,
   },
   statusBadge: {
     backgroundColor: "rgba(108, 77, 246, 0.15)",

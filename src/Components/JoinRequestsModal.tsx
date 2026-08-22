@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -17,11 +17,13 @@ import {
   useAiControllerAcceptInvitation,
   useAiControllerDeclineInvitation,
 } from "../Api/playVerseComponents";
+import { stackApiFetch } from "../stackApiFetcher";
 
 interface JoinRequestsModalProps {
   visible: boolean;
   onClose: () => void;
-  matchId: number;
+  matchId?: number;
+  tournamentId?: number;
   onRosterUpdated?: () => void;
 }
 
@@ -29,28 +31,61 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
   visible,
   onClose,
   matchId,
+  tournamentId,
   onRosterUpdated,
 }) => {
-  // Query pending requests
+  // Query pending requests for match
   const {
     data: requestsData,
-    isLoading,
+    isLoading: isMatchRequestsLoading,
     refetch,
   } = useMatchControllerGetMatchRequests(
     visible && matchId ? { pathParams: { matchId } } : skipToken,
     { retry: false }
   );
 
+  // Tournament requests state
+  const [tournamentRequests, setTournamentRequests] = useState<any[]>([]);
+  const [isTournamentRequestsLoading, setIsTournamentRequestsLoading] = useState(false);
+
+  const fetchTournamentRequests = async () => {
+    try {
+      setIsTournamentRequestsLoading(true);
+      const res = await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/tournament/v1/{id}/requests",
+        method: "GET",
+        pathParams: { id: String(tournamentId) },
+      });
+      setTournamentRequests((res as any)?.data || res || []);
+    } catch (err) {
+      console.log("Error fetching tournament requests:", err);
+    } finally {
+      setIsTournamentRequestsLoading(false);
+    }
+  };
+
   // Mutations
   const acceptMutation = useAiControllerAcceptInvitation();
   const declineMutation = useAiControllerDeclineInvitation();
 
-  // Refetch when modal becomes visible
-  useEffect(() => {
-    if (visible && matchId) {
+  const handleRefetch = () => {
+    if (tournamentId) {
+      fetchTournamentRequests();
+    } else if (matchId) {
       refetch();
     }
-  }, [visible, matchId]);
+  };
+
+  // Refetch when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      if (tournamentId) {
+        fetchTournamentRequests();
+      } else if (matchId) {
+        refetch();
+      }
+    }
+  }, [visible, matchId, tournamentId]);
 
   const handleAccept = async (requestId: number, userName: string) => {
     try {
@@ -61,7 +96,7 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
         message: `${userName} accepted successfully!`,
         type: "success",
       });
-      refetch();
+      handleRefetch();
       if (onRosterUpdated) {
         onRosterUpdated();
       }
@@ -83,7 +118,7 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
         message: `${userName} declined successfully!`,
         type: "info",
       });
-      refetch();
+      handleRefetch();
     } catch (err: any) {
       console.log("Error declining request:", err);
       showMessage({
@@ -93,7 +128,11 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
     }
   };
 
-  const requestList = (requestsData as any)?.data || (requestsData as any)?.result || requestsData || [];
+  const requestList = tournamentId
+    ? tournamentRequests
+    : (requestsData as any)?.data || (requestsData as any)?.result || requestsData || [];
+
+  const isLoading = tournamentId ? isTournamentRequestsLoading : isMatchRequestsLoading;
 
   return (
     <Modal
@@ -124,7 +163,11 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
           ) : requestList.length === 0 ? (
             <View style={styles.centerBox}>
               <Text style={styles.emptyIcon}>✉️</Text>
-              <Text style={styles.emptyText}>No pending requests for this match.</Text>
+              <Text style={styles.emptyText}>
+                {tournamentId
+                  ? "No pending requests for this tournament."
+                  : "No pending requests for this match."}
+              </Text>
             </View>
           ) : (
             <ScrollView
@@ -132,12 +175,12 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
               showsVerticalScrollIndicator={false}
             >
               {requestList.map((item: any, index: number) => {
-                const reqId = item.id || item.invitationId || item.requestId;
+                const reqId = item.request_id || item.id || item.invitationId || item.requestId;
                 const user = item.user || item.player || {};
-                const name = user.display_name || user.full_name || user.name || item.name || "Player";
-                const phone = user.phone || user.mobile_number || user.phoneNumber || item.phone || "N/A";
-                const gender = user.gender || item.gender || "N/A";
-                const image = user.profile_image || user.profileImage || user.avatarUrl || item.profileImage || null;
+                const name = item.user_name || user.display_name || user.full_name || user.name || item.name || "Player";
+                const phone = item.user_phone || user.phone || user.mobile_number || user.phoneNumber || item.phone || "N/A";
+                const gender = item.user_gender || user.gender || item.gender || "N/A";
+                const image = item.user_profile_image || user.profile_image || user.profileImage || user.avatarUrl || item.profileImage || null;
 
                 return (
                   <View key={reqId || index} style={styles.requestCard}>

@@ -613,23 +613,27 @@ const LiveScoringScreen = () => {
               </View>
             )}
 
+            {/* Organizer Requests Management Card */}
+            {isOrganizerOrCaptain && (
+              <View style={[styles.controlsCard, { marginBottom: 16 }]}>
+                <Text style={styles.controlsHeader}>Requests Management</Text>
+                <TouchableOpacity
+                  style={styles.viewRequestsBtn}
+                  onPress={() => setShowRequestsModal(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="people-outline" size={18} color="#FFF" />
+                  <Text style={styles.viewRequestsBtnText}>
+                    View Join Requests
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* ACTION CONTROLS */}
             {isAllowedToScore ? (
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
-
-                {isOrganizerOrCaptain && (
-                  <TouchableOpacity
-                    style={styles.viewRequestsBtn}
-                    onPress={() => setShowRequestsModal(true)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="people-outline" size={18} color="#FFF" />
-                    <Text style={styles.viewRequestsBtnText}>
-                      View Join Requests
-                    </Text>
-                  </TouchableOpacity>
-                )}
 
                 {/* Match Not Started Banner Action */}
                 {match?.status !== "LIVE" && !isCompleted && (

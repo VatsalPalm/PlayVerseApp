@@ -253,10 +253,17 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   </TouchableOpacity>
                 )}
 
-                {/* Live Scoring - All users can watch/score a live match */}
-                {item.status === "LIVE" && (
+                 {/* Live Scoring / Match Center - Open detail view for LIVE or SCHEDULED matches */}
+                {(item.status === "LIVE" || item.status === "SCHEDULED") && (
                   <TouchableOpacity
-                    style={styles.liveScoreBtn}
+                    style={[
+                      styles.liveScoreBtn,
+                      item.status === "SCHEDULED" && {
+                        backgroundColor: "rgba(108, 77, 246, 0.15)",
+                        borderColor: "rgba(108, 77, 246, 0.4)",
+                        borderWidth: 1,
+                      },
+                    ]}
                     onPress={() => {
                       const isTbd =
                         !item.home_team_id ||
@@ -266,7 +273,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
 
                       if (isTbd) {
                         showMessage({
-                          message: "Cannot open scoring: Opponents are not yet decided (TBD)",
+                          message: "Cannot open match: Opponents are not yet decided (TBD)",
                           type: "warning",
                         });
                         return;
@@ -278,7 +285,14 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                       });
                     }}
                   >
-                    <Text style={styles.liveScoreBtnText}>Live Scoring</Text>
+                    <Text
+                      style={[
+                        styles.liveScoreBtnText,
+                        item.status === "SCHEDULED" && { color: "#A78BFA" },
+                      ]}
+                    >
+                      {item.status === "LIVE" ? "Live Scoring" : "Match Center"}
+                    </Text>
                   </TouchableOpacity>
                 )}
 

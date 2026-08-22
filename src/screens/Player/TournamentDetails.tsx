@@ -57,6 +57,7 @@ import TournamentParticipantsTab from "../../Components/Tournament/TournamentPar
 import TournamentFixturesTab from "../../Components/Tournament/TournamentFixturesTab";
 import TournamentStandingsTab from "../../Components/Tournament/TournamentStandingsTab";
 import TournamentAnalyticsTab from "../../Components/Tournament/TournamentAnalyticsTab";
+import JoinRequestsModal from "../../Components/JoinRequestsModal";
 
 const formatInputToIso = (dateStr: string): string => {
   const trimmed = dateStr.trim();
@@ -813,6 +814,7 @@ const TournamentDetailsScreen = () => {
   // Add Member & Individual Player modal states
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
   const [selectedTeamForMember, setSelectedTeamForMember] = useState<
     any | null
   >(null);
@@ -932,6 +934,9 @@ const TournamentDetailsScreen = () => {
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false);
   const [newPlayerInput, setNewPlayerInput] = useState("");
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const [teamPendingMembers, setTeamPendingMembers] = useState<
+    Record<number, any[]>
+  >({});
 
   const loadAllData = useCallback(async () => {
     if (!tournamentId) return;
@@ -962,27 +967,32 @@ const TournamentDetailsScreen = () => {
 
       if (teamsRes?.teams) setTournamentTeams(teamsRes.teams);
 
+      let currentUserId: any = null;
+      let isOrg = false;
+      const storedProfile = storage.getString("userProfile");
+      const storedRole = storage.getString("userRole") || "PLAYER";
+
       if (tData) {
         setTournament(tData);
         // Check if current user is the organizer
-        const storedProfile = storage.getString("userProfile");
-        const storedRole = storage.getString("userRole") || "PLAYER";
         if (storedProfile) {
           const profile = JSON.parse(storedProfile);
           setUserProfile(profile);
-          const pId = profile.user_id ?? profile.id ?? profile.userId;
+          currentUserId = profile.user_id ?? profile.id ?? profile.userId;
           const isCreatorOrOrg =
-            Number(tData.organizer_id) === Number(pId) ||
+            Number(tData.organizer_id) === Number(currentUserId) ||
             storedRole === "TOURNAMENT_ORGANIZER" ||
             storedRole === "ORGANIZER" ||
             storedRole === "ADMIN";
           setIsOrganizer(Boolean(isCreatorOrOrg));
+          isOrg = Boolean(isCreatorOrOrg);
         } else {
-          setIsOrganizer(
+          const isCreatorOrOrg =
             storedRole === "TOURNAMENT_ORGANIZER" ||
-              storedRole === "ORGANIZER" ||
-              storedRole === "ADMIN",
-          );
+            storedRole === "ORGANIZER" ||
+            storedRole === "ADMIN";
+          setIsOrganizer(isCreatorOrOrg);
+          isOrg = isCreatorOrOrg;
         }
       }
       if (pData) {
@@ -1002,6 +1012,49 @@ const TournamentDetailsScreen = () => {
       if (fData) setFixtures(fData);
       if (sData) setStandings(sData);
       if (aData) setAnalytics(aData);
+
+      // Fetch pending roster members for teams in parallel
+      const pendingMembersMap: Record<number, any[]> = {};
+      const teamIdList = (pData || [])
+        .map((p: any) => p.team_id || p.id)
+        .filter(Boolean);
+
+      if (teamIdList.length > 0) {
+        await Promise.all(
+          teamIdList.map(async (tId: number) => {
+            try {
+              const matchingTeam = (teamsRes?.teams || []).find(
+                (t: any) => String(t.id) === String(tId),
+              );
+              const isCaptain =
+                matchingTeam &&
+                Number(matchingTeam.captainId) === Number(currentUserId);
+              if (isOrg || isCaptain) {
+                const res = await stackApiFetch<any, any, any, any, any, any>({
+                  url: "/api/teams/v1/{id}/members",
+                  method: "GET",
+                  pathParams: { id: String(tId) },
+                });
+                const membersList = Array.isArray(res)
+                  ? res
+                  : res?.members || res?.data || [];
+                const pending = membersList.filter(
+                  (m: any) =>
+                    m.status === "PENDING" ||
+                    m.status === "pending" ||
+                    m.status === "REQUESTED",
+                );
+                if (pending.length > 0) {
+                  pendingMembersMap[tId] = pending;
+                }
+              }
+            } catch (err) {
+              console.log("Error loading members for team", tId, err);
+            }
+          }),
+        );
+      }
+      setTeamPendingMembers(pendingMembersMap);
     } catch (e) {
       console.log("Error loading tournament details:", e);
     } finally {
@@ -1277,12 +1330,18 @@ const TournamentDetailsScreen = () => {
           const uploadedUrl =
             typeof result === "string"
               ? result
-              : result?.url || result?.fileUrl || result?.path || result?.location;
+              : result?.url ||
+                result?.fileUrl ||
+                result?.path ||
+                result?.location;
           if (uploadedUrl) {
             logoUrlToSave = uploadedUrl;
           }
         } catch (uploadErr) {
-          console.log("Error uploading team logo during team creation:", uploadErr);
+          console.log(
+            "Error uploading team logo during team creation:",
+            uploadErr,
+          );
         }
       }
 
@@ -1422,6 +1481,62 @@ const TournamentDetailsScreen = () => {
     } catch (err: any) {
       showMessage({
         message: safeErrorMessage(err, "Failed to join team"),
+        type: "danger",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveTeamPlayer = async (
+    teamId: number,
+    playerId: number,
+    playerName: string,
+  ) => {
+    try {
+      setActionLoading(true);
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members/{userId}/approve",
+        method: "POST",
+        pathParams: { id: String(teamId), userId: String(playerId) },
+      });
+      showMessage({
+        message: `${playerName} approved successfully!`,
+        type: "success",
+      });
+      loadAllData();
+    } catch (err: any) {
+      console.log("Error approving team player:", err);
+      showMessage({
+        message: err?.message || "Failed to approve player",
+        type: "danger",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectTeamPlayer = async (
+    teamId: number,
+    playerId: number,
+    playerName: string,
+  ) => {
+    try {
+      setActionLoading(true);
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members/{userId}/reject",
+        method: "POST",
+        pathParams: { id: String(teamId), userId: String(playerId) },
+      });
+      showMessage({
+        message: `${playerName} rejected successfully.`,
+        type: "info",
+      });
+      loadAllData();
+    } catch (err: any) {
+      console.log("Error rejecting team player:", err);
+      showMessage({
+        message: err?.message || "Failed to reject player",
         type: "danger",
       });
     } finally {
@@ -1820,6 +1935,9 @@ const TournamentDetailsScreen = () => {
       handleAutoRandomizeSeedingAndGroups={handleAutoRandomizeSeedingAndGroups}
       isTournamentEnded={isTournamentEnded}
       actionLoading={actionLoading}
+      teamPendingMembers={teamPendingMembers}
+      handleApproveTeamPlayer={handleApproveTeamPlayer}
+      handleRejectTeamPlayer={handleRejectTeamPlayer}
       styles={styles}
     />
   );
@@ -1900,6 +2018,14 @@ const TournamentDetailsScreen = () => {
           {tournament?.name || "Tournament"}
         </Text>
         <View style={{ flexDirection: "row", gap: 12 }}>
+          {isOrganizer && (
+            <TouchableOpacity
+              style={styles.syncBtn}
+              onPress={() => setShowRequestsModal(true)}
+            >
+              <Ionicons name="people-outline" size={20} color="#F59E0B" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.syncBtn} onPress={handleShare}>
             <Ionicons name="share-social-outline" size={20} color="#6C4DF6" />
           </TouchableOpacity>
@@ -2281,7 +2407,11 @@ const TournamentDetailsScreen = () => {
                           key={String(teamIdNum || Math.random())}
                           style={styles.teamRegisterItem}
                         >
-                          <TeamAvatar team={team} size={34} style={{ marginRight: 10 }} />
+                          <TeamAvatar
+                            team={team}
+                            size={34}
+                            style={{ marginRight: 10 }}
+                          />
                           <TouchableOpacity
                             style={{ flex: 1 }}
                             onPress={() => handleOpenTeamDetails(team)}
@@ -2487,7 +2617,11 @@ const TournamentDetailsScreen = () => {
                       const isFull = team.status === "FULL";
                       return (
                         <View key={team.id} style={styles.teamRegisterItem}>
-                          <TeamAvatar team={team} size={34} style={{ marginRight: 10 }} />
+                          <TeamAvatar
+                            team={team}
+                            size={34}
+                            style={{ marginRight: 10 }}
+                          />
                           <View style={{ flex: 1 }}>
                             <Text style={styles.teamRegisterName}>
                               {team.teamName}
@@ -2688,9 +2822,7 @@ const TournamentDetailsScreen = () => {
                   justifyContent: "center",
                   paddingHorizontal: 8,
                 }}
-                onPress={() =>
-                  confirmModalConfig.onConfirm(confirmPromptInput)
-                }
+                onPress={() => confirmModalConfig.onConfirm(confirmPromptInput)}
                 activeOpacity={0.8}
               >
                 <Text
@@ -2704,9 +2836,15 @@ const TournamentDetailsScreen = () => {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Join Requests Modal */}
+      <JoinRequestsModal
+        visible={showRequestsModal}
+        onClose={() => setShowRequestsModal(false)}
+        tournamentId={tournamentId ? Number(tournamentId) : undefined}
+      />
     </SafeAreaView>
   );
 };
 
 export default TournamentDetailsScreen;
-
