@@ -78,7 +78,10 @@ const TeamDetailsScreen = () => {
         }).catch(() => null),
       ]);
 
-      if (tRes) setTeamDetails(tRes);
+      if (tRes) {
+        const unwrapped = tRes?.data || tRes;
+        setTeamDetails(unwrapped);
+      }
       const memberList = Array.isArray(mRes)
         ? mRes
         : mRes?.members || mRes?.data || [];
@@ -146,6 +149,96 @@ const TeamDetailsScreen = () => {
     } finally {
       setAddingPlayer(false);
     }
+  };
+
+  const handleApprovePlayer = async (userId: number, name: string) => {
+    try {
+      setActionLoading(true);
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members/{userId}/approve",
+        method: "POST",
+        pathParams: { id: String(teamId), userId: String(userId) },
+      });
+      showMessage({
+        message: `${name} has been approved and added to the team!`,
+        type: "success",
+      });
+      loadData();
+    } catch (err: any) {
+      showMessage({
+        message: err.message || "Failed to approve player",
+        type: "danger",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectPlayer = async (userId: number, name: string) => {
+    try {
+      setActionLoading(true);
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members/{userId}/reject",
+        method: "POST",
+        pathParams: { id: String(teamId), userId: String(userId) },
+      });
+      showMessage({
+        message: `Join request for ${name} rejected`,
+        type: "info",
+      });
+      loadData();
+    } catch (err: any) {
+      showMessage({
+        message: err.message || "Failed to reject player",
+        type: "danger",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleMakeCaptain = (userId: number, name: string) => {
+    Alert.alert(
+      "Make Captain 👑",
+      `Are you sure you want to make ${name} the Team Captain?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Confirm",
+          style: "default",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await stackApiFetch<any, any, any, any, any, any>({
+                url: "/api/teams/v1/{id}/captain",
+                method: "POST",
+                pathParams: { id: String(teamId) },
+                body: { captainId: userId, userId },
+              }).catch(async () => {
+                await stackApiFetch<any, any, any, any, any, any>({
+                  url: "/api/teams/v1/{id}",
+                  method: "PATCH",
+                  pathParams: { id: String(teamId) },
+                  body: { captainId: userId },
+                });
+              });
+              showMessage({
+                message: `${name} is now the Team Captain! 👑`,
+                type: "success",
+              });
+              loadData();
+            } catch (err: any) {
+              showMessage({
+                message: err.message || "Failed to update team captain",
+                type: "danger",
+              });
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const handleRemovePlayer = (userId: number, name: string) => {
@@ -285,19 +378,57 @@ const TeamDetailsScreen = () => {
     return fallback;
   };
 
+  const pendingMembers = members.filter(
+    (m: any) =>
+      m.status === "PENDING" ||
+      m.status === "pending" ||
+      m.status === "WAITLISTED" ||
+      m.status === "waitlisted",
+  );
+  const acceptedMembers = members.filter(
+    (m: any) =>
+      m.status !== "PENDING" &&
+      m.status !== "pending" &&
+      m.status !== "WAITLISTED" &&
+      m.status !== "waitlisted",
+  );
+
   const displayName = safeStr(
     teamDetails?.name || teamDetails?.team_name || initialTeamName,
     "Team Details",
   );
+
+  const unwrappedCaptainId =
+    teamDetails?.captain_id ??
+    teamDetails?.captainId ??
+    teamDetails?.captain?.id ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.user_id ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.id;
+
   const rawCaptain =
-    teamDetails?.captain_name ||
-    teamDetails?.captain?.display_name ||
-    teamDetails?.captain?.full_name ||
-    teamDetails?.captain;
+    teamDetails?.captain_name ??
+    teamDetails?.captainName ??
+    teamDetails?.captain?.display_name ??
+    teamDetails?.captain?.full_name ??
+    teamDetails?.captain?.name ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.user_name ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.name ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.display_name;
+
   const captainName = safeStr(
     rawCaptain,
-    teamDetails?.captain_id
-      ? `Captain #${safeStr(teamDetails.captain_id)}`
+    unwrappedCaptainId
+      ? `Captain #${safeStr(unwrappedCaptainId)}`
       : "Not Assigned",
   );
 
@@ -308,7 +439,10 @@ const TeamDetailsScreen = () => {
   const teamDesc = safeStr(teamDetails?.description);
 
   const isCaptain =
-    Number(safeStr(teamDetails?.captain_id)) === Number(currentUserId);
+    Number(safeStr(unwrappedCaptainId)) === Number(currentUserId) ||
+    Number(safeStr(teamDetails?.owner_id || teamDetails?.ownerId)) ===
+      Number(currentUserId);
+
   const isAlreadyMember = members.some((m: any) => {
     const memberUid = safeStr(m.user_id || m.id || m.userId);
     return Number(memberUid) === Number(currentUserId);
@@ -455,10 +589,154 @@ const TeamDetailsScreen = () => {
 
                 <View style={styles.infoItem}>
                   <Text style={styles.infoLabel}>Total Members</Text>
-                  <Text style={styles.infoValue}>{members.length} Players</Text>
+                  <Text style={styles.infoValue}>
+                    {acceptedMembers.length} Players
+                  </Text>
                 </View>
               </View>
             </View>
+
+            {/* PENDING JOIN REQUESTS CARD (IF ANY) */}
+            {pendingMembers.length > 0 && (
+              <View
+                style={[
+                  styles.card,
+                  {
+                    borderColor: "rgba(245, 158, 11, 0.4)",
+                    backgroundColor: "rgba(245, 158, 11, 0.06)",
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name="notifications-outline"
+                      size={20}
+                      color="#F59E0B"
+                    />
+                    <Text style={[styles.sectionTitle, { color: "#F59E0B" }]}>
+                      Pending Requests ({pendingMembers.length})
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: "rgba(245, 158, 11, 0.2)",
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#F59E0B",
+                        fontSize: 10,
+                        fontWeight: "800",
+                      }}
+                    >
+                      Action Required
+                    </Text>
+                  </View>
+                </View>
+
+                <Text
+                  style={[
+                    styles.shareSubText,
+                    { marginBottom: 12, color: "#D1D5DB" },
+                  ]}
+                >
+                  Players requesting to join this team roster:
+                </Text>
+
+                {pendingMembers.map((member, index) => {
+                  const rawId =
+                    member.user_id ||
+                    member.id ||
+                    member.player_id ||
+                    member.user;
+                  const mId = safeStr(rawId, String(index + 1));
+                  const rawName =
+                    member.user_name ||
+                    member.name ||
+                    member.username ||
+                    member.display_name ||
+                    member.user;
+                  const mName = safeStr(rawName, `Player #${mId}`);
+
+                  return (
+                    <View
+                      key={`pending-${mId}-${index}`}
+                      style={[
+                        styles.memberRow,
+                        { borderColor: "rgba(245, 158, 11, 0.25)" },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.avatarCircle,
+                          {
+                            backgroundColor: "rgba(245, 158, 11, 0.15)",
+                            borderColor: "#F59E0B",
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.avatarText, { color: "#F59E0B" }]}>
+                          {mName ? mName.charAt(0).toUpperCase() : "P"}
+                        </Text>
+                      </View>
+
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.memberName}>{mName}</Text>
+                        <Text style={[styles.memberSub, { color: "#F59E0B" }]}>
+                          Pending Approval
+                        </Text>
+                      </View>
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          gap: 6,
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={styles.approveBtn}
+                          onPress={() =>
+                            handleApprovePlayer(Number(mId) || 0, mName)
+                          }
+                          disabled={actionLoading}
+                        >
+                          <Ionicons name="checkmark" size={14} color="#FFF" />
+                          <Text style={styles.approveBtnText}>Accept</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.rejectBtn}
+                          onPress={() =>
+                            handleRejectPlayer(Number(mId) || 0, mName)
+                          }
+                          disabled={actionLoading}
+                        >
+                          <Ionicons name="close" size={16} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
 
             {/* Self Join Team Banner for non-members */}
             {!isAlreadyMember && !isCaptain && (
@@ -619,12 +897,12 @@ const TeamDetailsScreen = () => {
                 >
                   <Ionicons name="people" size={20} color="#00D2FF" />
                   <Text style={styles.sectionTitle}>
-                    Player Roster ({members.length})
+                    Player Roster ({acceptedMembers.length})
                   </Text>
                 </View>
               </View>
 
-              {members.length === 0 ? (
+              {acceptedMembers.length === 0 ? (
                 <View style={styles.emptyBox}>
                   <Text style={styles.emptyIcon}>👥</Text>
                   <Text style={styles.emptyTitle}>
@@ -650,7 +928,7 @@ const TeamDetailsScreen = () => {
                   </TouchableOpacity>
                 </View>
               ) : (
-                members.map((member, index) => {
+                acceptedMembers.map((member, index) => {
                   const rawId =
                     member.user_id ||
                     member.id ||
@@ -666,8 +944,9 @@ const TeamDetailsScreen = () => {
                   const mName = safeStr(rawName, `Player #${mId}`);
                   const isCap =
                     member.role === "CAPTAIN" ||
+                    member.role === "Captain" ||
                     member.isCaptain ||
-                    Number(mId) === Number(safeStr(teamDetails?.captain_id));
+                    Number(mId) === Number(safeStr(unwrappedCaptainId));
                   const mRole = safeStr(
                     member.role,
                     isCap ? "Captain" : "Player",
@@ -707,20 +986,42 @@ const TeamDetailsScreen = () => {
                         </Text>
                       </View>
 
-                      {!isCap && (
-                        <TouchableOpacity
-                          style={styles.removeMemberBtn}
-                          onPress={() =>
-                            handleRemovePlayer(Number(mId) || 0, mName)
-                          }
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={18}
-                            color="#EF4444"
-                          />
-                        </TouchableOpacity>
-                      )}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        {!isCap && isCaptain && (
+                          <TouchableOpacity
+                            style={styles.makeCaptainBtn}
+                            onPress={() =>
+                              handleMakeCaptain(Number(mId) || 0, mName)
+                            }
+                            disabled={actionLoading}
+                          >
+                            <Text style={styles.makeCaptainBtnText}>
+                              👑 Make Captain
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {!isCap && isCaptain && (
+                          <TouchableOpacity
+                            style={styles.removeMemberBtn}
+                            onPress={() =>
+                              handleRemovePlayer(Number(mId) || 0, mName)
+                            }
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={18}
+                              color="#EF4444"
+                            />
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     </View>
                   );
                 })
@@ -980,6 +1281,40 @@ const styles = StyleSheet.create({
   },
   removeMemberBtn: {
     padding: 6,
+  },
+  approveBtn: {
+    backgroundColor: "#10B981",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  approveBtnText: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  rejectBtn: {
+    backgroundColor: "rgba(239, 68, 68, 0.15)",
+    padding: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
+  },
+  makeCaptainBtn: {
+    backgroundColor: "rgba(245, 158, 11, 0.12)",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "rgba(245, 158, 11, 0.3)",
+  },
+  makeCaptainBtnText: {
+    color: "#F59E0B",
+    fontSize: 11,
+    fontWeight: "700",
   },
   leaveTeamBtn: {
     backgroundColor: "rgba(239, 68, 68, 0.12)",

@@ -24,8 +24,12 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { showMessage } from "react-native-flash-message";
 import { HomeStackParamList } from "../../utils/types";
-import { useTournamentControllerCreateTournament } from "../../Api/playVerseComponents";
+import {
+  useTournamentControllerCreateTournament,
+  useGroundControllerGetPublicGrounds,
+} from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
+import { useMemo } from "react";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -86,6 +90,29 @@ const CreateTournamentScreen = () => {
 
   const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
   const [maxTeams, setMaxTeams] = useState("16");
+
+  // Ground Selection
+  const [selectedGround, setSelectedGround] = useState<any>(null);
+  const [showGroundPicker, setShowGroundPicker] = useState(false);
+  const [groundSearch, setGroundSearch] = useState("");
+
+  const { data: groundsResponse, isLoading: groundsLoading } =
+    useGroundControllerGetPublicGrounds<any>({
+      queryParams: { limit: 100 },
+    });
+
+  const groundsList: any[] = useMemo(() => {
+    const raw = Array.isArray(groundsResponse)
+      ? groundsResponse
+      : groundsResponse?.data || groundsResponse?.grounds || [];
+    if (!groundSearch.trim()) return raw;
+    const q = groundSearch.toLowerCase();
+    return raw.filter((g: any) =>
+      (g.name && g.name.toLowerCase().includes(q)) ||
+      (g.city && g.city.toLowerCase().includes(q)) ||
+      (g.address && g.address.toLowerCase().includes(q))
+    );
+  }, [groundsResponse, groundSearch]);
 
   // Modal control states
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -260,7 +287,7 @@ const CreateTournamentScreen = () => {
       const res = await createTournament({
         body: {
           name,
-          sportId,
+          sportId: 5, // Always force Pickleball
           format,
           startDate: `${startDate}T${startTime}:00.000Z`,
           endDate: `${endDate}T${endTime}:00.000Z`,
@@ -272,6 +299,7 @@ const CreateTournamentScreen = () => {
           minPlayersRequired: registrationType === 'TEAM' ? (parseInt(minPlayersRequired, 10) || 1) : undefined,
           teamApprovalRequired: registrationType === 'TEAM' ? teamApprovalRequired : undefined,
           initialTeamName: (registrationType === 'TEAM' && initialTeamName.trim()) ? initialTeamName.trim() : undefined,
+          ground_id: selectedGround?.id || undefined,
         },
       });
 
@@ -350,12 +378,24 @@ const CreateTournamentScreen = () => {
           <Text style={styles.label}>Select Sport</Text>
           <View style={styles.sportGrid}>
             {SPORTS.map((sport) => {
-              const active = sportId === sport.id;
+              // Always lock/style Pickleball (id: 5) as active and disable changing it
+              const active = sport.id === 5;
               return (
                 <TouchableOpacity
                   key={sport.id}
-                  style={[styles.sportCard, active && styles.sportCardActive]}
-                  onPress={() => setSportId(sport.id)}
+                  style={[
+                    styles.sportCard,
+                    active && styles.sportCardActive,
+                    !active && { opacity: 0.5 },
+                  ]}
+                  onPress={() => {
+                    if (sport.id !== 5) {
+                      showMessage({
+                        message: "Only Pickleball tournaments are supported currently",
+                        type: "info",
+                      });
+                    }
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text
@@ -397,6 +437,45 @@ const CreateTournamentScreen = () => {
               );
             })}
           </View>
+
+          <SizedBox height={16} />
+
+          {/* Ground / Venue Selection */}
+          <Text style={styles.label}>Tournament Ground / Venue (Optional)</Text>
+          {selectedGround ? (
+            <View style={styles.selectedGroundCard}>
+              <View style={styles.selectedGroundIcon}>
+                <Ionicons name="location" size={20} color="#10B981" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.selectedGroundName} numberOfLines={1}>
+                  {selectedGround.name}
+                </Text>
+                <Text style={styles.selectedGroundCity}>
+                  {selectedGround.city || selectedGround.address || "Venue Ground"}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setSelectedGround(null)}
+                style={styles.clearGroundBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close-circle" size={20} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.selectGroundBtn}
+              onPress={() => setShowGroundPicker(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="business-outline" size={20} color="#A78BFA" />
+              <Text style={styles.selectGroundBtnText}>
+                {groundsLoading ? "Loading grounds..." : "🏟️ Select Ground / Venue"}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
 
           <SizedBox height={16} />
 
@@ -727,6 +806,93 @@ const CreateTournamentScreen = () => {
                 <Text style={styles.confirmModalBtnText}>Confirm</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Ground Picker Modal */}
+      <Modal
+        visible={showGroundPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowGroundPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "80%" }]}>
+            <View style={styles.pickerHeaderRow}>
+              <View>
+                <Text style={styles.modalTitle}>Select Tournament Ground</Text>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                  Matches and fixtures will be hosted at this venue
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowGroundPicker(false)}
+                style={styles.closeBtnIcon}
+              >
+                <Ionicons name="close" size={20} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Search Bar */}
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search grounds by name or city..."
+                placeholderTextColor="#9CA3AF"
+                value={groundSearch}
+                onChangeText={setGroundSearch}
+              />
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 360 }}>
+              {/* Option to clear / TBD */}
+              <TouchableOpacity
+                style={styles.groundItem}
+                onPress={() => {
+                  setSelectedGround(null);
+                  setShowGroundPicker(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.groundItemIcon, { backgroundColor: "rgba(255, 255, 255, 0.05)" }]}>
+                  <Ionicons name="help-circle-outline" size={20} color="#9CA3AF" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.groundItemName}>No Ground (Venue TBD)</Text>
+                  <Text style={styles.groundItemSub}>Ground can be assigned later</Text>
+                </View>
+              </TouchableOpacity>
+
+              {groundsList.map((g: any) => {
+                const isSelected = selectedGround?.id === g.id;
+                return (
+                  <TouchableOpacity
+                    key={g.id}
+                    style={[styles.groundItem, isSelected && styles.groundItemSelected]}
+                    onPress={() => {
+                      setSelectedGround(g);
+                      setShowGroundPicker(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.groundItemIcon}>
+                      <Ionicons name="location" size={20} color="#10B981" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.groundItemName}>{g.name}</Text>
+                      <Text style={styles.groundItemSub}>
+                        📍 {g.city || g.address || "City Ground"}
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={22} color="#10B981" />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1062,5 +1228,115 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  pickerHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  closeBtnIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#FFF',
+    fontSize: 14,
+  },
+  groundItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  groundItemSelected: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    borderWidth: 1,
+  },
+  groundItemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groundItemName: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  groundItemSub: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  selectedGroundCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+    borderWidth: 1,
+    borderColor: "#10B981",
+    borderRadius: 14,
+    padding: 12,
+  },
+  selectedGroundIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedGroundName: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  selectedGroundCity: {
+    color: "#A7F3D0",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  clearGroundBtn: {
+    padding: 4,
+  },
+  selectGroundBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    gap: 10,
+  },
+  selectGroundBtnText: {
+    color: "#D1D5DB",
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
   },
 });

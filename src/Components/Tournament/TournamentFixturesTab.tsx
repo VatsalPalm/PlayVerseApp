@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { showMessage } from "react-native-flash-message";
 import SizedBox from "../atoms/SizeBox";
 import TeamAvatar from "./TeamAvatar";
 import StartMatchLineupModal from "../Match/StartMatchLineupModal";
@@ -224,6 +225,22 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   <TouchableOpacity
                     style={styles.liveScoreBtn}
                     onPress={() => {
+                      const isTbd =
+                        !item.home_team_id ||
+                        !item.away_team_id ||
+                        item.home_team_name === "TBD" ||
+                        item.away_team_name === "TBD" ||
+                        item.is_bye === true ||
+                        item.is_bye === 1;
+
+                      if (isTbd) {
+                        showMessage({
+                          message: "Cannot start match: Opponents are not yet decided (TBD)",
+                          type: "warning",
+                        });
+                        return;
+                      }
+
                       if (item.status === "SCHEDULED") {
                         setLineupModalMatch(item);
                       } else {
@@ -272,7 +289,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
         })
       )}
 
-      {participants.length >= 2 && (
+      {isOrganizer && participants.length >= 2 && (
         <View
           style={{
             marginTop: 24,

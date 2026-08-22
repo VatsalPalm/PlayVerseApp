@@ -499,31 +499,31 @@ export const useUserControllerGetProfile = <TData = undefined,>(
   });
 };
 
-export type UserControllerUpdateProfileError = Fetcher.ErrorWrapper<undefined>;
+export type UserControllerPatchProfileError = Fetcher.ErrorWrapper<undefined>;
 
-export type UserControllerUpdateProfileVariables = {
-  body?: Schemas.UpdateUserProfileDto;
+export type UserControllerPatchProfileVariables = {
+  body?: Schemas.PatchUserProfileDto;
 } & PlayVerseContext["fetcherOptions"];
 
-export const fetchUserControllerUpdateProfile = (
-  variables: UserControllerUpdateProfileVariables,
+export const fetchUserControllerPatchProfile = (
+  variables: UserControllerPatchProfileVariables,
   signal?: AbortSignal,
 ) =>
   playVerseFetch<
     undefined,
-    UserControllerUpdateProfileError,
-    Schemas.UpdateUserProfileDto,
+    UserControllerPatchProfileError,
+    Schemas.PatchUserProfileDto,
     {},
     {},
     {}
-  >({ url: "/api/users/v1/profile", method: "put", ...variables, signal });
+  >({ url: "/api/users/v1/profile", method: "patch", ...variables, signal });
 
-export const useUserControllerUpdateProfile = (
+export const useUserControllerPatchProfile = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      UserControllerUpdateProfileError,
-      UserControllerUpdateProfileVariables
+      UserControllerPatchProfileError,
+      UserControllerPatchProfileVariables
     >,
     "mutationFn"
   >,
@@ -531,11 +531,11 @@ export const useUserControllerUpdateProfile = (
   const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
-    UserControllerUpdateProfileError,
-    UserControllerUpdateProfileVariables
+    UserControllerPatchProfileError,
+    UserControllerPatchProfileVariables
   >({
-    mutationFn: (variables: UserControllerUpdateProfileVariables) =>
-      fetchUserControllerUpdateProfile(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: UserControllerPatchProfileVariables) =>
+      fetchUserControllerPatchProfile(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
@@ -7018,6 +7018,7 @@ export type TournamentControllerRegisterTeamError =
   Fetcher.ErrorWrapper<undefined>;
 
 export type TournamentControllerRegisterTeamVariables = {
+  body: Schemas.RegisterTeamDto;
   pathParams: TournamentControllerRegisterTeamPathParams;
 } & PlayVerseContext["fetcherOptions"];
 
@@ -7028,7 +7029,7 @@ export const fetchTournamentControllerRegisterTeam = (
   playVerseFetch<
     undefined,
     TournamentControllerRegisterTeamError,
-    undefined,
+    Schemas.RegisterTeamDto,
     {},
     {},
     TournamentControllerRegisterTeamPathParams
@@ -7057,62 +7058,6 @@ export const useTournamentControllerRegisterTeam = (
   >({
     mutationFn: (variables: TournamentControllerRegisterTeamVariables) =>
       fetchTournamentControllerRegisterTeam(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type TournamentControllerRegisterIndividualPathParams = {
-  /**
-   * Tournament ID
-   */
-  id: number;
-};
-
-export type TournamentControllerRegisterIndividualError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type TournamentControllerRegisterIndividualVariables = {
-  pathParams: TournamentControllerRegisterIndividualPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchTournamentControllerRegisterIndividual = (
-  variables: TournamentControllerRegisterIndividualVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    TournamentControllerRegisterIndividualError,
-    undefined,
-    {},
-    {},
-    TournamentControllerRegisterIndividualPathParams
-  >({
-    url: "/api/tournament/v1/{id}/register-individual",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useTournamentControllerRegisterIndividual = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      TournamentControllerRegisterIndividualError,
-      TournamentControllerRegisterIndividualVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    TournamentControllerRegisterIndividualError,
-    TournamentControllerRegisterIndividualVariables
-  >({
-    mutationFn: (variables: TournamentControllerRegisterIndividualVariables) =>
-      fetchTournamentControllerRegisterIndividual(
         deepMerge(fetcherOptions, variables),
       ),
     ...options,

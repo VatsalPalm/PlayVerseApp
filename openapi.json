@@ -267,23 +267,23 @@
           }
         ]
       },
-      "put": {
-        "operationId": "UserController_updateProfile",
-        "summary": "Update current user profile",
+      "patch": {
+        "operationId": "UserController_patchProfile",
+        "summary": "Update only user name and image",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateUserProfileDto"
+                "$ref": "#/components/schemas/PatchUserProfileDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Profile updated successfully"
+            "description": "Profile name/image updated successfully"
           },
           "400": {
             "description": "Validation error"
@@ -2953,7 +2953,7 @@
     "/api/tournament/v1/{id}/register": {
       "post": {
         "operationId": "TournamentController_registerTeam",
-        "summary": "Register a team or individual player to the tournament",
+        "summary": "Register a team to the tournament",
         "parameters": [
           {
             "name": "id",
@@ -2965,34 +2965,16 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTeamDto"
+              }
+            }
           }
         },
-        "tags": ["Tournament Management (Phase 5)"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/tournament/v1/{id}/register-individual": {
-      "post": {
-        "operationId": "TournamentController_registerIndividual",
-        "summary": "Register an individual player to the tournament",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Tournament ID",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": ""
@@ -3725,7 +3707,7 @@
         },
         "required": ["refreshToken"]
       },
-      "UpdateUserProfileDto": {
+      "PatchUserProfileDto": {
         "type": "object",
         "properties": {
           "display_name": {
@@ -3740,38 +3722,6 @@
                 "$ref": "#/components/schemas/ProfileImageDto"
               }
             ]
-          },
-          "dob": {
-            "type": "string",
-            "example": "1995-05-15",
-            "description": "Date of birth (YYYY-MM-DD)"
-          },
-          "gender": {
-            "type": "string",
-            "example": "MALE",
-            "enum": ["MALE", "FEMALE", "OTHER"],
-            "description": "Gender"
-          },
-          "city": {
-            "type": "string",
-            "example": "Mumbai",
-            "description": "City"
-          },
-          "bio": {
-            "type": "string",
-            "example": "Sports enthusiast",
-            "description": "Bio"
-          },
-          "preferred_language": {
-            "type": "string",
-            "example": "English",
-            "description": "Preferred language"
-          },
-          "dominant_hand": {
-            "type": "string",
-            "example": "RIGHT",
-            "enum": ["LEFT", "RIGHT"],
-            "description": "Dominant hand"
           },
           "sports": {
             "example": [1, 2],
@@ -4174,10 +4124,6 @@
           "description": {
             "type": "string",
             "example": "We love to play!"
-          },
-          "skipAutoAddMember": {
-            "type": "boolean",
-            "example": true
           }
         },
         "required": ["sportId", "name"]
@@ -4217,6 +4163,11 @@
             "type": "number",
             "example": 5,
             "description": "ID of the sport (e.g. 5 for Pickleball)"
+          },
+          "ground_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID of the ground where tournament is held"
           },
           "name": {
             "type": "string",

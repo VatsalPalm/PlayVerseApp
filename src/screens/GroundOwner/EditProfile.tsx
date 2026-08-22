@@ -20,7 +20,7 @@ import SizedBox from "../../Components/atoms/SizeBox";
 import CButton from "../../Components/atoms/CButton";
 import {
   useUserControllerGetProfile,
-  useUserControllerUpdateProfile,
+  useUserControllerPatchProfile,
   useUploadControllerUploadFile,
 } from "../../Api/playVerseComponents";
 import { ProfileImageDto } from "../../Api/playVerseSchemas";
@@ -117,7 +117,7 @@ const EditProfileScreen: React.FC<EditProfileProps> = ({ hideBack, showSignOut, 
   });
 
   // Update Profile Hook
-  const { mutate: updateProfile, isPending: isUpdating } = useUserControllerUpdateProfile({
+  const { mutate: updateProfile, isPending: isUpdating } = useUserControllerPatchProfile({
     onSuccess: (data: any) => {
       // Save updated data to MMKV cache
       try {

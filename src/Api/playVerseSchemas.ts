@@ -254,7 +254,7 @@ export type RefreshTokenDto = {
   refreshToken: string;
 };
 
-export type UpdateUserProfileDto = {
+export type PatchUserProfileDto = {
   /**
    * Display name of user
    *
@@ -265,42 +265,6 @@ export type UpdateUserProfileDto = {
    * Profile image upload object (filename and url), can also accept a plain URL string
    */
   profile_image?: ProfileImageDto;
-  /**
-   * Date of birth (YYYY-MM-DD)
-   *
-   * @example 1995-05-15
-   */
-  dob?: string;
-  /**
-   * Gender
-   *
-   * @example MALE
-   */
-  gender?: "MALE" | "FEMALE" | "OTHER";
-  /**
-   * City
-   *
-   * @example Mumbai
-   */
-  city?: string;
-  /**
-   * Bio
-   *
-   * @example Sports enthusiast
-   */
-  bio?: string;
-  /**
-   * Preferred language
-   *
-   * @example English
-   */
-  preferred_language?: string;
-  /**
-   * Dominant hand
-   *
-   * @example RIGHT
-   */
-  dominant_hand?: "LEFT" | "RIGHT";
   /**
    * List of sport IDs
    *
@@ -446,13 +410,13 @@ export type CreateMatchDto = {
    *
    * @example 1
    */
-  homePlayerIds: string[];
+  homePlayerIds: (string | number)[];
   /**
    * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
    *
    * @example 2
    */
-  awayPlayerIds: string[];
+  awayPlayerIds: (string | number)[];
   /**
    * Match type: SINGLES or DOUBLES
    *
@@ -695,10 +659,6 @@ export type CreateTeamDto = {
    * @example We love to play!
    */
   description?: string;
-  /**
-   * @example true
-   */
-  skipAutoAddMember?: boolean;
 };
 
 export type TeamInvitationDto = {
@@ -730,6 +690,12 @@ export type CreateTournamentDto = {
    * @example 5
    */
   sportId: number;
+  /**
+   * ID of the ground where tournament is held
+   *
+   * @example 1
+   */
+  ground_id?: number;
   /**
    * Name of the tournament
    *

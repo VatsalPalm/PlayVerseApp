@@ -151,15 +151,17 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
             matchingTeam?.shortName ||
             matchingTeam?.short_name;
           const captainName =
+            matchingTeam?.captainName ||
             item.captain_name ||
-            item.captainName ||
-            matchingTeam?.captainName;
+            item.captainName;
           const memberCount =
-            item.member_count ??
-            item.memberCount ??
-            matchingTeam?.memberCount;
+            matchingTeam?.memberCount !== undefined && matchingTeam?.memberCount !== null
+              ? matchingTeam.memberCount
+              : item.member_count !== undefined && item.member_count !== null
+                ? item.member_count
+                : item.memberCount ?? 0;
           const teamSize =
-            item.team_size ?? item.teamSize ?? matchingTeam?.teamSize;
+            matchingTeam?.teamSize ?? item.team_size ?? item.teamSize ?? 5;
           const status = item.status || matchingTeam?.status || "REGISTERED";
 
           return (

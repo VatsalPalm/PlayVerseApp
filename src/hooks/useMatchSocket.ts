@@ -313,15 +313,27 @@ export const useMatchSocket = (matchId: number) => {
       return;
     }
 
+    if (!matchState?.home_team_id || !matchState?.away_team_id) {
+      setError('Cannot score: Opponents are not yet decided (TBD)');
+      return;
+    }
+
     setSyncing(true);
     setTimeout(() => setSyncing(false), 4000);
 
     const currentVersion = matchState?.version ?? 0;
 
+    const resolvedPlayerId =
+      playerId ||
+      (teamId === matchState?.home_team_id
+        ? matchState?.homePlayers?.[0]?.user_id ?? matchState?.homePlayers?.[0]?.player_id
+        : matchState?.awayPlayers?.[0]?.user_id ?? matchState?.awayPlayers?.[0]?.player_id) ||
+      null;
+
     const payload = {
       matchId,
       winnerTeamId: teamId,
-      scoredByPlayerUserId: playerId || null,
+      scoredByPlayerUserId: resolvedPlayerId,
       clientVersion: currentVersion,
     };
 

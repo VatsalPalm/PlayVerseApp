@@ -438,7 +438,24 @@ const MatchHistoryScreen = () => {
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
               style={[styles.actionBtn, { flex: 4 }]}
-              onPress={() => setLineupModalMatch(item)}
+              onPress={() => {
+                const isTbd =
+                  !item.home_team_id ||
+                  !item.away_team_id ||
+                  item.home_team_name === "TBD" ||
+                  item.away_team_name === "TBD" ||
+                  item.is_bye === true ||
+                  item.is_bye === 1;
+
+                if (isTbd) {
+                  showMessage({
+                    message: "Cannot start match: Opponents are not yet decided (TBD)",
+                    type: "warning",
+                  });
+                  return;
+                }
+                setLineupModalMatch(item);
+              }}
               disabled={startMatchMutation.isPending || deleteMatchMutation.isPending}
               activeOpacity={0.8}
             >
@@ -458,7 +475,24 @@ const MatchHistoryScreen = () => {
         {isLive && (
           <TouchableOpacity
             style={[styles.actionBtn, { backgroundColor: '#10B981' }]}
-            onPress={() => navigation.navigate('LiveScoring', { matchId: item.id })}
+            onPress={() => {
+              const isTbd =
+                !item.home_team_id ||
+                !item.away_team_id ||
+                item.home_team_name === "TBD" ||
+                item.away_team_name === "TBD" ||
+                item.is_bye === true ||
+                item.is_bye === 1;
+
+              if (isTbd) {
+                showMessage({
+                  message: "Cannot start scoring: Opponents are not yet decided (TBD)",
+                  type: "warning",
+                });
+                return;
+              }
+              navigation.navigate('LiveScoring', { matchId: item.id });
+            }}
             activeOpacity={0.8}
           >
             <Text style={styles.actionBtnText}>⚡ Score Live Engine</Text>
