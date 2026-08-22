@@ -125,7 +125,7 @@ const EditProfileScreen: React.FC<EditProfileProps> = ({ hideBack, showSignOut, 
         if (storedProfile) {
           const currentProfileObj = JSON.parse(storedProfile);
           const updatedProfileData = data?.data || data?.result || data || {};
-          
+
           const newProfileObj = {
             ...currentProfileObj,
             ...updatedProfileData,
@@ -356,7 +356,7 @@ const EditProfileScreen: React.FC<EditProfileProps> = ({ hideBack, showSignOut, 
         </View>
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]} keyboardShouldPersistTaps="handled">
-          
+
           {/* Avatar Section */}
           <View style={styles.avatarSection}>
             <TouchableOpacity style={[styles.avatarContainer, profileImageUri ? styles.avatarContainerActive : null]} onPress={handlePickImage} disabled={isUploading} activeOpacity={0.8}>

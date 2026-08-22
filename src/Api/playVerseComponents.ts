@@ -410,6 +410,45 @@ export const useAuthControllerRefreshToken = (
   });
 };
 
+export type AuthControllerLogoutError = Fetcher.ErrorWrapper<undefined>;
+
+export type AuthControllerLogoutVariables = {} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAuthControllerLogout = (
+  variables: AuthControllerLogoutVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AuthControllerLogoutError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/auth/v1/logout", method: "post", ...variables, signal });
+
+export const useAuthControllerLogout = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AuthControllerLogoutError,
+      AuthControllerLogoutVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    AuthControllerLogoutError,
+    AuthControllerLogoutVariables
+  >({
+    mutationFn: (variables: AuthControllerLogoutVariables) =>
+      fetchAuthControllerLogout(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type UserControllerGetProfileError = Fetcher.ErrorWrapper<undefined>;
 
 export type UserControllerGetProfileVariables =
@@ -516,7 +555,7 @@ export const fetchUserControllerUpdateProfile = (
     {},
     {},
     {}
-  >({ url: "/api/users/v1/profile", method: "put", ...variables, signal });
+  >({ url: "/api/users/v1/profile", method: "patch", ...variables, signal });
 
 export const useUserControllerUpdateProfile = (
   options?: Omit<

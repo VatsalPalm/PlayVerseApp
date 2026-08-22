@@ -41,7 +41,7 @@ import { storage } from "../../services/mmkv";
 import { showMessage } from "react-native-flash-message";
 import SizedBox from "../../Components/atoms/SizeBox";
 import MyTeamsModal from "../../Components/MyTeamsModal";
-import EditProfileScreen from "../GroundOwner/EditProfile";
+import PlayerProfileSection from "./PlayerProfileSection";
 import { useMatchSocket } from "../../hooks/useMatchSocket";
 import {
   useBookingControllerGetMyBookings,
@@ -380,9 +380,7 @@ const PlayerHomeScreen = () => {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         {activeBottomTab === "profile" ? (
           <View style={{ flex: 1 }}>
-            <EditProfileScreen
-              hideBack
-              showSignOut
+            <PlayerProfileSection
               onSignOut={handleLocalLogout}
             />
           </View>
