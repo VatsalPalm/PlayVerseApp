@@ -115,6 +115,7 @@ export const useMatchSocket = (matchId: number) => {
 
   // Fetch initial match state via REST API on mount or matchId change
   useEffect(() => {
+    if (!matchId) return;
     let active = true;
     const fetchInitialState = async () => {
       try {
@@ -148,6 +149,7 @@ export const useMatchSocket = (matchId: number) => {
   }, [matchId, flattenMatchState]);
 
   useEffect(() => {
+    if (!matchId) return;
     const socketUrl = getSocketURL();
     const token = storage.getString('accessToken');
 

@@ -44,7 +44,13 @@ const getProfileImageUrl = (url?: string) => {
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 
-const EditProfileScreen = () => {
+interface EditProfileProps {
+  hideBack?: boolean;
+  showSignOut?: boolean;
+  onSignOut?: () => void;
+}
+
+const EditProfileScreen: React.FC<EditProfileProps> = ({ hideBack, showSignOut, onSignOut }) => {
   const navigation = useNavigation<any>();
 
   // Form states
@@ -338,10 +344,14 @@ const EditProfileScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Ionicons name="chevron-back" size={24} color="#00D2FF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Edit Profile</Text>
+          {!hideBack ? (
+            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+              <Ionicons name="chevron-back" size={24} color="#00D2FF" />
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 48 }} />
+          )}
+          <Text style={styles.headerTitle}>{hideBack ? "My Profile" : "Edit Profile"}</Text>
           <View style={{ width: 48 }} />
         </View>
 
@@ -404,7 +414,21 @@ const EditProfileScreen = () => {
 
           <CButton title="Save Changes" onPress={handleSaveChanges} loading={isUpdating} disabled={isUpdating || isUploading} />
 
-          <SizedBox height={40} />
+          {showSignOut && (
+            <>
+              <SizedBox height={16} />
+              <TouchableOpacity
+                style={styles.signOutBtn}
+                onPress={onSignOut}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+                <Text style={styles.signOutBtnText}>Sign Out</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          <SizedBox height={60} />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -528,5 +552,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 8,
     fontWeight: "500",
+  },
+  signOutBtn: {
+    height: 50,
+    backgroundColor: "rgba(239, 68, 68, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  signOutBtnText: {
+    color: "#EF4444",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

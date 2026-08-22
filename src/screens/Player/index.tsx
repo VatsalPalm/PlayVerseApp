@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   StyleSheet,
   Text,
@@ -8,8 +14,13 @@ import {
   ScrollView,
   StatusBar,
   ActivityIndicator,
+  Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,14 +30,20 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
-import { useNavigation, useFocusEffect, CompositeNavigationProp } from "@react-navigation/native";
+import {
+  useNavigation,
+  useFocusEffect,
+  CompositeNavigationProp,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList, HomeStackParamList } from "../../utils/types";
 import { storage } from "../../services/mmkv";
 import { showMessage } from "react-native-flash-message";
 import SizedBox from "../../Components/atoms/SizeBox";
 import MyTeamsModal from "../../Components/MyTeamsModal";
-import { 
+import EditProfileScreen from "../GroundOwner/EditProfile";
+import { useMatchSocket } from "../../hooks/useMatchSocket";
+import {
   useBookingControllerGetMyBookings,
   fetchTournamentControllerListTournaments,
   fetchTournamentControllerGetParticipants,
@@ -48,22 +65,41 @@ const statusBg: Record<string, string> = {
 };
 
 const formatDate = (raw: string): string => {
-  if (!raw) return '—';
+  if (!raw) return "—";
   let date: Date;
-  if (raw.includes('T')) {
+  if (raw.includes("T")) {
     date = new Date(raw);
   } else {
-    const [y, m, d] = raw.split('-').map(Number);
+    const [y, m, d] = raw.split("-").map(Number);
     date = new Date(y, m - 1, d);
   }
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 };
 
 const PlayerHomeScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const insets = useSafeAreaInsets();
   const [userName, setUserName] = useState("User");
+  const [activeBottomTab, setActiveBottomTab] = useState<
+    "dashboard" | "profile"
+  >("dashboard");
   const [selectedSport, setSelectedSport] = useState("Cricket");
+  const [showSportModal, setShowSportModal] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Fetch actual recent bookings
@@ -105,13 +141,19 @@ const PlayerHomeScreen = () => {
     if (!allMatchesList.length) return null;
 
     const matchesForSport = allMatchesList.filter((m: any) => {
+      if (selectedSport === "All Sports" || selectedSport === "All")
+        return true;
       const sName = (m.sport_name || m.sportName || "").toLowerCase();
       const sId = Number(m.sport_id || m.sportId || 0);
 
-      if (selectedSport === "Cricket") return sId === 1 || sName.includes("cricket");
-      if (selectedSport === "Football") return sId === 2 || sName.includes("football");
-      if (selectedSport === "Pickleball") return sId === 5 || sName.includes("pickle");
-      if (selectedSport === "Badminton") return sId === 6 || sName.includes("badminton");
+      if (selectedSport === "Cricket")
+        return sId === 1 || sName.includes("cricket");
+      if (selectedSport === "Football")
+        return sId === 2 || sName.includes("football");
+      if (selectedSport === "Pickleball")
+        return sId === 5 || sName.includes("pickle");
+      if (selectedSport === "Badminton")
+        return sId === 6 || sName.includes("badminton");
       return sName.includes(selectedSport.toLowerCase());
     });
 
@@ -123,25 +165,95 @@ const PlayerHomeScreen = () => {
     );
   }, [allMatchesList, selectedSport]);
 
+  // Connect socket for live match real-time score updates on home screen
+  const matchIdForSocket = activeSportMatch?.id || 0;
+  const { matchState: socketMatchState } = useMatchSocket(matchIdForSocket);
+
+  // Combine initial REST match data with real-time Socket.IO match state updates
+  const currentLiveMatch = useMemo(() => {
+    if (!activeSportMatch) return null;
+    if (!socketMatchState) return activeSportMatch;
+    return {
+      ...activeSportMatch,
+      ...socketMatchState,
+      home_team_name:
+        socketMatchState.home_team_name ||
+        activeSportMatch.home_team_name ||
+        activeSportMatch.homeTeamName,
+      away_team_name:
+        socketMatchState.away_team_name ||
+        activeSportMatch.away_team_name ||
+        activeSportMatch.awayTeamName,
+      homePlayers: socketMatchState.homePlayers?.length
+        ? socketMatchState.homePlayers
+        : activeSportMatch.homePlayers,
+      awayPlayers: socketMatchState.awayPlayers?.length
+        ? socketMatchState.awayPlayers
+        : activeSportMatch.awayPlayers,
+      periods: socketMatchState.periods?.length
+        ? socketMatchState.periods
+        : activeSportMatch.periods,
+    };
+  }, [activeSportMatch, socketMatchState]);
+
+  // Filter tournaments dynamically for selected sport
+  const filteredTournaments = useMemo(() => {
+    if (selectedSport === "All Sports" || selectedSport === "All")
+      return myTournaments;
+    return myTournaments.filter((t: any) => {
+      const sName = (t.sport_name || t.sportName || "").toLowerCase();
+      const sId = Number(t.sport_id || t.sportId || 0);
+      if (selectedSport === "Cricket")
+        return sId === 1 || sName.includes("cricket");
+      if (selectedSport === "Football")
+        return sId === 2 || sName.includes("football");
+      if (selectedSport === "Pickleball")
+        return sId === 5 || sName.includes("pickle");
+      if (selectedSport === "Badminton")
+        return sId === 6 || sName.includes("badminton");
+      return sName.includes(selectedSport.toLowerCase());
+    });
+  }, [myTournaments, selectedSport]);
+
+  // Filter bookings dynamically for selected sport
+  const filteredBookings = useMemo(() => {
+    const rawList = myBookingsData?.data || myBookingsData?.result || [];
+    if (selectedSport === "All Sports" || selectedSport === "All")
+      return rawList;
+    return rawList.filter((b: any) => {
+      const sName = (
+        b.sport_name ||
+        b.sportName ||
+        b.ground_name ||
+        ""
+      ).toLowerCase();
+      if (selectedSport === "Cricket") return sName.includes("cricket");
+      if (selectedSport === "Football") return sName.includes("football");
+      if (selectedSport === "Pickleball") return sName.includes("pickle");
+      if (selectedSport === "Badminton") return sName.includes("badminton");
+      return true;
+    });
+  }, [myBookingsData, selectedSport]);
+
   const loadPlayerTournaments = async (pId: number) => {
     try {
       setTournamentsLoading(true);
-      const res = await fetchTournamentControllerListTournaments({
+      const res = (await fetchTournamentControllerListTournaments({
         queryParams: {
           limit: 30,
           offset: 0,
         },
-      }) as any;
+      })) as any;
 
       const listArray = res?.data || [];
       const matched: any[] = [];
-      
+
       const promises = listArray.slice(0, 8).map(async (t: any) => {
         try {
           const parts = (await fetchTournamentControllerGetParticipants({
-            pathParams: { id: t.id }
+            pathParams: { id: t.id },
           }).catch(() => null)) as any;
-          
+
           const isParticipant = parts?.some((p: any) => p.captain_id === pId);
           if (isParticipant || t.organizer_id === pId) {
             matched.push(t);
@@ -154,7 +266,7 @@ const PlayerHomeScreen = () => {
       await Promise.all(promises);
       setMyTournaments(matched);
     } catch (e) {
-      console.log('Failed to load player tournaments:', e);
+      console.log("Failed to load player tournaments:", e);
     } finally {
       setTournamentsLoading(false);
     }
@@ -179,7 +291,7 @@ const PlayerHomeScreen = () => {
       } catch (e) {
         console.log("Failed to parse user profile:", e);
       }
-    }, [])
+    }, []),
   );
 
   // Shared values for background orbs
@@ -228,10 +340,12 @@ const PlayerHomeScreen = () => {
       description: "You have logged out successfully.",
       type: "info",
     });
-    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.reset({
-      index: 0,
-      routes: [{ name: "Welcome" }],
-    });
+    navigation
+      .getParent<NativeStackNavigationProp<RootStackParamList>>()
+      ?.reset({
+        index: 0,
+        routes: [{ name: "Welcome" }],
+      });
   };
 
   const animatedOrb1 = useAnimatedStyle(() => ({
@@ -263,404 +377,597 @@ const PlayerHomeScreen = () => {
       {/* Floating glowing orbs */}
       <Animated.View style={[styles.floatingOrb, styles.orb1, animatedOrb1]} />
 
-      <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              Hello, {userName.split(" ")[0]}! 👋
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              Ready to lead your team to victory?
-            </Text>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+        {activeBottomTab === "profile" ? (
+          <View style={{ flex: 1 }}>
+            <EditProfileScreen
+              hideBack
+              showSignOut
+              onSignOut={handleLocalLogout}
+            />
           </View>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleLocalLogout}
-            style={styles.logoutBtn}
-          >
-            <Text style={styles.logoutBtnText}>Sign Out</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Choose Your Sport Filter */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Choose Your Sport</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.sportsScroll}
-            >
-              {[
-                "Cricket",
-                "Football",
-                "Pickleball",
-                "Badminton",
-              ].map((sport) => {
-                const isSelected = selectedSport === sport;
-                const emoji =
-                  sport === "Cricket"
-                    ? "🏏"
-                    : sport === "Football"
-                      ? "⚽"
-                      : sport === "Pickleball"
-                        ? "🏓"
-                        : "🏸";
-                return (
-                  <TouchableOpacity
-                    key={sport}
-                    activeOpacity={0.8}
-                    onPress={() => setSelectedSport(sport)}
-                    style={[
-                      styles.sportTab,
-                      isSelected && styles.sportTabActive,
-                    ]}
-                  >
-                    <Text style={styles.sportEmoji}>{emoji}</Text>
-                    <Text
-                      style={[
-                        styles.sportText,
-                        isSelected && styles.sportTextActive,
-                      ]}
-                    >
-                      {sport}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* Live Match Card */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
-                {selectedSport} Match
-              </Text>
-              <View
-                style={[
-                  styles.liveBadge,
-                  activeSportMatch?.status === "LIVE"
-                    ? null
-                    : { backgroundColor: "rgba(108, 77, 246, 0.15)" },
-                ]}
-              >
-                {activeSportMatch?.status === "LIVE" && <View style={styles.liveDot} />}
-                <Text
-                  style={[
-                    styles.liveBadgeText,
-                    activeSportMatch?.status === "LIVE"
-                      ? null
-                      : { color: "#6C4DF6" },
-                  ]}
-                >
-                  {activeSportMatch?.status || "LIVE"}
+        ) : (
+          <>
+            {/* App Bar Header with Sport Selector */}
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.greeting}>
+                  Hello, {userName.split(" ")[0]}! 👋
+                </Text>
+                <Text style={styles.headerSubtitle}>
+                  {selectedSport} Overview • Ready for victory?
                 </Text>
               </View>
+
+              {/* App Bar Sport Selector Pill */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setShowSportModal(true)}
+                style={styles.sportHeaderBtn}
+              >
+                <Text style={styles.sportHeaderEmoji}>
+                  {selectedSport === "Cricket"
+                    ? "🏏"
+                    : selectedSport === "Football"
+                      ? "⚽"
+                      : selectedSport === "Pickleball"
+                        ? "🏓"
+                        : selectedSport === "Badminton"
+                          ? "🏸"
+                          : "🏆"}
+                </Text>
+                <Text style={styles.sportHeaderText}>{selectedSport}</Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={14}
+                  color="#00D2FF"
+                  style={{ marginLeft: 4 }}
+                />
+              </TouchableOpacity>
             </View>
 
-            {activeSportMatch ? (
-              (() => {
-                const homePlayerNames = activeSportMatch.homePlayers
-                  ?.map((p: any) => p.display_name || p.name)
-                  .filter(Boolean)
-                  .join(" & ");
-                const awayPlayerNames = activeSportMatch.awayPlayers
-                  ?.map((p: any) => p.display_name || p.name)
-                  .filter(Boolean)
-                  .join(" & ");
-
-                const homeName =
-                  activeSportMatch.home_team_name ||
-                  activeSportMatch.homeTeamName ||
-                  homePlayerNames ||
-                  "Home Team";
-                const awayName =
-                  activeSportMatch.away_team_name ||
-                  activeSportMatch.awayTeamName ||
-                  awayPlayerNames ||
-                  "Away Team";
-
-                const periods = activeSportMatch.periods || [];
-                const homeGamesWon = periods.filter(
-                  (p: any) => p.winner_team_id && p.winner_team_id === activeSportMatch.home_team_id
-                ).length;
-                const awayGamesWon = periods.filter(
-                  (p: any) => p.winner_team_id && p.winner_team_id === activeSportMatch.away_team_id
-                ).length;
-
-                return (
-                  <View style={styles.glassCard}>
-                    <Text style={styles.matchSub}>
-                      {activeSportMatch.matchType || "MATCH"} • {formatDate(activeSportMatch.created_at || activeSportMatch.scheduled_at)}
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Live Match Card */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>{selectedSport} Match</Text>
+                  <View
+                    style={[
+                      styles.liveBadge,
+                      currentLiveMatch?.status === "LIVE"
+                        ? null
+                        : { backgroundColor: "rgba(108, 77, 246, 0.15)" },
+                    ]}
+                  >
+                    {currentLiveMatch?.status === "LIVE" && (
+                      <View style={styles.liveDot} />
+                    )}
+                    <Text
+                      style={[
+                        styles.liveBadgeText,
+                        currentLiveMatch?.status === "LIVE"
+                          ? null
+                          : { color: "#6C4DF6" },
+                      ]}
+                    >
+                      {currentLiveMatch?.status || "LIVE"}
                     </Text>
+                  </View>
+                </View>
 
-                    <View style={styles.teamsRow}>
-                      <View style={styles.teamContainer}>
-                        <Text style={styles.teamName}>{homeName}</Text>
-                        <Text style={styles.teamScore}>
-                          {selectedSport === "Cricket"
-                            ? `${activeSportMatch.home_score || homeGamesWon} / 0`
-                            : `${homeGamesWon}`}
+                {currentLiveMatch ? (
+                  (() => {
+                    const homePlayerNames = currentLiveMatch.homePlayers
+                      ?.map((p: any) => p.display_name || p.name)
+                      .filter(Boolean)
+                      .join(" & ");
+                    const awayPlayerNames = currentLiveMatch.awayPlayers
+                      ?.map((p: any) => p.display_name || p.name)
+                      .filter(Boolean)
+                      .join(" & ");
+
+                    const homeName =
+                      currentLiveMatch.home_team_name ||
+                      currentLiveMatch.homeTeamName ||
+                      homePlayerNames;
+                    // "Team 1";
+                    const awayName =
+                      currentLiveMatch.away_team_name ||
+                      currentLiveMatch.awayTeamName ||
+                      awayPlayerNames;
+                    // "Team 2";
+
+                    const periods = currentLiveMatch.periods || [];
+                    const currentPeriod = periods.find(
+                      (p: any) => !p.ended_at,
+                    ) ||
+                      periods[periods.length - 1] || {
+                        home_score: 0,
+                        away_score: 0,
+                      };
+
+                    const homePointScore = currentPeriod.home_score ?? 0;
+                    const awayPointScore = currentPeriod.away_score ?? 0;
+
+                    const homeGamesWon = periods.filter(
+                      (p: any) =>
+                        p.winner_team_id &&
+                        p.winner_team_id ===
+                          (currentLiveMatch.home_team_id ||
+                            currentLiveMatch.homeTeamId),
+                    ).length;
+                    const awayGamesWon = periods.filter(
+                      (p: any) =>
+                        p.winner_team_id &&
+                        p.winner_team_id ===
+                          (currentLiveMatch.away_team_id ||
+                            currentLiveMatch.awayTeamId),
+                    ).length;
+
+                    const homeScoreVal =
+                      currentLiveMatch.home_score !== undefined &&
+                      currentLiveMatch.home_score !== null
+                        ? currentLiveMatch.home_score
+                        : homeGamesWon > 0
+                          ? homeGamesWon
+                          : homePointScore;
+
+                    const awayScoreVal =
+                      currentLiveMatch.away_score !== undefined &&
+                      currentLiveMatch.away_score !== null
+                        ? currentLiveMatch.away_score
+                        : awayGamesWon > 0
+                          ? awayGamesWon
+                          : awayPointScore;
+
+                    return (
+                      <View style={styles.glassCard}>
+                        <Text style={styles.matchSub}>
+                          {currentLiveMatch.matchType || "MATCH"} •{" "}
+                          {formatDate(
+                            currentLiveMatch.created_at ||
+                              currentLiveMatch.scheduled_at,
+                          )}
                         </Text>
-                        <Text style={styles.teamOvers}>
-                          {selectedSport === "Cricket" ? "Overs: 0.0" : "Games Won"}
-                        </Text>
+
+                        <View style={styles.teamsRow}>
+                          <View style={styles.teamContainer}>
+                            <Text style={styles.teamName}>{homeName}</Text>
+                            <Text style={styles.teamScore}>{homeScoreVal}</Text>
+                          </View>
+
+                          <Text style={styles.vsText}>VS</Text>
+
+                          <View style={styles.teamContainer}>
+                            <Text style={styles.teamName}>{awayName}</Text>
+                            <Text style={styles.teamScore}>{awayScoreVal}</Text>
+                          </View>
+                        </View>
+
+                        <TouchableOpacity
+                          style={styles.matchCenterBtn}
+                          activeOpacity={0.8}
+                          onPress={() => {
+                            if (
+                              currentLiveMatch.status === "LIVE" ||
+                              currentLiveMatch.status === "COMPLETED"
+                            ) {
+                              navigation.navigate("LiveScoring", {
+                                matchId: currentLiveMatch.id,
+                              });
+                            } else {
+                              navigation.navigate("MatchHistory");
+                            }
+                          }}
+                        >
+                          <Text style={styles.matchCenterText}>
+                            Match Center
+                          </Text>
+                        </TouchableOpacity>
                       </View>
-
-                      <Text style={styles.vsText}>VS</Text>
-
-                      <View style={styles.teamContainer}>
-                        <Text style={styles.teamName}>{awayName}</Text>
-                        <Text style={styles.teamScore}>
-                          {selectedSport === "Cricket"
-                            ? `${activeSportMatch.away_score || awayGamesWon} / 0`
-                            : `${awayGamesWon}`}
+                    );
+                  })()
+                ) : (
+                  <View style={styles.glassCard}>
+                    <View style={{ alignItems: "center", paddingVertical: 10 }}>
+                      <Text style={{ fontSize: 32, marginBottom: 8 }}>
+                        {selectedSport === "Cricket"
+                          ? "🏏"
+                          : selectedSport === "Football"
+                            ? "⚽"
+                            : selectedSport === "Pickleball"
+                              ? "🏓"
+                              : "🏸"}
+                      </Text>
+                      <Text style={[styles.teamName, { textAlign: "center" }]}>
+                        No Live {selectedSport} Match
+                      </Text>
+                      <Text
+                        style={[
+                          styles.matchSub,
+                          { textAlign: "center", marginTop: 4 },
+                        ]}
+                      >
+                        There are currently no active live matches for{" "}
+                        {selectedSport}.
+                      </Text>
+                      <TouchableOpacity
+                        style={[
+                          styles.matchCenterBtn,
+                          { paddingHorizontal: 20, marginTop: 14 },
+                        ]}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate("MatchHistory")}
+                      >
+                        <Text style={styles.matchCenterText}>
+                          Explore {selectedSport} Matches
                         </Text>
-                        <Text style={styles.teamOvers}>
-                          {selectedSport === "Cricket" ? "Overs: 0.0" : "Games Won"}
-                        </Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
+                  </View>
+                )}
+              </View>
 
+              {/* Quick Actions Grid */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Quick Actions</Text>
+                <View style={styles.actionsGrid}>
+                  {[
+                    { title: "Live Matches", icon: "⚡" },
+                    { title: "Book Ground", icon: "🏟️" },
+                    { title: "Tournaments", icon: "🏆" },
+                    { title: "My Teams", icon: "👥" },
+                  ].map((action, index) => (
                     <TouchableOpacity
-                      style={styles.matchCenterBtn}
+                      key={index}
+                      style={styles.actionCard}
                       activeOpacity={0.8}
                       onPress={() => {
-                        if (activeSportMatch.status === "LIVE" || activeSportMatch.status === "COMPLETED") {
-                          navigation.navigate("LiveScoring", { matchId: activeSportMatch.id });
-                        } else {
+                        if (action.title === "Book Ground") {
+                          navigation.navigate("GroundsList");
+                        } else if (action.title === "Live Matches") {
                           navigation.navigate("MatchHistory");
+                        } else if (action.title === "Tournaments") {
+                          navigation.navigate("TournamentList");
+                        } else if (action.title === "My Teams") {
+                          setShowMyTeamsModal(true);
+                        } else {
+                          showMessage({
+                            message: `${action.title} coming soon!`,
+                            type: "info",
+                          });
                         }
                       }}
                     >
-                      <Text style={styles.matchCenterText}>Match Center</Text>
+                      <Text style={styles.actionIcon}>{action.icon}</Text>
+                      <Text style={styles.actionTitle}>{action.title}</Text>
                     </TouchableOpacity>
-                  </View>
-                );
-              })()
-            ) : (
-              <View style={styles.glassCard}>
-                <View style={{ alignItems: "center", paddingVertical: 10 }}>
-                  <Text style={{ fontSize: 32, marginBottom: 8 }}>
-                    {selectedSport === "Cricket"
-                      ? "🏏"
-                      : selectedSport === "Football"
-                        ? "⚽"
-                        : selectedSport === "Pickleball"
-                          ? "🏓"
-                          : "🏸"}
-                  </Text>
-                  <Text style={[styles.teamName, { textAlign: "center" }]}>
-                    No Live {selectedSport} Match
-                  </Text>
-                  <Text style={[styles.matchSub, { textAlign: "center", marginTop: 4 }]}>
-                    There are currently no active live matches for {selectedSport}.
-                  </Text>
-                  <TouchableOpacity
-                    style={[styles.matchCenterBtn, { paddingHorizontal: 20, marginTop: 14 }]}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate("MatchHistory")}
-                  >
-                    <Text style={styles.matchCenterText}>Explore {selectedSport} Matches</Text>
-                  </TouchableOpacity>
+                  ))}
                 </View>
               </View>
-            )}
-          </View>
 
-          {/* Quick Actions Grid */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <View style={styles.actionsGrid}>
-              {[
-                { title: "Live Scoring", icon: "⚡" },
-                { title: "Book Ground", icon: "🏟️" },
-                { title: "Tournaments", icon: "🏆" },
-                { title: "My Teams", icon: "👥" },
-                { title: "My Profile", icon: "👤" },
-              ].map((action, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.actionCard}
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    if (action.title === "Book Ground") {
-                      navigation.navigate("GroundsList");
-                    } else if (action.title === "Live Scoring") {
-                      navigation.navigate("MatchHistory");
-                    } else if (action.title === "Tournaments") {
-                      navigation.navigate("TournamentList");
-                    } else if (action.title === "My Teams") {
-                      setShowMyTeamsModal(true);
-                    } else if (action.title === "My Profile") {
-                      navigation.navigate("EditProfile");
-                    } else {
-                      showMessage({
-                        message: `${action.title} coming soon!`,
-                        type: "info",
-                      });
-                    }
-                  }}
-                >
-                  <Text style={styles.actionIcon}>{action.icon}</Text>
-                  <Text style={styles.actionTitle}>{action.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* My Tournaments */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>My Tournaments</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => navigation.navigate("TournamentList")}
-              >
-                <Text
-                  style={{ color: "#6C4DF6", fontSize: 13, fontWeight: "600" }}
-                >
-                  View All
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {tournamentsLoading ? (
-              <ActivityIndicator size="small" color="#6C4DF6" style={{ marginVertical: 20 }} />
-            ) : myTournaments.length === 0 ? (
-              <View style={styles.emptyBookingsBox}>
-                <Text style={styles.emptyBookingsText}>
-                  You haven't registered in any tournaments yet.
-                </Text>
-              </View>
-            ) : (
-              myTournaments.map((item) => {
-                const isLive = item.status === 'ONGOING';
-                const isUpcoming = item.status === 'UPCOMING';
-                const statusColorVal = isLive ? '#22c55e' : isUpcoming ? '#00D2FF' : '#9CA3AF';
-                
-                return (
+              {/* My Tournaments */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>My Tournaments</Text>
                   <TouchableOpacity
-                    key={item.id}
-                    style={styles.bookingItem}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('TournamentDetails', { tournamentId: item.id })}
+                    activeOpacity={0.7}
+                    onPress={() => navigation.navigate("TournamentList")}
                   >
-                    <View style={styles.bookingLeft}>
-                      <Text style={styles.bookingGround} numberOfLines={1}>{item.name}</Text>
-                      <Text style={styles.bookingDate}>
-                        Sport: {item.sport_name || 'Pickleball'} • Format: {item.format}
-                      </Text>
-                      <Text style={[styles.bookingDate, { fontSize: 10, opacity: 0.8 }]}>
-                        Starts: {item.start_date ? new Date(item.start_date).toLocaleDateString() : 'TBD'}
-                      </Text>
-                    </View>
-                    
-                    <View style={[styles.statusBadge, { 
-                      borderColor: statusColorVal + '40', 
-                      backgroundColor: statusColorVal + '12',
-                      borderWidth: 1,
-                    }]}>
-                      <Text style={{ color: statusColorVal, fontSize: 9, fontWeight: '900' }}>
-                        {item.status}
-                      </Text>
-                    </View>
+                    <Text
+                      style={{
+                        color: "#6C4DF6",
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      View All
+                    </Text>
                   </TouchableOpacity>
-                );
-              })
-            )}
-          </View>
+                </View>
 
-          {/* Recent Bookings */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Bookings</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => navigation.navigate("MyBookings")}
-              >
-                <Text
-                  style={{ color: "#6C4DF6", fontSize: 13, fontWeight: "600" }}
-                >
-                  View All
-                </Text>
-              </TouchableOpacity>
-            </View>
+                {tournamentsLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#6C4DF6"
+                    style={{ marginVertical: 20 }}
+                  />
+                ) : filteredTournaments.length === 0 ? (
+                  <View style={styles.emptyBookingsBox}>
+                    <Text style={styles.emptyBookingsText}>
+                      No tournaments found for {selectedSport}.
+                    </Text>
+                  </View>
+                ) : (
+                  filteredTournaments.map((item) => {
+                    const isLive = item.status === "ONGOING";
+                    const isUpcoming = item.status === "UPCOMING";
+                    const statusColorVal = isLive
+                      ? "#22c55e"
+                      : isUpcoming
+                        ? "#00D2FF"
+                        : "#9CA3AF";
 
-            {bookingsLoading ? (
-              <ActivityIndicator
-                size="small"
-                color="#6C4DF6"
-                style={{ marginVertical: 12 }}
-              />
-            ) : !myBookingsData?.data || myBookingsData.data.length === 0 ? (
-              <View style={styles.emptyBookingsBox}>
-                <Text style={styles.emptyBookingsText}>
-                  No bookings found. Try booking a slot below!
-                </Text>
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={styles.bookingItem}
+                        activeOpacity={0.8}
+                        onPress={() =>
+                          navigation.navigate("TournamentDetails", {
+                            tournamentId: item.id,
+                          })
+                        }
+                      >
+                        <View style={styles.bookingLeft}>
+                          <Text style={styles.bookingGround} numberOfLines={1}>
+                            {item.name}
+                          </Text>
+                          <Text style={styles.bookingDate}>
+                            Sport: {item.sport_name || "Pickleball"} • Format:{" "}
+                            {item.format}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.bookingDate,
+                              { fontSize: 10, opacity: 0.8 },
+                            ]}
+                          >
+                            Starts:{" "}
+                            {item.start_date
+                              ? new Date(item.start_date).toLocaleDateString()
+                              : "TBD"}
+                          </Text>
+                        </View>
+
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            {
+                              borderColor: statusColorVal + "40",
+                              backgroundColor: statusColorVal + "12",
+                              borderWidth: 1,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={{
+                              color: statusColorVal,
+                              fontSize: 9,
+                              fontWeight: "900",
+                            }}
+                          >
+                            {item.status}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                )}
               </View>
-            ) : (
-              [...myBookingsData.data]
-                .sort((a, b) => {
-                  const dateA = new Date(a.booking_date || 0).getTime();
-                  const dateB = new Date(b.booking_date || 0).getTime();
-                  if (dateB !== dateA) return dateB - dateA;
-                  return (b.id || 0) - (a.id || 0);
-                })
-                .slice(0, 3)
-                .map((item: any, idx: number) => {
-                const statusCol = statusColor[item.booking_status] || "#9CA3AF";
-                const statusBgCol =
-                  statusBg[item.booking_status] || "rgba(0,0,0,0.1)";
-                return (
+
+              {/* Recent Bookings */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Recent Bookings</Text>
                   <TouchableOpacity
-                    key={item.id || idx}
-                    style={styles.bookingItem}
-                    activeOpacity={0.8}
+                    activeOpacity={0.7}
                     onPress={() => navigation.navigate("MyBookings")}
                   >
-                    <View style={styles.bookingLeft}>
-                      <Text style={styles.bookingGround}>
-                        {item.ground_name}
-                      </Text>
-                      <Text style={styles.bookingDate}>
-                        {formatDate(item.booking_date)} • {item.slot_start} –{" "}
-                        {item.slot_end}
-                      </Text>
-                    </View>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        {
-                          backgroundColor: statusBgCol,
-                          borderColor: statusCol,
-                          borderWidth: 1,
-                        },
-                      ]}
+                    <Text
+                      style={{
+                        color: "#6C4DF6",
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
                     >
+                      View All
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {bookingsLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#6C4DF6"
+                    style={{ marginVertical: 12 }}
+                  />
+                ) : !filteredBookings || filteredBookings.length === 0 ? (
+                  <View style={styles.emptyBookingsBox}>
+                    <Text style={styles.emptyBookingsText}>
+                      No bookings found for {selectedSport}. Try booking a slot
+                      below!
+                    </Text>
+                  </View>
+                ) : (
+                  [...filteredBookings]
+                    .sort((a, b) => {
+                      const dateA = new Date(a.booking_date || 0).getTime();
+                      const dateB = new Date(b.booking_date || 0).getTime();
+                      if (dateB !== dateA) return dateB - dateA;
+                      return (b.id || 0) - (a.id || 0);
+                    })
+                    .slice(0, 3)
+                    .map((item: any, idx: number) => {
+                      const statusCol =
+                        statusColor[item.booking_status] || "#9CA3AF";
+                      const statusBgCol =
+                        statusBg[item.booking_status] || "rgba(0,0,0,0.1)";
+                      return (
+                        <TouchableOpacity
+                          key={item.id || idx}
+                          style={styles.bookingItem}
+                          activeOpacity={0.8}
+                          onPress={() => navigation.navigate("MyBookings")}
+                        >
+                          <View style={styles.bookingLeft}>
+                            <Text style={styles.bookingGround}>
+                              {item.ground_name}
+                            </Text>
+                            <Text style={styles.bookingDate}>
+                              {formatDate(item.booking_date)} •{" "}
+                              {item.slot_start} – {item.slot_end}
+                            </Text>
+                          </View>
+                          <View
+                            style={[
+                              styles.statusBadge,
+                              {
+                                backgroundColor: statusBgCol,
+                                borderColor: statusCol,
+                                borderWidth: 1,
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.statusText,
+                                {
+                                  color: statusCol,
+                                  fontSize: 10,
+                                  fontWeight: "700",
+                                },
+                              ]}
+                            >
+                              {item.booking_status}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })
+                )}
+              </View>
+
+              <SizedBox height={30} />
+            </ScrollView>
+          </>
+        )}
+
+        {/* Sport Selector Modal */}
+        <Modal
+          transparent
+          visible={showSportModal}
+          animationType="fade"
+          onRequestClose={() => setShowSportModal(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowSportModal(false)}
+          >
+            <View style={styles.sportModalContent}>
+              <Text style={styles.sportModalTitle}>Choose Sport</Text>
+              <Text style={styles.sportModalSub}>
+                Filter dashboard matches, tournaments & bookings
+              </Text>
+              <SizedBox height={14} />
+
+              {[
+                { name: "Cricket", emoji: "🏏" },
+                { name: "Football", emoji: "⚽" },
+                { name: "Pickleball", emoji: "🏓" },
+                { name: "Badminton", emoji: "🏸" },
+              ].map((item) => {
+                const isSelected = selectedSport === item.name;
+                return (
+                  <TouchableOpacity
+                    key={item.name}
+                    style={[
+                      styles.sportModalOption,
+                      isSelected && styles.sportModalOptionActive,
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setSelectedSport(item.name);
+                      setShowSportModal(false);
+                    }}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text style={{ fontSize: 20, marginRight: 12 }}>
+                        {item.emoji}
+                      </Text>
                       <Text
                         style={[
-                          styles.statusText,
-                          { color: statusCol, fontSize: 10, fontWeight: "700" },
+                          styles.sportModalOptionText,
+                          isSelected && styles.sportModalOptionTextActive,
                         ]}
                       >
-                        {item.booking_status}
+                        {item.name}
                       </Text>
                     </View>
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color="#00D2FF"
+                      />
+                    )}
                   </TouchableOpacity>
                 );
-              })
-            )}
-          </View>
+              })}
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
-          <SizedBox height={30} />
-        </ScrollView>
+        {/* Bottom Navigation Bar */}
+        <View
+          style={[
+            styles.bottomTabBar,
+            { paddingBottom: Math.max(insets.bottom, 10) },
+          ]}
+        >
+          <TouchableOpacity
+            style={[
+              styles.tabBarItem,
+              activeBottomTab === "dashboard" && styles.tabBarItemActive,
+            ]}
+            onPress={() => setActiveBottomTab("dashboard")}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={activeBottomTab === "dashboard" ? "grid" : "grid-outline"}
+              size={20}
+              color={activeBottomTab === "dashboard" ? "#00D2FF" : "#9CA3AF"}
+            />
+            <Text
+              style={[
+                styles.tabBarLabel,
+                activeBottomTab === "dashboard" && styles.tabBarLabelActive,
+              ]}
+            >
+              Dashboard
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tabBarItem,
+              activeBottomTab === "profile" && styles.tabBarItemActive,
+            ]}
+            onPress={() => setActiveBottomTab("profile")}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={activeBottomTab === "profile" ? "person" : "person-outline"}
+              size={20}
+              color={activeBottomTab === "profile" ? "#00D2FF" : "#9CA3AF"}
+            />
+            <Text
+              style={[
+                styles.tabBarLabel,
+                activeBottomTab === "profile" && styles.tabBarLabelActive,
+              ]}
+            >
+              Profile
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
       <MyTeamsModal
         visible={showMyTeamsModal}
@@ -701,12 +1008,12 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: "#FFFFFF",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "800",
   },
   headerSubtitle: {
     color: "#9CA3AF",
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
     fontWeight: "500",
   },
@@ -1035,17 +1342,104 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "700",
   },
-  bookNowBtn: {
-    backgroundColor: "#6C4DF6",
-    borderRadius: 14,
-    height: 44,
+  sportHeaderBtn: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "rgba(0, 210, 255, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(0, 210, 255, 0.3)",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  bookNowText: {
-    color: "#FFFFFF",
+  sportHeaderEmoji: {
     fontSize: 14,
+    marginRight: 4,
+  },
+  sportHeaderText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "flex-end",
+  },
+  sportModalContent: {
+    backgroundColor: "#120E2E",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    borderTopWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  sportModalTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
     fontWeight: "800",
+  },
+  sportModalSub: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  sportModalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 10,
+  },
+  sportModalOptionActive: {
+    backgroundColor: "rgba(0, 210, 255, 0.12)",
+    borderColor: "#00D2FF",
+  },
+  sportModalOptionText: {
+    color: "#9CA3AF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  sportModalOptionTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  bottomTabBar: {
+    flexDirection: "row",
+    backgroundColor: "rgba(18, 14, 46, 0.95)",
+    borderTopWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    paddingTop: 10,
+    paddingHorizontal: 30,
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  tabBarItem: {
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  tabBarItemActive: {
+    backgroundColor: "rgba(0, 210, 255, 0.12)",
+    borderColor: "rgba(0, 210, 255, 0.3)",
+  },
+  tabBarLabel: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  tabBarLabelActive: {
+    color: "#00D2FF",
+    fontWeight: "700",
   },
 });
 
