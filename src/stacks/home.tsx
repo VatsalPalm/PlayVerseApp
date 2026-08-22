@@ -22,6 +22,7 @@ import TournamentListScreen from '../screens/Player/TournamentList';
 import TournamentDetailsScreen from '../screens/Player/TournamentDetails';
 import CreateTournamentScreen from '../screens/Organizer/CreateTournament';
 import TeamDetailsScreen from '../screens/Player/TeamDetails';
+import FindMatchScreen from '../screens/Player/FindMatch';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -63,6 +64,7 @@ const Home = () => {
             <Stack.Screen name="TournamentDetails" component={TournamentDetailsScreen} />
             <Stack.Screen name="CreateTournament" component={CreateTournamentScreen} />
             <Stack.Screen name="TeamDetails" component={TeamDetailsScreen} />
+            <Stack.Screen name="FindMatch" component={FindMatchScreen} />
         </Stack.Navigator>
     );
 };

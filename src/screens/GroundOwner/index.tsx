@@ -59,9 +59,10 @@ const GroundOwnerHomeScreen = () => {
     }
   }, [refetch]);
 
-  const dashboardStats = myGroundsData?.dashboard_stats;
+  const dashboardStats =
+    myGroundsData?.dashboard_stats || (myGroundsData as any)?.data?.dashboard_stats;
   const aiInsights =
-    myGroundsData?.ai_insights || myGroundsData?.data?.ai_insights;
+    myGroundsData?.ai_insights || (myGroundsData as any)?.data?.ai_insights;
 
   // Extract owner price and market average dynamically
   const ownerPrice = aiInsights?.price_analysis?.owner_price;
@@ -223,19 +224,19 @@ const GroundOwnerHomeScreen = () => {
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>Total Grounds</Text>
               <Text style={styles.metricValue}>
-                {dashboardStats?.total_grounds}
+                {dashboardStats?.total_grounds ?? 0}
               </Text>
             </View>
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>Today's Bookings</Text>
               <Text style={styles.metricValue}>
-                {dashboardStats?.today_bookings}
+                {dashboardStats?.today_bookings ?? 0}
               </Text>
             </View>
             <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Revenue (Today)</Text>
+              <Text style={styles.metricLabel}>Total Revenue</Text>
               <Text style={[styles.metricValue, styles.revenueText]}>
-                {dashboardStats?.today_revenue}
+                ₹{Number(dashboardStats?.today_revenue ?? dashboardStats?.total_revenue ?? 0).toLocaleString()}
               </Text>
             </View>
           </View>
@@ -367,14 +368,22 @@ const GroundOwnerHomeScreen = () => {
                     {/* Visual Gauge Bar */}
                     <View style={styles.sliderContainer}>
                       <View style={styles.sliderTrack} />
-                      <View style={[styles.sliderFill, { width: `${ownerPos}%` }]} />
-                      <View style={[styles.sliderMarker, { left: `${ownerPos}%`, marginLeft: -12 }]}>
+                      <View style={[styles.sliderFill, { width: `${Math.max(0, Math.min(100, ownerPos))}%` }]} />
+                      
+                      {/* You (Owner) - Positioned Above Track */}
+                      <View style={[styles.sliderMarkerTop, { left: `${Math.max(10, Math.min(90, ownerPos))}%`, marginLeft: -30 }]}>
+                        <View style={styles.markerBadgeOwner}>
+                          <Text style={styles.markerBadgeOwnerText}>You: ₹{ownerPrice}</Text>
+                        </View>
                         <View style={styles.markerDotOwner} />
-                        <Text style={styles.markerLabelOwner}>You</Text>
                       </View>
-                      <View style={[styles.sliderMarker, { left: `${marketPos}%`, marginLeft: -12 }]}>
+
+                      {/* Market - Positioned Below Track */}
+                      <View style={[styles.sliderMarkerBottom, { left: `${Math.max(10, Math.min(90, marketPos))}%`, marginLeft: -34 }]}>
                         <View style={styles.markerDotMarket} />
-                        <Text style={styles.markerLabelMarket}>Market</Text>
+                        <View style={styles.markerBadgeMarket}>
+                          <Text style={styles.markerBadgeMarketText}>Market: ₹{marketPrice || 0}</Text>
+                        </View>
                       </View>
                     </View>
                   </>
@@ -826,65 +835,88 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   sliderContainer: {
-    height: 48,
+    height: 76,
     justifyContent: "center",
     position: "relative",
     marginTop: 8,
   },
   sliderTrack: {
-    height: 10,
+    height: 8,
     backgroundColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: 5,
+    borderRadius: 4,
     width: "100%",
   },
   sliderFill: {
-    height: 10,
-    backgroundColor: "rgba(0, 210, 255, 0.3)",
-    borderRadius: 5,
+    height: 8,
+    backgroundColor: "rgba(0, 210, 255, 0.35)",
+    borderRadius: 4,
     position: "absolute",
   },
-  sliderMarker: {
+  sliderMarkerTop: {
     position: "absolute",
     alignItems: "center",
-    top: 12, // centers vertically: (height 48 - dot 24) / 2 = 12
+    top: 2,
+    zIndex: 2,
+  },
+  sliderMarkerBottom: {
+    position: "absolute",
+    alignItems: "center",
+    bottom: 2,
+    zIndex: 1,
+  },
+  markerBadgeOwner: {
+    backgroundColor: "rgba(0, 210, 255, 0.18)",
+    borderColor: "#00D2FF",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 4,
+  },
+  markerBadgeOwnerText: {
+    color: "#00D2FF",
+    fontSize: 9,
+    fontWeight: "800",
   },
   markerDotOwner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: "#00D2FF",
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: "#120E2E",
     shadowColor: "#00D2FF",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  markerLabelOwner: {
-    color: "#00D2FF",
-    fontSize: 10,
-    fontWeight: "800",
+  markerBadgeMarket: {
+    backgroundColor: "rgba(255, 145, 0, 0.18)",
+    borderColor: "#FF9100",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     marginTop: 4,
   },
+  markerBadgeMarketText: {
+    color: "#FF9100",
+    fontSize: 9,
+    fontWeight: "800",
+  },
   markerDotMarket: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: "#FF9100",
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: "#120E2E",
     shadowColor: "#FF9100",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  markerLabelMarket: {
-    color: "#FF9100",
-    fontSize: 10,
-    fontWeight: "800",
-    marginTop: 4,
+    shadowRadius: 3,
+    elevation: 3,
   },
   chartContainer: {
     flexDirection: "row",

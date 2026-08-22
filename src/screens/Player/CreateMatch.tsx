@@ -29,59 +29,7 @@ import SizedBox from "../../Components/atoms/SizeBox";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Seeded users from Dump20260730.sql (IDs 1-50) for easy picker lookup
-const SEED_PLAYERS = [
-  { id: 1, name: "Rajesh Kumar", mobile: "9876543210" },
-  { id: 2, name: "Priya Sharma", mobile: "9876543211" },
-  { id: 3, name: "Amit Patel", mobile: "9876543212" },
-  { id: 4, name: "Sneha Reddy", mobile: "9876543213" },
-  { id: 5, name: "Vikram Singh", mobile: "9876543214" },
-  { id: 6, name: "Ananya Gupta", mobile: "9876543215" },
-  { id: 7, name: "Suresh Nair", mobile: "9876543216" },
-  { id: 8, name: "Kavya Menon", mobile: "9876543217" },
-  { id: 9, name: "Arjun Rao", mobile: "9876543218" },
-  { id: 10, name: "Meera Iyer", mobile: "9876543219" },
-  { id: 11, name: "Karan Joshi", mobile: "9876543220" },
-  { id: 12, name: "Divya Patel", mobile: "9876543221" },
-  { id: 13, name: "Ravi Sharma", mobile: "9876543222" },
-  { id: 14, name: "Neha Singh", mobile: "9876543223" },
-  { id: 15, name: "Deepak Kumar", mobile: "9876543224" },
-  { id: 16, name: "Pooja Verma", mobile: "9876543225" },
-  { id: 17, name: "Manoj Gupta", mobile: "9876543226" },
-  { id: 18, name: "Shreya Malhotra", mobile: "9876543227" },
-  { id: 19, name: "Rahul Sinha", mobile: "9876543228" },
-  { id: 20, name: "Anjali Nair", mobile: "9876543229" },
-  { id: 21, name: "Vivek Reddy", mobile: "9876543230" },
-  { id: 22, name: "Nandini Rao", mobile: "9876543231" },
-  { id: 23, name: "Sanjay Sharma", mobile: "9876543232" },
-  { id: 24, name: "Kriti Agarwal", mobile: "9876543233" },
-  { id: 25, name: "Ajay Singh", mobile: "9876543234" },
-  { id: 26, name: "Sunita Mehta", mobile: "9876543235" },
-  { id: 27, name: "Prakash Raj", mobile: "9876543236" },
-  { id: 28, name: "Jyoti Sharma", mobile: "9876543237" },
-  { id: 29, name: "Vinod Kumar", mobile: "9876543238" },
-  { id: 30, name: "Lata Singh", mobile: "9876543239" },
-  { id: 31, name: "Gopal Reddy", mobile: "9876543240" },
-  { id: 32, name: "Maya Patel", mobile: "9876543241" },
-  { id: 33, name: "Rakesh Kumar", mobile: "9876543242" },
-  { id: 34, name: "Sita Raman", mobile: "9876543243" },
-  { id: 35, name: "Mahesh Babu", mobile: "9876543244" },
-  { id: 36, name: "Padma Nair", mobile: "9876543245" },
-  { id: 37, name: "John Doe", mobile: "9876543246" },
-  { id: 38, name: "Jane Smith", mobile: "9876543247" },
-  { id: 39, name: "Michael Johnson", mobile: "9876543248" },
-  { id: 40, name: "Sarah Wilson", mobile: "9876543249" },
-  { id: 41, name: "David Brown", mobile: "9876543250" },
-  { id: 42, name: "Emily Davis", mobile: "9876543251" },
-  { id: 43, name: "James Wilson", mobile: "9876543252" },
-  { id: 44, name: "Lisa Anderson", mobile: "9876543253" },
-  { id: 45, name: "Robert Taylor", mobile: "9876543254" },
-  { id: 46, name: "Maria Garcia", mobile: "9876543255" },
-  { id: 47, name: "Thomas Martinez", mobile: "9876543256" },
-  { id: 48, name: "Linda Robinson", mobile: "9876543257" },
-  { id: 49, name: "Daniel Clark", mobile: "9876543258" },
-  { id: 50, name: "Barbara Lewis", mobile: "9876543259" },
-];
+import { SEED_PLAYERS } from "../../utils/seedPlayers";
 
 const CreateMatchScreen = () => {
   const navigation = useNavigation<any>();
@@ -199,15 +147,15 @@ const CreateMatchScreen = () => {
       }
     }
 
-    // Collect IDs
-    const homePlayerIds = [homePlayer1.id.toString()];
+    // Collect IDs as numbers
+    const homePlayerIds = [Number(homePlayer1.id)];
     if (matchType === "DOUBLES" && homePlayer2) {
-      homePlayerIds.push(homePlayer2.id.toString());
+      homePlayerIds.push(Number(homePlayer2.id));
     }
 
-    const awayPlayerIds = [awayPlayer1.id.toString()];
+    const awayPlayerIds = [Number(awayPlayer1.id)];
     if (matchType === "DOUBLES" && awayPlayer2) {
-      awayPlayerIds.push(awayPlayer2.id.toString());
+      awayPlayerIds.push(Number(awayPlayer2.id));
     }
 
     // Check for duplicates
@@ -242,8 +190,8 @@ const CreateMatchScreen = () => {
     const bodyPayload = {
       sportId: 5, // Pickleball
       matchType,
-      homePlayerIds,
-      awayPlayerIds,
+      homePlayerIds: homePlayerIds.map(String),
+      awayPlayerIds: awayPlayerIds.map(String),
       groundId: selectedGround?.id || null,
       scheduledAt: `${scheduledDate}T${scheduledTime}:00Z`,
       pointsPerGame: points,

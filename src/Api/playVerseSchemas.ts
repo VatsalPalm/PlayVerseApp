@@ -222,6 +222,54 @@ export type ConfirmOtpDto = {
    * @example 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
    */
   token: string;
+  /**
+   * FCM token of the device
+   *
+   * @example fcm_token_001
+   */
+  fcm_token?: string;
+  /**
+   * Device os type
+   *
+   * @example ANDROID
+   */
+  os?: string;
+  /**
+   * Device brand name
+   *
+   * @example Samsung A50
+   */
+  brand?: string;
+  /**
+   * Device model number
+   *
+   * @example SM-A12E
+   */
+  model_no?: string;
+  /**
+   * Device serial number
+   *
+   * @example SA4545as45a4
+   */
+  serial_number?: string;
+  /**
+   * version number
+   *
+   * @example 1.0
+   */
+  version_number?: string;
+  /**
+   * Latitude coordinate
+   *
+   * @example 23.0225
+   */
+  latitude?: number;
+  /**
+   * Longitude coordinate
+   *
+   * @example 72.5714
+   */
+  longitude?: number;
 };
 
 export type ChangePasswordDto = {
@@ -254,7 +302,7 @@ export type RefreshTokenDto = {
   refreshToken: string;
 };
 
-export type UpdateUserProfileDto = {
+export type PatchUserProfileDto = {
   /**
    * Display name of user
    *
@@ -266,48 +314,142 @@ export type UpdateUserProfileDto = {
    */
   profile_image?: ProfileImageDto;
   /**
-   * Date of birth (YYYY-MM-DD)
-   *
-   * @example 1995-05-15
-   */
-  dob?: string;
-  /**
-   * Gender
-   *
-   * @example MALE
-   */
-  gender?: "MALE" | "FEMALE" | "OTHER";
-  /**
-   * City
-   *
-   * @example Mumbai
-   */
-  city?: string;
-  /**
-   * Bio
-   *
-   * @example Sports enthusiast
-   */
-  bio?: string;
-  /**
-   * Preferred language
-   *
-   * @example English
-   */
-  preferred_language?: string;
-  /**
-   * Dominant hand
-   *
-   * @example RIGHT
-   */
-  dominant_hand?: "LEFT" | "RIGHT";
-  /**
    * List of sport IDs
    *
    * @example 1
    * @example 2
    */
   sports?: string[];
+};
+
+export type FindGameRequestDto = {
+  /**
+   * Natural language query representing player's intent
+   *
+   * @example I want to play badminton today around 7 PM. I'm intermediate and need one player.
+   */
+  prompt: string;
+};
+
+export type SendGameInviteDto = {
+  /**
+   * The ID of the match the user wants to join
+   *
+   * @example 38
+   */
+  matchId: number;
+  /**
+   * The ID of the ground slot
+   *
+   * @example 1001
+   */
+  slotId: number;
+};
+
+export type CreateBookingDto = {
+  /**
+   * Ground ID to book
+   *
+   * @example 1
+   */
+  groundId: number;
+  /**
+   * Slot ID to book
+   *
+   * @example 5
+   */
+  slotId: number;
+  /**
+   * Booking date (YYYY-MM-DD)
+   *
+   * @example 2026-08-20
+   */
+  bookingDate: string;
+  /**
+   * Sport ID (if ground supports multiple)
+   *
+   * @example 1
+   */
+  sportId?: number;
+  /**
+   * Optional notes for the booking
+   */
+  notes?: string;
+};
+
+export type CreateMatchDto = {
+  /**
+   * The ID of the sport
+   *
+   * @example 1
+   */
+  sportId: number;
+  /**
+   * Tournament ID, if applicable
+   *
+   * @example null
+   */
+  tournamentId?: number;
+  /**
+   * Ground ID, if applicable
+   *
+   * @example null
+   */
+  groundId?: number;
+  /**
+   * Home Team ID, if already created
+   *
+   * @example null
+   */
+  homeTeamId?: number;
+  /**
+   * Away Team ID, if already created
+   *
+   * @example null
+   */
+  awayTeamId?: number;
+  /**
+   * List of Home Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 1
+   */
+  homePlayerIds: string[];
+  /**
+   * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
+   *
+   * @example 2
+   */
+  awayPlayerIds: string[];
+  /**
+   * Match type: SINGLES or DOUBLES
+   *
+   * @example SINGLES
+   */
+  matchType: string;
+  /**
+   * Scheduled time
+   *
+   * @example 2026-08-25T18:00:00Z
+   */
+  scheduledAt?: string;
+  /**
+   * Points required to win a game (default 11)
+   *
+   * @example 11
+   */
+  pointsPerGame?: number;
+  /**
+   * Whether team must win by 2 points (default true)
+   *
+   * @example true
+   */
+  winByTwo?: boolean;
+  /**
+   * Number of games/periods needed to win the match (default 2)
+   *
+   * @example 2
+   */
+  gamesToWin?: number;
 };
 
 export type GroundSlotDto = {
@@ -495,37 +637,6 @@ export type GroundImageDto = {
   url: string;
 };
 
-export type CreateBookingDto = {
-  /**
-   * Ground ID to book
-   *
-   * @example 1
-   */
-  groundId: number;
-  /**
-   * Slot ID to book
-   *
-   * @example 5
-   */
-  slotId: number;
-  /**
-   * Booking date (YYYY-MM-DD)
-   *
-   * @example 2026-08-20
-   */
-  bookingDate: string;
-  /**
-   * Sport ID (if ground supports multiple)
-   *
-   * @example 1
-   */
-  sportId?: number;
-  /**
-   * Optional notes for the booking
-   */
-  notes?: string;
-};
-
 export type CreateTeamDto = {
   /**
    * @example 1
@@ -575,81 +686,6 @@ export type ChallengeDto = {
   scheduledAt: string;
 };
 
-export type CreateMatchDto = {
-  /**
-   * The ID of the sport
-   *
-   * @example 1
-   */
-  sportId: number;
-  /**
-   * Tournament ID, if applicable
-   *
-   * @example null
-   */
-  tournamentId?: number;
-  /**
-   * Ground ID, if applicable
-   *
-   * @example null
-   */
-  groundId?: number;
-  /**
-   * Home Team ID, if already created
-   *
-   * @example null
-   */
-  homeTeamId?: number;
-  /**
-   * Away Team ID, if already created
-   *
-   * @example null
-   */
-  awayTeamId?: number;
-  /**
-   * List of Home Team Player User IDs (1 for Singles, 2 for Doubles)
-   *
-   * @example 1
-   */
-  homePlayerIds: string[];
-  /**
-   * List of Away Team Player User IDs (1 for Singles, 2 for Doubles)
-   *
-   * @example 2
-   */
-  awayPlayerIds: string[];
-  /**
-   * Match type: SINGLES or DOUBLES
-   *
-   * @example SINGLES
-   */
-  matchType: string;
-  /**
-   * Scheduled time
-   *
-   * @example 2026-08-25T18:00:00Z
-   */
-  scheduledAt?: string;
-  /**
-   * Points required to win a game (default 11)
-   *
-   * @example 11
-   */
-  pointsPerGame?: number;
-  /**
-   * Whether team must win by 2 points (default true)
-   *
-   * @example true
-   */
-  winByTwo?: boolean;
-  /**
-   * Number of games/periods needed to win the match (default 2)
-   *
-   * @example 2
-   */
-  gamesToWin?: number;
-};
-
 export type CreateTournamentDto = {
   /**
    * ID of the sport (e.g. 5 for Pickleball)
@@ -657,6 +693,12 @@ export type CreateTournamentDto = {
    * @example 5
    */
   sportId: number;
+  /**
+   * ID of the ground where tournament is held
+   *
+   * @example 1
+   */
+  ground_id?: number;
   /**
    * Name of the tournament
    *

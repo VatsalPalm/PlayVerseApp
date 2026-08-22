@@ -267,23 +267,23 @@
           }
         ]
       },
-      "put": {
-        "operationId": "UserController_updateProfile",
-        "summary": "Update current user profile",
+      "patch": {
+        "operationId": "UserController_patchProfile",
+        "summary": "Update only user name and image",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateUserProfileDto"
+                "$ref": "#/components/schemas/PatchUserProfileDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Profile updated successfully"
+            "description": "Profile name/image updated successfully"
           },
           "400": {
             "description": "Validation error"
@@ -460,6 +460,750 @@
           }
         },
         "tags": ["AI"]
+      }
+    },
+    "/api/ai/v1/find-game": {
+      "post": {
+        "operationId": "AiController_findGame",
+        "summary": "Find candidate playing combinations based on preferences or prompt",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindGameRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["AI"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/ai/v1/find-game/invite": {
+      "post": {
+        "operationId": "AiController_invitePlayer",
+        "summary": "Invite a player candidate for a specific ground slot",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendGameInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["AI"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/ai/v1/find-game/invitations": {
+      "get": {
+        "operationId": "AiController_getInvitations",
+        "summary": "Get list of game/match invitations",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Type of invitations: incoming or outgoing. Default: incoming",
+            "schema": {
+              "enum": ["incoming", "outgoing"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["AI"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/ai/v1/find-game/invitations/{id}/accept": {
+      "post": {
+        "operationId": "AiController_acceptInvitation",
+        "summary": "Accept a game invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the invitation",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["AI"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/ai/v1/find-game/invitations/{id}/decline": {
+      "post": {
+        "operationId": "AiController_declineInvitation",
+        "summary": "Decline a game invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the invitation",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["AI"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1": {
+      "post": {
+        "operationId": "BookingController_createBooking",
+        "summary": "Player creates a ground slot booking",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/my": {
+      "get": {
+        "operationId": "BookingController_getMyBookings",
+        "summary": "Get logged-in player's bookings",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "example": 1,
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "example": 20,
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter by date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Filter from date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Filter to date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/owner": {
+      "get": {
+        "operationId": "BookingController_getOwnerAllBookings",
+        "summary": "Owner: Get all bookings across all owned grounds",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "example": 1,
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "example": 20,
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter by date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Filter from date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Filter to date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/ground/{groundId}": {
+      "get": {
+        "operationId": "BookingController_getGroundBookings",
+        "summary": "Owner: Get bookings for a specific ground",
+        "parameters": [
+          {
+            "name": "groundId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "example": 1,
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "example": 20,
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter by date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Filter from date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "Filter to date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/{id}/confirm": {
+      "put": {
+        "operationId": "BookingController_confirmBooking",
+        "summary": "Owner confirms a pending booking",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/{id}/cancel": {
+      "put": {
+        "operationId": "BookingController_cancelBooking",
+        "summary": "Player or Owner cancels a booking",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/bookings/v1/ai-assistant": {
+      "post": {
+        "operationId": "BookingController_aiAssistant",
+        "summary": "Conversational AI Booking Assistant",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Bookings"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/create": {
+      "post": {
+        "operationId": "MatchController_createMatch",
+        "summary": "Create/Schedule a sport match (Singles or Doubles) with team resolution",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1": {
+      "get": {
+        "operationId": "MatchController_getAllMatches",
+        "summary": "Get all matches with pagination and search",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "example": "1",
+            "description": "Page number",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "example": "10",
+            "description": "Records per page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by team name or sport",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status (SCHEDULED, LIVE, COMPLETED)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sportId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by sport ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sport_id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by sport ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/{matchId}/start": {
+      "post": {
+        "operationId": "MatchController_startMatch",
+        "summary": "Start a scheduled match (makes it LIVE)",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "description": "The ID of the match to start",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/history": {
+      "get": {
+        "operationId": "MatchController_getMatchHistory",
+        "summary": "Get match history with filters",
+        "parameters": [
+          {
+            "name": "playerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by Player ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by Team ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status (SCHEDULED, LIVE, COMPLETED)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Pagination limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"]
+      }
+    },
+    "/api/match/v1/{matchId}": {
+      "get": {
+        "operationId": "MatchController_getMatchDetail",
+        "summary": "Get complete match details including periods and events",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"]
+      },
+      "delete": {
+        "operationId": "MatchController_deleteMatch",
+        "summary": "Delete a scheduled match",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/match/v1/{matchId}/requests": {
+      "get": {
+        "operationId": "MatchController_getMatchRequests",
+        "summary": "Get all pending join requests for a match",
+        "parameters": [
+          {
+            "name": "matchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Match Management (Phase 3)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/grounds/v1": {
@@ -1346,345 +2090,6 @@
         "tags": ["Master"]
       }
     },
-    "/api/bookings/v1": {
-      "post": {
-        "operationId": "BookingController_createBooking",
-        "summary": "Player creates a ground slot booking",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateBookingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/my": {
-      "get": {
-        "operationId": "BookingController_getMyBookings",
-        "summary": "Get logged-in player's bookings",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Page number",
-            "example": 1,
-            "schema": {
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Items per page",
-            "example": 20,
-            "schema": {
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "description": "Filter by date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "required": false,
-            "in": "query",
-            "description": "Filter from date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateTo",
-            "required": false,
-            "in": "query",
-            "description": "Filter to date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/owner": {
-      "get": {
-        "operationId": "BookingController_getOwnerAllBookings",
-        "summary": "Owner: Get all bookings across all owned grounds",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Page number",
-            "example": 1,
-            "schema": {
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Items per page",
-            "example": 20,
-            "schema": {
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "description": "Filter by date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "required": false,
-            "in": "query",
-            "description": "Filter from date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateTo",
-            "required": false,
-            "in": "query",
-            "description": "Filter to date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/ground/{groundId}": {
-      "get": {
-        "operationId": "BookingController_getGroundBookings",
-        "summary": "Owner: Get bookings for a specific ground",
-        "parameters": [
-          {
-            "name": "groundId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "description": "Page number",
-            "example": 1,
-            "schema": {
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Items per page",
-            "example": 20,
-            "schema": {
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status: PENDING | CONFIRMED | CANCELLED",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "description": "Filter by date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "required": false,
-            "in": "query",
-            "description": "Filter from date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateTo",
-            "required": false,
-            "in": "query",
-            "description": "Filter to date (YYYY-MM-DD)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/{id}/confirm": {
-      "put": {
-        "operationId": "BookingController_confirmBooking",
-        "summary": "Owner confirms a pending booking",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/{id}/cancel": {
-      "put": {
-        "operationId": "BookingController_cancelBooking",
-        "summary": "Player or Owner cancels a booking",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/bookings/v1/ai-assistant": {
-      "post": {
-        "operationId": "BookingController_aiAssistant",
-        "summary": "Conversational AI Booking Assistant",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["Bookings"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/api/player-profile/v1/{playerId}/statistics": {
       "get": {
         "operationId": "PlayerProfileController_getStatistics",
@@ -2056,6 +2461,24 @@
             "description": "Search by team name or short name",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sportId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by sport ID",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sport_id",
+            "required": false,
+            "in": "query",
+            "description": "Filter by sport ID",
+            "schema": {
+              "type": "number"
             }
           }
         ],
@@ -2465,225 +2888,6 @@
           }
         },
         "tags": ["Community (Phase 8)"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/match/v1/create": {
-      "post": {
-        "operationId": "MatchController_createMatch",
-        "summary": "Create/Schedule a sport match (Singles or Doubles) with team resolution",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMatchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/match/v1": {
-      "get": {
-        "operationId": "MatchController_getAllMatches",
-        "summary": "Get all matches with pagination and search",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "example": "1",
-            "description": "Page number",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "example": "10",
-            "description": "Records per page",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "description": "Search by team name or sport",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status (SCHEDULED, LIVE, COMPLETED)",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/match/v1/{matchId}/start": {
-      "post": {
-        "operationId": "MatchController_startMatch",
-        "summary": "Start a scheduled match (makes it LIVE)",
-        "parameters": [
-          {
-            "name": "matchId",
-            "required": true,
-            "in": "path",
-            "description": "The ID of the match to start",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
-    "/api/match/v1/history": {
-      "get": {
-        "operationId": "MatchController_getMatchHistory",
-        "summary": "Get match history with filters",
-        "parameters": [
-          {
-            "name": "playerId",
-            "required": false,
-            "in": "query",
-            "description": "Filter by Player ID",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "teamId",
-            "required": false,
-            "in": "query",
-            "description": "Filter by Team ID",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Filter by status (SCHEDULED, LIVE, COMPLETED)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Pagination limit",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "description": "Pagination offset",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"]
-      }
-    },
-    "/api/match/v1/{matchId}": {
-      "get": {
-        "operationId": "MatchController_getMatchDetail",
-        "summary": "Get complete match details including periods and events",
-        "parameters": [
-          {
-            "name": "matchId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"]
-      },
-      "delete": {
-        "operationId": "MatchController_deleteMatch",
-        "summary": "Delete a scheduled match",
-        "parameters": [
-          {
-            "name": "matchId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["Match Management (Phase 3)"],
         "security": [
           {
             "bearer": []
@@ -3487,6 +3691,46 @@
           "token": {
             "type": "string",
             "example": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+          },
+          "fcm_token": {
+            "type": "string",
+            "example": "fcm_token_001",
+            "description": "FCM token of the device"
+          },
+          "os": {
+            "type": "string",
+            "example": "ANDROID",
+            "description": "Device os type"
+          },
+          "brand": {
+            "type": "string",
+            "example": "Samsung A50",
+            "description": "Device brand name"
+          },
+          "model_no": {
+            "type": "string",
+            "example": "SM-A12E",
+            "description": "Device model number"
+          },
+          "serial_number": {
+            "type": "string",
+            "example": "SA4545as45a4",
+            "description": "Device serial number"
+          },
+          "version_number": {
+            "type": "string",
+            "example": "1.0",
+            "description": "version number"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Latitude coordinate",
+            "example": 23.0225
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude coordinate",
+            "example": 72.5714
           }
         },
         "required": ["mobile_number", "country_code", "otp", "token"]
@@ -3530,7 +3774,7 @@
         },
         "required": ["refreshToken"]
       },
-      "UpdateUserProfileDto": {
+      "PatchUserProfileDto": {
         "type": "object",
         "properties": {
           "display_name": {
@@ -3546,38 +3790,6 @@
               }
             ]
           },
-          "dob": {
-            "type": "string",
-            "example": "1995-05-15",
-            "description": "Date of birth (YYYY-MM-DD)"
-          },
-          "gender": {
-            "type": "string",
-            "example": "MALE",
-            "enum": ["MALE", "FEMALE", "OTHER"],
-            "description": "Gender"
-          },
-          "city": {
-            "type": "string",
-            "example": "Mumbai",
-            "description": "City"
-          },
-          "bio": {
-            "type": "string",
-            "example": "Sports enthusiast",
-            "description": "Bio"
-          },
-          "preferred_language": {
-            "type": "string",
-            "example": "English",
-            "description": "Preferred language"
-          },
-          "dominant_hand": {
-            "type": "string",
-            "example": "RIGHT",
-            "enum": ["LEFT", "RIGHT"],
-            "description": "Dominant hand"
-          },
           "sports": {
             "example": [1, 2],
             "description": "List of sport IDs",
@@ -3587,6 +3799,135 @@
             }
           }
         }
+      },
+      "FindGameRequestDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Natural language query representing player's intent",
+            "example": "I want to play badminton today around 7 PM. I'm intermediate and need one player."
+          }
+        },
+        "required": ["prompt"]
+      },
+      "SendGameInviteDto": {
+        "type": "object",
+        "properties": {
+          "matchId": {
+            "type": "number",
+            "description": "The ID of the match the user wants to join",
+            "example": 38
+          },
+          "slotId": {
+            "type": "number",
+            "description": "The ID of the ground slot",
+            "example": 1001
+          }
+        },
+        "required": ["matchId", "slotId"]
+      },
+      "CreateBookingDto": {
+        "type": "object",
+        "properties": {
+          "groundId": {
+            "type": "number",
+            "description": "Ground ID to book",
+            "example": 1
+          },
+          "slotId": {
+            "type": "number",
+            "description": "Slot ID to book",
+            "example": 5
+          },
+          "bookingDate": {
+            "type": "string",
+            "description": "Booking date (YYYY-MM-DD)",
+            "example": "2026-08-20"
+          },
+          "sportId": {
+            "type": "number",
+            "description": "Sport ID (if ground supports multiple)",
+            "example": 1
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes for the booking"
+          }
+        },
+        "required": ["groundId", "slotId", "bookingDate"]
+      },
+      "CreateMatchDto": {
+        "type": "object",
+        "properties": {
+          "sportId": {
+            "type": "number",
+            "example": 1,
+            "description": "The ID of the sport"
+          },
+          "tournamentId": {
+            "type": "number",
+            "example": null,
+            "description": "Tournament ID, if applicable"
+          },
+          "groundId": {
+            "type": "number",
+            "example": null,
+            "description": "Ground ID, if applicable"
+          },
+          "homeTeamId": {
+            "type": "number",
+            "example": null,
+            "description": "Home Team ID, if already created"
+          },
+          "awayTeamId": {
+            "type": "number",
+            "example": null,
+            "description": "Away Team ID, if already created"
+          },
+          "homePlayerIds": {
+            "example": [1],
+            "description": "List of Home Team Player User IDs (1 for Singles, 2 for Doubles)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "awayPlayerIds": {
+            "example": [2],
+            "description": "List of Away Team Player User IDs (1 for Singles, 2 for Doubles)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "matchType": {
+            "type": "string",
+            "example": "SINGLES",
+            "description": "Match type: SINGLES or DOUBLES"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "example": "2026-08-25T18:00:00Z",
+            "description": "Scheduled time"
+          },
+          "pointsPerGame": {
+            "type": "number",
+            "example": 11,
+            "description": "Points required to win a game (default 11)"
+          },
+          "winByTwo": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether team must win by 2 points (default true)"
+          },
+          "gamesToWin": {
+            "type": "number",
+            "example": 2,
+            "description": "Number of games/periods needed to win the match (default 2)"
+          }
+        },
+        "required": ["sportId", "homePlayerIds", "awayPlayerIds", "matchType"]
       },
       "GroundSlotDto": {
         "type": "object",
@@ -3787,36 +4128,6 @@
         },
         "required": ["filename", "url"]
       },
-      "CreateBookingDto": {
-        "type": "object",
-        "properties": {
-          "groundId": {
-            "type": "number",
-            "description": "Ground ID to book",
-            "example": 1
-          },
-          "slotId": {
-            "type": "number",
-            "description": "Slot ID to book",
-            "example": 5
-          },
-          "bookingDate": {
-            "type": "string",
-            "description": "Booking date (YYYY-MM-DD)",
-            "example": "2026-08-20"
-          },
-          "sportId": {
-            "type": "number",
-            "description": "Sport ID (if ground supports multiple)",
-            "example": 1
-          },
-          "notes": {
-            "type": "string",
-            "description": "Optional notes for the booking"
-          }
-        },
-        "required": ["groundId", "slotId", "bookingDate"]
-      },
       "CreateTeamDto": {
         "type": "object",
         "properties": {
@@ -3875,78 +4186,6 @@
         },
         "required": ["opponentTeamId", "sportId", "scheduledAt"]
       },
-      "CreateMatchDto": {
-        "type": "object",
-        "properties": {
-          "sportId": {
-            "type": "number",
-            "example": 1,
-            "description": "The ID of the sport"
-          },
-          "tournamentId": {
-            "type": "number",
-            "example": null,
-            "description": "Tournament ID, if applicable"
-          },
-          "groundId": {
-            "type": "number",
-            "example": null,
-            "description": "Ground ID, if applicable"
-          },
-          "homeTeamId": {
-            "type": "number",
-            "example": null,
-            "description": "Home Team ID, if already created"
-          },
-          "awayTeamId": {
-            "type": "number",
-            "example": null,
-            "description": "Away Team ID, if already created"
-          },
-          "homePlayerIds": {
-            "example": [1],
-            "description": "List of Home Team Player User IDs (1 for Singles, 2 for Doubles)",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "awayPlayerIds": {
-            "example": [2],
-            "description": "List of Away Team Player User IDs (1 for Singles, 2 for Doubles)",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "matchType": {
-            "type": "string",
-            "example": "SINGLES",
-            "description": "Match type: SINGLES or DOUBLES"
-          },
-          "scheduledAt": {
-            "type": "string",
-            "example": "2026-08-25T18:00:00Z",
-            "description": "Scheduled time"
-          },
-          "pointsPerGame": {
-            "type": "number",
-            "example": 11,
-            "description": "Points required to win a game (default 11)"
-          },
-          "winByTwo": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether team must win by 2 points (default true)"
-          },
-          "gamesToWin": {
-            "type": "number",
-            "example": 2,
-            "description": "Number of games/periods needed to win the match (default 2)"
-          }
-        },
-        "required": ["sportId", "homePlayerIds", "awayPlayerIds", "matchType"]
-      },
       "CreateTournamentDto": {
         "type": "object",
         "properties": {
@@ -3954,6 +4193,11 @@
             "type": "number",
             "example": 5,
             "description": "ID of the sport (e.g. 5 for Pickleball)"
+          },
+          "ground_id": {
+            "type": "number",
+            "example": 1,
+            "description": "ID of the ground where tournament is held"
           },
           "name": {
             "type": "string",

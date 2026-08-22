@@ -538,31 +538,31 @@ export const useUserControllerGetProfile = <TData = undefined,>(
   });
 };
 
-export type UserControllerUpdateProfileError = Fetcher.ErrorWrapper<undefined>;
+export type UserControllerPatchProfileError = Fetcher.ErrorWrapper<undefined>;
 
-export type UserControllerUpdateProfileVariables = {
-  body?: Schemas.UpdateUserProfileDto;
+export type UserControllerPatchProfileVariables = {
+  body?: Schemas.PatchUserProfileDto;
 } & PlayVerseContext["fetcherOptions"];
 
-export const fetchUserControllerUpdateProfile = (
-  variables: UserControllerUpdateProfileVariables,
+export const fetchUserControllerPatchProfile = (
+  variables: UserControllerPatchProfileVariables,
   signal?: AbortSignal,
 ) =>
   playVerseFetch<
     undefined,
-    UserControllerUpdateProfileError,
-    Schemas.UpdateUserProfileDto,
+    UserControllerPatchProfileError,
+    Schemas.PatchUserProfileDto,
     {},
     {},
     {}
   >({ url: "/api/users/v1/profile", method: "patch", ...variables, signal });
 
-export const useUserControllerUpdateProfile = (
+export const useUserControllerPatchProfile = (
   options?: Omit<
     reactQuery.UseMutationOptions<
       undefined,
-      UserControllerUpdateProfileError,
-      UserControllerUpdateProfileVariables
+      UserControllerPatchProfileError,
+      UserControllerPatchProfileVariables
     >,
     "mutationFn"
   >,
@@ -570,11 +570,11 @@ export const useUserControllerUpdateProfile = (
   const { fetcherOptions } = usePlayVerseContext();
   return reactQuery.useMutation<
     undefined,
-    UserControllerUpdateProfileError,
-    UserControllerUpdateProfileVariables
+    UserControllerPatchProfileError,
+    UserControllerPatchProfileVariables
   >({
-    mutationFn: (variables: UserControllerUpdateProfileVariables) =>
-      fetchUserControllerUpdateProfile(deepMerge(fetcherOptions, variables)),
+    mutationFn: (variables: UserControllerPatchProfileVariables) =>
+      fetchUserControllerPatchProfile(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
@@ -998,6 +998,1548 @@ export const useAiControllerGetPlayerStats = <TData = undefined,>(
       ...queryOptions,
     },
   );
+};
+
+export type AiControllerFindGameError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerFindGameVariables = {
+  body: Schemas.FindGameRequestDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerFindGame = (
+  variables: AiControllerFindGameVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerFindGameError,
+    Schemas.FindGameRequestDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/ai/v1/find-game", method: "post", ...variables, signal });
+
+export const useAiControllerFindGame = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AiControllerFindGameError,
+      AiControllerFindGameVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    AiControllerFindGameError,
+    AiControllerFindGameVariables
+  >({
+    mutationFn: (variables: AiControllerFindGameVariables) =>
+      fetchAiControllerFindGame(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type AiControllerInvitePlayerError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerInvitePlayerVariables = {
+  body: Schemas.SendGameInviteDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerInvitePlayer = (
+  variables: AiControllerInvitePlayerVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerInvitePlayerError,
+    Schemas.SendGameInviteDto,
+    {},
+    {},
+    {}
+  >({
+    url: "/api/ai/v1/find-game/invite",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useAiControllerInvitePlayer = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AiControllerInvitePlayerError,
+      AiControllerInvitePlayerVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    AiControllerInvitePlayerError,
+    AiControllerInvitePlayerVariables
+  >({
+    mutationFn: (variables: AiControllerInvitePlayerVariables) =>
+      fetchAiControllerInvitePlayer(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type AiControllerGetInvitationsQueryParams = {
+  /**
+   * Type of invitations: incoming or outgoing. Default: incoming
+   */
+  type?: "incoming" | "outgoing";
+};
+
+export type AiControllerGetInvitationsError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerGetInvitationsVariables = {
+  queryParams?: AiControllerGetInvitationsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerGetInvitations = (
+  variables: AiControllerGetInvitationsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerGetInvitationsError,
+    undefined,
+    {},
+    AiControllerGetInvitationsQueryParams,
+    {}
+  >({
+    url: "/api/ai/v1/find-game/invitations",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function aiControllerGetInvitationsQuery(
+  variables: AiControllerGetInvitationsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function aiControllerGetInvitationsQuery(
+  variables: AiControllerGetInvitationsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function aiControllerGetInvitationsQuery(
+  variables: AiControllerGetInvitationsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/ai/v1/find-game/invitations",
+      operationId: "aiControllerGetInvitations",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchAiControllerGetInvitations(variables, signal),
+  };
+}
+
+export const useSuspenseAiControllerGetInvitations = <TData = undefined,>(
+  variables: AiControllerGetInvitationsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetInvitationsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    AiControllerGetInvitationsError,
+    TData
+  >({
+    ...aiControllerGetInvitationsQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useAiControllerGetInvitations = <TData = undefined,>(
+  variables: AiControllerGetInvitationsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      AiControllerGetInvitationsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<undefined, AiControllerGetInvitationsError, TData>(
+    {
+      ...aiControllerGetInvitationsQuery(
+        variables === reactQuery.skipToken
+          ? variables
+          : deepMerge(fetcherOptions, variables),
+      ),
+      ...options,
+      ...queryOptions,
+    },
+  );
+};
+
+export type AiControllerAcceptInvitationPathParams = {
+  /**
+   * The ID of the invitation
+   */
+  id: number;
+};
+
+export type AiControllerAcceptInvitationError = Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerAcceptInvitationVariables = {
+  pathParams: AiControllerAcceptInvitationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerAcceptInvitation = (
+  variables: AiControllerAcceptInvitationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerAcceptInvitationError,
+    undefined,
+    {},
+    {},
+    AiControllerAcceptInvitationPathParams
+  >({
+    url: "/api/ai/v1/find-game/invitations/{id}/accept",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useAiControllerAcceptInvitation = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AiControllerAcceptInvitationError,
+      AiControllerAcceptInvitationVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    AiControllerAcceptInvitationError,
+    AiControllerAcceptInvitationVariables
+  >({
+    mutationFn: (variables: AiControllerAcceptInvitationVariables) =>
+      fetchAiControllerAcceptInvitation(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type AiControllerDeclineInvitationPathParams = {
+  /**
+   * The ID of the invitation
+   */
+  id: number;
+};
+
+export type AiControllerDeclineInvitationError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type AiControllerDeclineInvitationVariables = {
+  pathParams: AiControllerDeclineInvitationPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchAiControllerDeclineInvitation = (
+  variables: AiControllerDeclineInvitationVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    AiControllerDeclineInvitationError,
+    undefined,
+    {},
+    {},
+    AiControllerDeclineInvitationPathParams
+  >({
+    url: "/api/ai/v1/find-game/invitations/{id}/decline",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useAiControllerDeclineInvitation = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      AiControllerDeclineInvitationError,
+      AiControllerDeclineInvitationVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    AiControllerDeclineInvitationError,
+    AiControllerDeclineInvitationVariables
+  >({
+    mutationFn: (variables: AiControllerDeclineInvitationVariables) =>
+      fetchAiControllerDeclineInvitation(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type BookingControllerCreateBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerCreateBookingVariables = {
+  body: Schemas.CreateBookingDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerCreateBooking = (
+  variables: BookingControllerCreateBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerCreateBookingError,
+    Schemas.CreateBookingDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/bookings/v1", method: "post", ...variables, signal });
+
+export const useBookingControllerCreateBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerCreateBookingError,
+      BookingControllerCreateBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerCreateBookingError,
+    BookingControllerCreateBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerCreateBookingVariables) =>
+      fetchBookingControllerCreateBooking(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type BookingControllerGetMyBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetMyBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetMyBookingsVariables = {
+  queryParams?: BookingControllerGetMyBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetMyBookings = (
+  variables: BookingControllerGetMyBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    undefined,
+    {},
+    BookingControllerGetMyBookingsQueryParams,
+    {}
+  >({ url: "/api/bookings/v1/my", method: "get", ...variables, signal });
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetMyBookingsQuery(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/my",
+      operationId: "bookingControllerGetMyBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetMyBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetMyBookings = <TData = undefined,>(
+  variables: BookingControllerGetMyBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetMyBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    TData
+  >({
+    ...bookingControllerGetMyBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetMyBookings = <TData = undefined,>(
+  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetMyBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetMyBookingsError,
+    TData
+  >({
+    ...bookingControllerGetMyBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerGetOwnerAllBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetOwnerAllBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetOwnerAllBookingsVariables = {
+  queryParams?: BookingControllerGetOwnerAllBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetOwnerAllBookings = (
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    undefined,
+    {},
+    BookingControllerGetOwnerAllBookingsQueryParams,
+    {}
+  >({ url: "/api/bookings/v1/owner", method: "get", ...variables, signal });
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetOwnerAllBookingsQuery(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/owner",
+      operationId: "bookingControllerGetOwnerAllBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetOwnerAllBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetOwnerAllBookings = <
+  TData = undefined,
+>(
+  variables: BookingControllerGetOwnerAllBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetOwnerAllBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    TData
+  >({
+    ...bookingControllerGetOwnerAllBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetOwnerAllBookings = <TData = undefined,>(
+  variables:
+    | BookingControllerGetOwnerAllBookingsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetOwnerAllBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetOwnerAllBookingsError,
+    TData
+  >({
+    ...bookingControllerGetOwnerAllBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerGetGroundBookingsPathParams = {
+  groundId: number;
+};
+
+export type BookingControllerGetGroundBookingsQueryParams = {
+  /**
+   * Page number
+   *
+   * @default 1
+   */
+  page?: number;
+  /**
+   * Items per page
+   *
+   * @default 20
+   */
+  limit?: number;
+  /**
+   * Filter by status: PENDING | CONFIRMED | CANCELLED
+   */
+  status?: string;
+  /**
+   * Filter by date (YYYY-MM-DD)
+   */
+  date?: string;
+  /**
+   * Filter from date (YYYY-MM-DD)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (YYYY-MM-DD)
+   */
+  dateTo?: string;
+};
+
+export type BookingControllerGetGroundBookingsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerGetGroundBookingsVariables = {
+  pathParams: BookingControllerGetGroundBookingsPathParams;
+  queryParams?: BookingControllerGetGroundBookingsQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerGetGroundBookings = (
+  variables: BookingControllerGetGroundBookingsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    undefined,
+    {},
+    BookingControllerGetGroundBookingsQueryParams,
+    BookingControllerGetGroundBookingsPathParams
+  >({
+    url: "/api/bookings/v1/ground/{groundId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function bookingControllerGetGroundBookingsQuery(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/bookings/v1/ground/{groundId}",
+      operationId: "bookingControllerGetGroundBookings",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchBookingControllerGetGroundBookings(variables, signal),
+  };
+}
+
+export const useSuspenseBookingControllerGetGroundBookings = <
+  TData = undefined,
+>(
+  variables: BookingControllerGetGroundBookingsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetGroundBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    TData
+  >({
+    ...bookingControllerGetGroundBookingsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useBookingControllerGetGroundBookings = <TData = undefined,>(
+  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      BookingControllerGetGroundBookingsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    BookingControllerGetGroundBookingsError,
+    TData
+  >({
+    ...bookingControllerGetGroundBookingsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type BookingControllerConfirmBookingPathParams = {
+  id: number;
+};
+
+export type BookingControllerConfirmBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerConfirmBookingVariables = {
+  pathParams: BookingControllerConfirmBookingPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerConfirmBooking = (
+  variables: BookingControllerConfirmBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerConfirmBookingError,
+    undefined,
+    {},
+    {},
+    BookingControllerConfirmBookingPathParams
+  >({
+    url: "/api/bookings/v1/{id}/confirm",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerConfirmBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerConfirmBookingError,
+      BookingControllerConfirmBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerConfirmBookingError,
+    BookingControllerConfirmBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerConfirmBookingVariables) =>
+      fetchBookingControllerConfirmBooking(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type BookingControllerCancelBookingPathParams = {
+  id: number;
+};
+
+export type BookingControllerCancelBookingError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerCancelBookingVariables = {
+  pathParams: BookingControllerCancelBookingPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerCancelBooking = (
+  variables: BookingControllerCancelBookingVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerCancelBookingError,
+    undefined,
+    {},
+    {},
+    BookingControllerCancelBookingPathParams
+  >({
+    url: "/api/bookings/v1/{id}/cancel",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerCancelBooking = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerCancelBookingError,
+      BookingControllerCancelBookingVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerCancelBookingError,
+    BookingControllerCancelBookingVariables
+  >({
+    mutationFn: (variables: BookingControllerCancelBookingVariables) =>
+      fetchBookingControllerCancelBooking(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type BookingControllerAiAssistantError = Fetcher.ErrorWrapper<undefined>;
+
+export type BookingControllerAiAssistantVariables =
+  PlayVerseContext["fetcherOptions"];
+
+export const fetchBookingControllerAiAssistant = (
+  variables: BookingControllerAiAssistantVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    BookingControllerAiAssistantError,
+    undefined,
+    {},
+    {},
+    {}
+  >({
+    url: "/api/bookings/v1/ai-assistant",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useBookingControllerAiAssistant = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      BookingControllerAiAssistantError,
+      BookingControllerAiAssistantVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    BookingControllerAiAssistantError,
+    BookingControllerAiAssistantVariables
+  >({
+    mutationFn: (variables: BookingControllerAiAssistantVariables) =>
+      fetchBookingControllerAiAssistant(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerCreateMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerCreateMatchVariables = {
+  body: Schemas.CreateMatchDto;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerCreateMatch = (
+  variables: MatchControllerCreateMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerCreateMatchError,
+    Schemas.CreateMatchDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/match/v1/create", method: "post", ...variables, signal });
+
+export const useMatchControllerCreateMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerCreateMatchError,
+      MatchControllerCreateMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerCreateMatchError,
+    MatchControllerCreateMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerCreateMatchVariables) =>
+      fetchMatchControllerCreateMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerGetAllMatchesQueryParams = {
+  /**
+   * Page number
+   */
+  page?: string;
+  /**
+   * Records per page
+   */
+  limit?: string;
+  /**
+   * Search by team name or sport
+   */
+  search?: string;
+  /**
+   * Filter by status (SCHEDULED, LIVE, COMPLETED)
+   */
+  status?: string;
+  /**
+   * Filter by sport ID
+   */
+  sportId?: number;
+  /**
+   * Filter by sport ID
+   */
+  sport_id?: number;
+};
+
+export type MatchControllerGetAllMatchesError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetAllMatchesVariables = {
+  queryParams?: MatchControllerGetAllMatchesQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetAllMatches = (
+  variables: MatchControllerGetAllMatchesVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    undefined,
+    {},
+    MatchControllerGetAllMatchesQueryParams,
+    {}
+  >({ url: "/api/match/v1", method: "get", ...variables, signal });
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetAllMatchesQuery(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1",
+      operationId: "matchControllerGetAllMatches",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetAllMatches(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetAllMatches = <TData = undefined,>(
+  variables: MatchControllerGetAllMatchesVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetAllMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    TData
+  >({
+    ...matchControllerGetAllMatchesQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetAllMatches = <TData = undefined,>(
+  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetAllMatchesError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetAllMatchesError,
+    TData
+  >({
+    ...matchControllerGetAllMatchesQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type MatchControllerStartMatchPathParams = {
+  /**
+   * The ID of the match to start
+   */
+  matchId: number;
+};
+
+export type MatchControllerStartMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerStartMatchVariables = {
+  pathParams: MatchControllerStartMatchPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerStartMatch = (
+  variables: MatchControllerStartMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerStartMatchError,
+    undefined,
+    {},
+    {},
+    MatchControllerStartMatchPathParams
+  >({
+    url: "/api/match/v1/{matchId}/start",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useMatchControllerStartMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerStartMatchError,
+      MatchControllerStartMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerStartMatchError,
+    MatchControllerStartMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerStartMatchVariables) =>
+      fetchMatchControllerStartMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerGetMatchHistoryQueryParams = {
+  /**
+   * Filter by Player ID
+   */
+  playerId?: number;
+  /**
+   * Filter by Team ID
+   */
+  teamId?: number;
+  /**
+   * Filter by status (SCHEDULED, LIVE, COMPLETED)
+   */
+  status?: string;
+  /**
+   * Pagination limit
+   */
+  limit?: number;
+  /**
+   * Pagination offset
+   */
+  offset?: number;
+};
+
+export type MatchControllerGetMatchHistoryError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchHistoryVariables = {
+  queryParams?: MatchControllerGetMatchHistoryQueryParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchHistory = (
+  variables: MatchControllerGetMatchHistoryVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    undefined,
+    {},
+    MatchControllerGetMatchHistoryQueryParams,
+    {}
+  >({ url: "/api/match/v1/history", method: "get", ...variables, signal });
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchHistoryQuery(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/history",
+      operationId: "matchControllerGetMatchHistory",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchHistory(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchHistory = <TData = undefined,>(
+  variables: MatchControllerGetMatchHistoryVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    TData
+  >({
+    ...matchControllerGetMatchHistoryQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchHistory = <TData = undefined,>(
+  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchHistoryError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchHistoryError,
+    TData
+  >({
+    ...matchControllerGetMatchHistoryQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type MatchControllerGetMatchDetailPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerGetMatchDetailError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchDetailVariables = {
+  pathParams: MatchControllerGetMatchDetailPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchDetail = (
+  variables: MatchControllerGetMatchDetailVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    undefined,
+    {},
+    {},
+    MatchControllerGetMatchDetailPathParams
+  >({ url: "/api/match/v1/{matchId}", method: "get", ...variables, signal });
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchDetailQuery(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/{matchId}",
+      operationId: "matchControllerGetMatchDetail",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchDetail(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchDetail = <TData = undefined,>(
+  variables: MatchControllerGetMatchDetailVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchDetailError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    TData
+  >({
+    ...matchControllerGetMatchDetailQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchDetail = <TData = undefined,>(
+  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchDetailError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchDetailError,
+    TData
+  >({
+    ...matchControllerGetMatchDetailQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type MatchControllerDeleteMatchPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerDeleteMatchError = Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerDeleteMatchVariables = {
+  pathParams: MatchControllerDeleteMatchPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerDeleteMatch = (
+  variables: MatchControllerDeleteMatchVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerDeleteMatchError,
+    undefined,
+    {},
+    {},
+    MatchControllerDeleteMatchPathParams
+  >({ url: "/api/match/v1/{matchId}", method: "delete", ...variables, signal });
+
+export const useMatchControllerDeleteMatch = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      MatchControllerDeleteMatchError,
+      MatchControllerDeleteMatchVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    MatchControllerDeleteMatchError,
+    MatchControllerDeleteMatchVariables
+  >({
+    mutationFn: (variables: MatchControllerDeleteMatchVariables) =>
+      fetchMatchControllerDeleteMatch(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type MatchControllerGetMatchRequestsPathParams = {
+  matchId: number;
+};
+
+export type MatchControllerGetMatchRequestsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type MatchControllerGetMatchRequestsVariables = {
+  pathParams: MatchControllerGetMatchRequestsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchMatchControllerGetMatchRequests = (
+  variables: MatchControllerGetMatchRequestsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    undefined,
+    {},
+    {},
+    MatchControllerGetMatchRequestsPathParams
+  >({
+    url: "/api/match/v1/{matchId}/requests",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function matchControllerGetMatchRequestsQuery(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/match/v1/{matchId}/requests",
+      operationId: "matchControllerGetMatchRequests",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMatchControllerGetMatchRequests(variables, signal),
+  };
+}
+
+export const useSuspenseMatchControllerGetMatchRequests = <TData = undefined,>(
+  variables: MatchControllerGetMatchRequestsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    TData
+  >({
+    ...matchControllerGetMatchRequestsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMatchControllerGetMatchRequests = <TData = undefined,>(
+  variables: MatchControllerGetMatchRequestsVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      MatchControllerGetMatchRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    MatchControllerGetMatchRequestsError,
+    TData
+  >({
+    ...matchControllerGetMatchRequestsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
 };
 
 export type GroundControllerCreateGroundError = Fetcher.ErrorWrapper<undefined>;
@@ -2911,625 +4453,6 @@ export const useMasterControllerGetSports = <TData = undefined,>(
   });
 };
 
-export type BookingControllerCreateBookingError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerCreateBookingVariables = {
-  body: Schemas.CreateBookingDto;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerCreateBooking = (
-  variables: BookingControllerCreateBookingVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerCreateBookingError,
-    Schemas.CreateBookingDto,
-    {},
-    {},
-    {}
-  >({ url: "/api/bookings/v1", method: "post", ...variables, signal });
-
-export const useBookingControllerCreateBooking = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      BookingControllerCreateBookingError,
-      BookingControllerCreateBookingVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    BookingControllerCreateBookingError,
-    BookingControllerCreateBookingVariables
-  >({
-    mutationFn: (variables: BookingControllerCreateBookingVariables) =>
-      fetchBookingControllerCreateBooking(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type BookingControllerGetMyBookingsQueryParams = {
-  /**
-   * Page number
-   *
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   *
-   * @default 20
-   */
-  limit?: number;
-  /**
-   * Filter by status: PENDING | CONFIRMED | CANCELLED
-   */
-  status?: string;
-  /**
-   * Filter by date (YYYY-MM-DD)
-   */
-  date?: string;
-  /**
-   * Filter from date (YYYY-MM-DD)
-   */
-  dateFrom?: string;
-  /**
-   * Filter to date (YYYY-MM-DD)
-   */
-  dateTo?: string;
-};
-
-export type BookingControllerGetMyBookingsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerGetMyBookingsVariables = {
-  queryParams?: BookingControllerGetMyBookingsQueryParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerGetMyBookings = (
-  variables: BookingControllerGetMyBookingsVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerGetMyBookingsError,
-    undefined,
-    {},
-    BookingControllerGetMyBookingsQueryParams,
-    {}
-  >({ url: "/api/bookings/v1/my", method: "get", ...variables, signal });
-
-export function bookingControllerGetMyBookingsQuery(
-  variables: BookingControllerGetMyBookingsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function bookingControllerGetMyBookingsQuery(
-  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function bookingControllerGetMyBookingsQuery(
-  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/bookings/v1/my",
-      operationId: "bookingControllerGetMyBookings",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchBookingControllerGetMyBookings(variables, signal),
-  };
-}
-
-export const useSuspenseBookingControllerGetMyBookings = <TData = undefined,>(
-  variables: BookingControllerGetMyBookingsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetMyBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    BookingControllerGetMyBookingsError,
-    TData
-  >({
-    ...bookingControllerGetMyBookingsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useBookingControllerGetMyBookings = <TData = undefined,>(
-  variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetMyBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    BookingControllerGetMyBookingsError,
-    TData
-  >({
-    ...bookingControllerGetMyBookingsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type BookingControllerGetOwnerAllBookingsQueryParams = {
-  /**
-   * Page number
-   *
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   *
-   * @default 20
-   */
-  limit?: number;
-  /**
-   * Filter by status: PENDING | CONFIRMED | CANCELLED
-   */
-  status?: string;
-  /**
-   * Filter by date (YYYY-MM-DD)
-   */
-  date?: string;
-  /**
-   * Filter from date (YYYY-MM-DD)
-   */
-  dateFrom?: string;
-  /**
-   * Filter to date (YYYY-MM-DD)
-   */
-  dateTo?: string;
-};
-
-export type BookingControllerGetOwnerAllBookingsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerGetOwnerAllBookingsVariables = {
-  queryParams?: BookingControllerGetOwnerAllBookingsQueryParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerGetOwnerAllBookings = (
-  variables: BookingControllerGetOwnerAllBookingsVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerGetOwnerAllBookingsError,
-    undefined,
-    {},
-    BookingControllerGetOwnerAllBookingsQueryParams,
-    {}
-  >({ url: "/api/bookings/v1/owner", method: "get", ...variables, signal });
-
-export function bookingControllerGetOwnerAllBookingsQuery(
-  variables: BookingControllerGetOwnerAllBookingsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function bookingControllerGetOwnerAllBookingsQuery(
-  variables:
-    | BookingControllerGetOwnerAllBookingsVariables
-    | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function bookingControllerGetOwnerAllBookingsQuery(
-  variables:
-    | BookingControllerGetOwnerAllBookingsVariables
-    | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/bookings/v1/owner",
-      operationId: "bookingControllerGetOwnerAllBookings",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchBookingControllerGetOwnerAllBookings(variables, signal),
-  };
-}
-
-export const useSuspenseBookingControllerGetOwnerAllBookings = <
-  TData = undefined,
->(
-  variables: BookingControllerGetOwnerAllBookingsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetOwnerAllBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    BookingControllerGetOwnerAllBookingsError,
-    TData
-  >({
-    ...bookingControllerGetOwnerAllBookingsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useBookingControllerGetOwnerAllBookings = <TData = undefined,>(
-  variables:
-    | BookingControllerGetOwnerAllBookingsVariables
-    | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetOwnerAllBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    BookingControllerGetOwnerAllBookingsError,
-    TData
-  >({
-    ...bookingControllerGetOwnerAllBookingsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type BookingControllerGetGroundBookingsPathParams = {
-  groundId: number;
-};
-
-export type BookingControllerGetGroundBookingsQueryParams = {
-  /**
-   * Page number
-   *
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Items per page
-   *
-   * @default 20
-   */
-  limit?: number;
-  /**
-   * Filter by status: PENDING | CONFIRMED | CANCELLED
-   */
-  status?: string;
-  /**
-   * Filter by date (YYYY-MM-DD)
-   */
-  date?: string;
-  /**
-   * Filter from date (YYYY-MM-DD)
-   */
-  dateFrom?: string;
-  /**
-   * Filter to date (YYYY-MM-DD)
-   */
-  dateTo?: string;
-};
-
-export type BookingControllerGetGroundBookingsError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerGetGroundBookingsVariables = {
-  pathParams: BookingControllerGetGroundBookingsPathParams;
-  queryParams?: BookingControllerGetGroundBookingsQueryParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerGetGroundBookings = (
-  variables: BookingControllerGetGroundBookingsVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerGetGroundBookingsError,
-    undefined,
-    {},
-    BookingControllerGetGroundBookingsQueryParams,
-    BookingControllerGetGroundBookingsPathParams
-  >({
-    url: "/api/bookings/v1/ground/{groundId}",
-    method: "get",
-    ...variables,
-    signal,
-  });
-
-export function bookingControllerGetGroundBookingsQuery(
-  variables: BookingControllerGetGroundBookingsVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function bookingControllerGetGroundBookingsQuery(
-  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function bookingControllerGetGroundBookingsQuery(
-  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/bookings/v1/ground/{groundId}",
-      operationId: "bookingControllerGetGroundBookings",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchBookingControllerGetGroundBookings(variables, signal),
-  };
-}
-
-export const useSuspenseBookingControllerGetGroundBookings = <
-  TData = undefined,
->(
-  variables: BookingControllerGetGroundBookingsVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetGroundBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    BookingControllerGetGroundBookingsError,
-    TData
-  >({
-    ...bookingControllerGetGroundBookingsQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useBookingControllerGetGroundBookings = <TData = undefined,>(
-  variables: BookingControllerGetGroundBookingsVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      BookingControllerGetGroundBookingsError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    BookingControllerGetGroundBookingsError,
-    TData
-  >({
-    ...bookingControllerGetGroundBookingsQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type BookingControllerConfirmBookingPathParams = {
-  id: number;
-};
-
-export type BookingControllerConfirmBookingError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerConfirmBookingVariables = {
-  pathParams: BookingControllerConfirmBookingPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerConfirmBooking = (
-  variables: BookingControllerConfirmBookingVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerConfirmBookingError,
-    undefined,
-    {},
-    {},
-    BookingControllerConfirmBookingPathParams
-  >({
-    url: "/api/bookings/v1/{id}/confirm",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useBookingControllerConfirmBooking = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      BookingControllerConfirmBookingError,
-      BookingControllerConfirmBookingVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    BookingControllerConfirmBookingError,
-    BookingControllerConfirmBookingVariables
-  >({
-    mutationFn: (variables: BookingControllerConfirmBookingVariables) =>
-      fetchBookingControllerConfirmBooking(
-        deepMerge(fetcherOptions, variables),
-      ),
-    ...options,
-  });
-};
-
-export type BookingControllerCancelBookingPathParams = {
-  id: number;
-};
-
-export type BookingControllerCancelBookingError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerCancelBookingVariables = {
-  pathParams: BookingControllerCancelBookingPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerCancelBooking = (
-  variables: BookingControllerCancelBookingVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerCancelBookingError,
-    undefined,
-    {},
-    {},
-    BookingControllerCancelBookingPathParams
-  >({
-    url: "/api/bookings/v1/{id}/cancel",
-    method: "put",
-    ...variables,
-    signal,
-  });
-
-export const useBookingControllerCancelBooking = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      BookingControllerCancelBookingError,
-      BookingControllerCancelBookingVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    BookingControllerCancelBookingError,
-    BookingControllerCancelBookingVariables
-  >({
-    mutationFn: (variables: BookingControllerCancelBookingVariables) =>
-      fetchBookingControllerCancelBooking(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type BookingControllerAiAssistantError = Fetcher.ErrorWrapper<undefined>;
-
-export type BookingControllerAiAssistantVariables =
-  PlayVerseContext["fetcherOptions"];
-
-export const fetchBookingControllerAiAssistant = (
-  variables: BookingControllerAiAssistantVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    BookingControllerAiAssistantError,
-    undefined,
-    {},
-    {},
-    {}
-  >({
-    url: "/api/bookings/v1/ai-assistant",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useBookingControllerAiAssistant = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      BookingControllerAiAssistantError,
-      BookingControllerAiAssistantVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    BookingControllerAiAssistantError,
-    BookingControllerAiAssistantVariables
-  >({
-    mutationFn: (variables: BookingControllerAiAssistantVariables) =>
-      fetchBookingControllerAiAssistant(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
 export type PlayerProfileControllerGetStatisticsPathParams = {
   playerId: number;
 };
@@ -4923,6 +5846,14 @@ export type TeamControllerGetAllTeamsQueryParams = {
    * Search by team name or short name
    */
   search?: string;
+  /**
+   * Filter by sport ID
+   */
+  sportId?: number;
+  /**
+   * Filter by sport ID
+   */
+  sport_id?: number;
 };
 
 export type TeamControllerGetAllTeamsError = Fetcher.ErrorWrapper<undefined>;
@@ -5998,501 +6929,6 @@ export const useCommunityControllerChallengePlayer = (
       fetchCommunityControllerChallengePlayer(
         deepMerge(fetcherOptions, variables),
       ),
-    ...options,
-  });
-};
-
-export type MatchControllerCreateMatchError = Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerCreateMatchVariables = {
-  body: Schemas.CreateMatchDto;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerCreateMatch = (
-  variables: MatchControllerCreateMatchVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerCreateMatchError,
-    Schemas.CreateMatchDto,
-    {},
-    {},
-    {}
-  >({ url: "/api/match/v1/create", method: "post", ...variables, signal });
-
-export const useMatchControllerCreateMatch = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      MatchControllerCreateMatchError,
-      MatchControllerCreateMatchVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    MatchControllerCreateMatchError,
-    MatchControllerCreateMatchVariables
-  >({
-    mutationFn: (variables: MatchControllerCreateMatchVariables) =>
-      fetchMatchControllerCreateMatch(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type MatchControllerGetAllMatchesQueryParams = {
-  /**
-   * Page number
-   */
-  page?: string;
-  /**
-   * Records per page
-   */
-  limit?: string;
-  /**
-   * Search by team name or sport
-   */
-  search?: string;
-  /**
-   * Filter by status (SCHEDULED, LIVE, COMPLETED)
-   */
-  status?: string;
-};
-
-export type MatchControllerGetAllMatchesError = Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerGetAllMatchesVariables = {
-  queryParams?: MatchControllerGetAllMatchesQueryParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerGetAllMatches = (
-  variables: MatchControllerGetAllMatchesVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerGetAllMatchesError,
-    undefined,
-    {},
-    MatchControllerGetAllMatchesQueryParams,
-    {}
-  >({ url: "/api/match/v1", method: "get", ...variables, signal });
-
-export function matchControllerGetAllMatchesQuery(
-  variables: MatchControllerGetAllMatchesVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function matchControllerGetAllMatchesQuery(
-  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function matchControllerGetAllMatchesQuery(
-  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/match/v1",
-      operationId: "matchControllerGetAllMatches",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchMatchControllerGetAllMatches(variables, signal),
-  };
-}
-
-export const useSuspenseMatchControllerGetAllMatches = <TData = undefined,>(
-  variables: MatchControllerGetAllMatchesVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetAllMatchesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    MatchControllerGetAllMatchesError,
-    TData
-  >({
-    ...matchControllerGetAllMatchesQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useMatchControllerGetAllMatches = <TData = undefined,>(
-  variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetAllMatchesError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    MatchControllerGetAllMatchesError,
-    TData
-  >({
-    ...matchControllerGetAllMatchesQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type MatchControllerStartMatchPathParams = {
-  /**
-   * The ID of the match to start
-   */
-  matchId: number;
-};
-
-export type MatchControllerStartMatchError = Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerStartMatchVariables = {
-  pathParams: MatchControllerStartMatchPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerStartMatch = (
-  variables: MatchControllerStartMatchVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerStartMatchError,
-    undefined,
-    {},
-    {},
-    MatchControllerStartMatchPathParams
-  >({
-    url: "/api/match/v1/{matchId}/start",
-    method: "post",
-    ...variables,
-    signal,
-  });
-
-export const useMatchControllerStartMatch = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      MatchControllerStartMatchError,
-      MatchControllerStartMatchVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    MatchControllerStartMatchError,
-    MatchControllerStartMatchVariables
-  >({
-    mutationFn: (variables: MatchControllerStartMatchVariables) =>
-      fetchMatchControllerStartMatch(deepMerge(fetcherOptions, variables)),
-    ...options,
-  });
-};
-
-export type MatchControllerGetMatchHistoryQueryParams = {
-  /**
-   * Filter by Player ID
-   */
-  playerId?: number;
-  /**
-   * Filter by Team ID
-   */
-  teamId?: number;
-  /**
-   * Filter by status (SCHEDULED, LIVE, COMPLETED)
-   */
-  status?: string;
-  /**
-   * Pagination limit
-   */
-  limit?: number;
-  /**
-   * Pagination offset
-   */
-  offset?: number;
-};
-
-export type MatchControllerGetMatchHistoryError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerGetMatchHistoryVariables = {
-  queryParams?: MatchControllerGetMatchHistoryQueryParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerGetMatchHistory = (
-  variables: MatchControllerGetMatchHistoryVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerGetMatchHistoryError,
-    undefined,
-    {},
-    MatchControllerGetMatchHistoryQueryParams,
-    {}
-  >({ url: "/api/match/v1/history", method: "get", ...variables, signal });
-
-export function matchControllerGetMatchHistoryQuery(
-  variables: MatchControllerGetMatchHistoryVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function matchControllerGetMatchHistoryQuery(
-  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function matchControllerGetMatchHistoryQuery(
-  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/match/v1/history",
-      operationId: "matchControllerGetMatchHistory",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchMatchControllerGetMatchHistory(variables, signal),
-  };
-}
-
-export const useSuspenseMatchControllerGetMatchHistory = <TData = undefined,>(
-  variables: MatchControllerGetMatchHistoryVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetMatchHistoryError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    MatchControllerGetMatchHistoryError,
-    TData
-  >({
-    ...matchControllerGetMatchHistoryQuery(
-      deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useMatchControllerGetMatchHistory = <TData = undefined,>(
-  variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetMatchHistoryError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    MatchControllerGetMatchHistoryError,
-    TData
-  >({
-    ...matchControllerGetMatchHistoryQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type MatchControllerGetMatchDetailPathParams = {
-  matchId: number;
-};
-
-export type MatchControllerGetMatchDetailError =
-  Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerGetMatchDetailVariables = {
-  pathParams: MatchControllerGetMatchDetailPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerGetMatchDetail = (
-  variables: MatchControllerGetMatchDetailVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerGetMatchDetailError,
-    undefined,
-    {},
-    {},
-    MatchControllerGetMatchDetailPathParams
-  >({ url: "/api/match/v1/{matchId}", method: "get", ...variables, signal });
-
-export function matchControllerGetMatchDetailQuery(
-  variables: MatchControllerGetMatchDetailVariables,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn: (options: QueryFnOptions) => Promise<undefined>;
-};
-
-export function matchControllerGetMatchDetailQuery(
-  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
-): {
-  queryKey: reactQuery.QueryKey;
-  queryFn:
-    | ((options: QueryFnOptions) => Promise<undefined>)
-    | reactQuery.SkipToken;
-};
-
-export function matchControllerGetMatchDetailQuery(
-  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
-) {
-  return {
-    queryKey: queryKeyFn({
-      path: "/api/match/v1/{matchId}",
-      operationId: "matchControllerGetMatchDetail",
-      variables,
-    }),
-    queryFn:
-      variables === reactQuery.skipToken
-        ? reactQuery.skipToken
-        : ({ signal }: QueryFnOptions) =>
-            fetchMatchControllerGetMatchDetail(variables, signal),
-  };
-}
-
-export const useSuspenseMatchControllerGetMatchDetail = <TData = undefined,>(
-  variables: MatchControllerGetMatchDetailVariables,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetMatchDetailError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useSuspenseQuery<
-    undefined,
-    MatchControllerGetMatchDetailError,
-    TData
-  >({
-    ...matchControllerGetMatchDetailQuery(deepMerge(fetcherOptions, variables)),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export const useMatchControllerGetMatchDetail = <TData = undefined,>(
-  variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken,
-  options?: Omit<
-    reactQuery.UseQueryOptions<
-      undefined,
-      MatchControllerGetMatchDetailError,
-      TData
-    >,
-    "queryKey" | "queryFn" | "initialData"
-  >,
-) => {
-  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
-  return reactQuery.useQuery<
-    undefined,
-    MatchControllerGetMatchDetailError,
-    TData
-  >({
-    ...matchControllerGetMatchDetailQuery(
-      variables === reactQuery.skipToken
-        ? variables
-        : deepMerge(fetcherOptions, variables),
-    ),
-    ...options,
-    ...queryOptions,
-  });
-};
-
-export type MatchControllerDeleteMatchPathParams = {
-  matchId: number;
-};
-
-export type MatchControllerDeleteMatchError = Fetcher.ErrorWrapper<undefined>;
-
-export type MatchControllerDeleteMatchVariables = {
-  pathParams: MatchControllerDeleteMatchPathParams;
-} & PlayVerseContext["fetcherOptions"];
-
-export const fetchMatchControllerDeleteMatch = (
-  variables: MatchControllerDeleteMatchVariables,
-  signal?: AbortSignal,
-) =>
-  playVerseFetch<
-    undefined,
-    MatchControllerDeleteMatchError,
-    undefined,
-    {},
-    {},
-    MatchControllerDeleteMatchPathParams
-  >({ url: "/api/match/v1/{matchId}", method: "delete", ...variables, signal });
-
-export const useMatchControllerDeleteMatch = (
-  options?: Omit<
-    reactQuery.UseMutationOptions<
-      undefined,
-      MatchControllerDeleteMatchError,
-      MatchControllerDeleteMatchVariables
-    >,
-    "mutationFn"
-  >,
-) => {
-  const { fetcherOptions } = usePlayVerseContext();
-  return reactQuery.useMutation<
-    undefined,
-    MatchControllerDeleteMatchError,
-    MatchControllerDeleteMatchVariables
-  >({
-    mutationFn: (variables: MatchControllerDeleteMatchVariables) =>
-      fetchMatchControllerDeleteMatch(deepMerge(fetcherOptions, variables)),
     ...options,
   });
 };
@@ -8027,6 +8463,52 @@ export type QueryOperation =
       variables: AiControllerGetPlayerStatsVariables | reactQuery.SkipToken;
     }
   | {
+      path: "/api/ai/v1/find-game/invitations";
+      operationId: "aiControllerGetInvitations";
+      variables: AiControllerGetInvitationsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/my";
+      operationId: "bookingControllerGetMyBookings";
+      variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/owner";
+      operationId: "bookingControllerGetOwnerAllBookings";
+      variables:
+        | BookingControllerGetOwnerAllBookingsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/bookings/v1/ground/{groundId}";
+      operationId: "bookingControllerGetGroundBookings";
+      variables:
+        | BookingControllerGetGroundBookingsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1";
+      operationId: "matchControllerGetAllMatches";
+      variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/history";
+      operationId: "matchControllerGetMatchHistory";
+      variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/{matchId}";
+      operationId: "matchControllerGetMatchDetail";
+      variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/match/v1/{matchId}/requests";
+      operationId: "matchControllerGetMatchRequests";
+      variables:
+        | MatchControllerGetMatchRequestsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
       path: "/api/grounds/v1";
       operationId: "groundControllerGetPublicGrounds";
       variables:
@@ -8103,25 +8585,6 @@ export type QueryOperation =
       path: "/api/master/v1/sports";
       operationId: "masterControllerGetSports";
       variables: MasterControllerGetSportsVariables | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/bookings/v1/my";
-      operationId: "bookingControllerGetMyBookings";
-      variables: BookingControllerGetMyBookingsVariables | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/bookings/v1/owner";
-      operationId: "bookingControllerGetOwnerAllBookings";
-      variables:
-        | BookingControllerGetOwnerAllBookingsVariables
-        | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/bookings/v1/ground/{groundId}";
-      operationId: "bookingControllerGetGroundBookings";
-      variables:
-        | BookingControllerGetGroundBookingsVariables
-        | reactQuery.SkipToken;
     }
   | {
       path: "/api/player-profile/v1/{playerId}/statistics";
@@ -8229,21 +8692,6 @@ export type QueryOperation =
       variables:
         | CommunityControllerGetCommunityActivityVariables
         | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/match/v1";
-      operationId: "matchControllerGetAllMatches";
-      variables: MatchControllerGetAllMatchesVariables | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/match/v1/history";
-      operationId: "matchControllerGetMatchHistory";
-      variables: MatchControllerGetMatchHistoryVariables | reactQuery.SkipToken;
-    }
-  | {
-      path: "/api/match/v1/{matchId}";
-      operationId: "matchControllerGetMatchDetail";
-      variables: MatchControllerGetMatchDetailVariables | reactQuery.SkipToken;
     }
   | {
       path: "/api/tournament/v1/{id}/teams";

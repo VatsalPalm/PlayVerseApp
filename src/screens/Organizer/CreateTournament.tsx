@@ -24,8 +24,12 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { showMessage } from "react-native-flash-message";
 import { HomeStackParamList } from "../../utils/types";
-import { useTournamentControllerCreateTournament } from "../../Api/playVerseComponents";
+import {
+  useTournamentControllerCreateTournament,
+  useGroundControllerGetPublicGrounds,
+} from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
+import { useMemo } from "react";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,12 +43,35 @@ const SPORTS = [
 const FORMATS = ["KNOCKOUT", "ROUND_ROBIN", "GROUP_STAGE"];
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
-const MINUTES = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = [
+  "00",
+  "05",
+  "10",
+  "15",
+  "20",
+  "25",
+  "30",
+  "35",
+  "40",
+  "45",
+  "50",
+  "55",
+];
 
 const getDaysInMonth = (year: number, month: number): (Date | null)[] => {
   const date = new Date(year, month, 1);
@@ -70,11 +97,13 @@ const CreateTournamentScreen = () => {
   const [format, setFormat] = useState<
     "KNOCKOUT" | "ROUND_ROBIN" | "GROUP_STAGE"
   >("KNOCKOUT");
-  const [registrationType, setRegistrationType] = useState<'INDIVIDUAL' | 'TEAM'>('TEAM');
-  const [teamSize, setTeamSize] = useState('5');
-  const [minPlayersRequired, setMinPlayersRequired] = useState('1');
+  const [registrationType, setRegistrationType] = useState<
+    "INDIVIDUAL" | "TEAM"
+  >("TEAM");
+  const [teamSize, setTeamSize] = useState("5");
+  const [minPlayersRequired, setMinPlayersRequired] = useState("1");
   const [teamApprovalRequired, setTeamApprovalRequired] = useState(false);
-  const [initialTeamName, setInitialTeamName] = useState('');
+  const [initialTeamName, setInitialTeamName] = useState("");
 
   // Date and Time split states
   const [startDate, setStartDate] = useState("2026-08-25");
@@ -87,29 +116,55 @@ const CreateTournamentScreen = () => {
   const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
   const [maxTeams, setMaxTeams] = useState("16");
 
+  // Ground Selection
+  const [selectedGround, setSelectedGround] = useState<any>(null);
+  const [showGroundPicker, setShowGroundPicker] = useState(false);
+  const [groundSearch, setGroundSearch] = useState("");
+
+  const { data: groundsResponse, isLoading: groundsLoading } =
+    useGroundControllerGetPublicGrounds<any>({
+      queryParams: { limit: 100 },
+    });
+
+  const groundsList: any[] = useMemo(() => {
+    const raw = Array.isArray(groundsResponse)
+      ? groundsResponse
+      : groundsResponse?.data || groundsResponse?.grounds || [];
+    if (!groundSearch.trim()) return raw;
+    const q = groundSearch.toLowerCase();
+    return raw.filter(
+      (g: any) =>
+        (g.name && g.name.toLowerCase().includes(q)) ||
+        (g.city && g.city.toLowerCase().includes(q)) ||
+        (g.address && g.address.toLowerCase().includes(q)),
+    );
+  }, [groundsResponse, groundSearch]);
+
   // Modal control states
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | 'reg'>('start');
+  const [pickerTarget, setPickerTarget] = useState<"start" | "end" | "reg">(
+    "start",
+  );
   const [calendarYear, setCalendarYear] = useState(2026);
   const [calendarMonth, setCalendarMonth] = useState(7); // August (0-indexed is 7)
-  const [selectedHour, setSelectedHour] = useState('12');
-  const [selectedMinute, setSelectedMinute] = useState('00');
+  const [selectedHour, setSelectedHour] = useState("12");
+  const [selectedMinute, setSelectedMinute] = useState("00");
 
   const { mutateAsync: createTournament, isPending } =
     useTournamentControllerCreateTournament();
 
   const handleDaySelect = (dayDate: Date) => {
     const y = dayDate.getFullYear();
-    const m = String(dayDate.getMonth() + 1).padStart(2, '0');
-    const d = String(dayDate.getDate()).padStart(2, '0');
+    const m = String(dayDate.getMonth() + 1).padStart(2, "0");
+    const d = String(dayDate.getDate()).padStart(2, "0");
     const formatted = `${y}-${m}-${d}`;
-    
-    if (pickerTarget === 'start') {
+
+    if (pickerTarget === "start") {
       setStartDate(formatted);
-    } else if (pickerTarget === 'end') {
+    } else if (pickerTarget === "end") {
       setEndDate(formatted);
-    } else if (pickerTarget === 'reg') {
+    } else if (pickerTarget === "reg") {
       setRegDate(formatted);
     }
     setShowDatePicker(false);
@@ -117,21 +172,22 @@ const CreateTournamentScreen = () => {
 
   const handleTimeSelect = (hour: string, minute: string) => {
     const formatted = `${hour}:${minute}`;
-    if (pickerTarget === 'start') {
+    if (pickerTarget === "start") {
       setStartTime(formatted);
-    } else if (pickerTarget === 'end') {
+    } else if (pickerTarget === "end") {
       setEndTime(formatted);
-    } else if (pickerTarget === 'reg') {
+    } else if (pickerTarget === "reg") {
       setRegTime(formatted);
     }
     setShowTimePicker(false);
   };
 
-  const openDatePicker = (target: 'start' | 'end' | 'reg') => {
+  const openDatePicker = (target: "start" | "end" | "reg") => {
     setPickerTarget(target);
-    const currVal = target === 'start' ? startDate : target === 'end' ? endDate : regDate;
+    const currVal =
+      target === "start" ? startDate : target === "end" ? endDate : regDate;
     if (currVal) {
-      const parts = currVal.split('-');
+      const parts = currVal.split("-");
       if (parts.length === 3) {
         setCalendarYear(parseInt(parts[0], 10));
         setCalendarMonth(parseInt(parts[1], 10) - 1);
@@ -144,18 +200,19 @@ const CreateTournamentScreen = () => {
     setShowDatePicker(true);
   };
 
-  const openTimePicker = (target: 'start' | 'end' | 'reg') => {
+  const openTimePicker = (target: "start" | "end" | "reg") => {
     setPickerTarget(target);
-    const currVal = target === 'start' ? startTime : target === 'end' ? endTime : regTime;
+    const currVal =
+      target === "start" ? startTime : target === "end" ? endTime : regTime;
     if (currVal) {
-      const parts = currVal.split(':');
+      const parts = currVal.split(":");
       if (parts.length === 2) {
         setSelectedHour(parts[0]);
         setSelectedMinute(parts[1]);
       }
     } else {
-      setSelectedHour('12');
-      setSelectedMinute('00');
+      setSelectedHour("12");
+      setSelectedMinute("00");
     }
     setShowTimePicker(true);
   };
@@ -164,7 +221,7 @@ const CreateTournamentScreen = () => {
     const days = getDaysInMonth(calendarYear, calendarMonth);
     const dayRows: (Date | null)[][] = [];
     let currentRow: (Date | null)[] = [];
-    
+
     days.forEach((day, index) => {
       currentRow.push(day);
       if (currentRow.length === 7 || index === days.length - 1) {
@@ -180,33 +237,41 @@ const CreateTournamentScreen = () => {
       <View style={styles.calendarContainer}>
         {/* Month Header */}
         <View style={styles.calendarHeader}>
-          <TouchableOpacity onPress={() => {
-            if (calendarMonth === 0) {
-              setCalendarMonth(11);
-              setCalendarYear(y => y - 1);
-            } else {
-              setCalendarMonth(m => m - 1);
-            }
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (calendarMonth === 0) {
+                setCalendarMonth(11);
+                setCalendarYear((y) => y - 1);
+              } else {
+                setCalendarMonth((m) => m - 1);
+              }
+            }}
+          >
             <Ionicons name="chevron-back" size={20} color="#FFF" />
           </TouchableOpacity>
-          <Text style={styles.calendarMonthText}>{MONTH_NAMES[calendarMonth]} {calendarYear}</Text>
-          <TouchableOpacity onPress={() => {
-            if (calendarMonth === 11) {
-              setCalendarMonth(0);
-              setCalendarYear(y => y + 1);
-            } else {
-              setCalendarMonth(m => m + 1);
-            }
-          }}>
+          <Text style={styles.calendarMonthText}>
+            {MONTH_NAMES[calendarMonth]} {calendarYear}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              if (calendarMonth === 11) {
+                setCalendarMonth(0);
+                setCalendarYear((y) => y + 1);
+              } else {
+                setCalendarMonth((m) => m + 1);
+              }
+            }}
+          >
             <Ionicons name="chevron-forward" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
 
         {/* Weekday headers */}
         <View style={styles.weekdaysRow}>
-          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((w, idx) => (
-            <Text key={idx} style={styles.weekdayText}>{w}</Text>
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((w, idx) => (
+            <Text key={idx} style={styles.weekdayText}>
+              {w}
+            </Text>
           ))}
         </View>
 
@@ -215,20 +280,35 @@ const CreateTournamentScreen = () => {
           <View key={rIdx} style={styles.daysRow}>
             {row.map((day, dIdx) => {
               if (!day) return <View key={dIdx} style={styles.emptyDay} />;
-              
-              const isSelected = (
-                (pickerTarget === 'start' && startDate === `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`) ||
-                (pickerTarget === 'end' && endDate === `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`) ||
-                (pickerTarget === 'reg' && regDate === `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`)
-              );
+
+              const isSelected =
+                (pickerTarget === "start" &&
+                  startDate ===
+                    `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`) ||
+                (pickerTarget === "end" &&
+                  endDate ===
+                    `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`) ||
+                (pickerTarget === "reg" &&
+                  regDate ===
+                    `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`);
 
               return (
-                <TouchableOpacity 
-                  key={dIdx} 
-                  style={[styles.dayButton, isSelected && styles.dayButtonSelected]}
+                <TouchableOpacity
+                  key={dIdx}
+                  style={[
+                    styles.dayButton,
+                    isSelected && styles.dayButtonSelected,
+                  ]}
                   onPress={() => handleDaySelect(day)}
                 >
-                  <Text style={[styles.dayText, isSelected && styles.dayTextSelected]}>{day.getDate()}</Text>
+                  <Text
+                    style={[
+                      styles.dayText,
+                      isSelected && styles.dayTextSelected,
+                    ]}
+                  >
+                    {day.getDate()}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
@@ -244,15 +324,24 @@ const CreateTournamentScreen = () => {
       return;
     }
     if (!startDate || !startTime) {
-      showMessage({ message: "Please select start date and time", type: "warning" });
+      showMessage({
+        message: "Please select start date and time",
+        type: "warning",
+      });
       return;
     }
     if (!endDate || !endTime) {
-      showMessage({ message: "Please select end date and time", type: "warning" });
+      showMessage({
+        message: "Please select end date and time",
+        type: "warning",
+      });
       return;
     }
     if (!regDate || !regTime) {
-      showMessage({ message: "Please select registration deadline date and time", type: "warning" });
+      showMessage({
+        message: "Please select registration deadline date and time",
+        type: "warning",
+      });
       return;
     }
 
@@ -260,7 +349,7 @@ const CreateTournamentScreen = () => {
       const res = await createTournament({
         body: {
           name,
-          sportId,
+          sportId: 5, // Always force Pickleball
           format,
           startDate: `${startDate}T${startTime}:00.000Z`,
           endDate: `${endDate}T${endTime}:00.000Z`,
@@ -268,10 +357,21 @@ const CreateTournamentScreen = () => {
           maxTeams: parseInt(maxTeams, 10) || 16,
           registrationDeadline: `${regDate}T${regTime}:00.000Z`,
           registrationType,
-          teamSize: registrationType === 'TEAM' ? (parseInt(teamSize, 10) || 5) : undefined,
-          minPlayersRequired: registrationType === 'TEAM' ? (parseInt(minPlayersRequired, 10) || 1) : undefined,
-          teamApprovalRequired: registrationType === 'TEAM' ? teamApprovalRequired : undefined,
-          initialTeamName: (registrationType === 'TEAM' && initialTeamName.trim()) ? initialTeamName.trim() : undefined,
+          teamSize:
+            registrationType === "TEAM"
+              ? parseInt(teamSize, 10) || 5
+              : undefined,
+          minPlayersRequired:
+            registrationType === "TEAM"
+              ? parseInt(minPlayersRequired, 10) || 1
+              : undefined,
+          teamApprovalRequired:
+            registrationType === "TEAM" ? teamApprovalRequired : undefined,
+          initialTeamName:
+            registrationType === "TEAM" && initialTeamName.trim()
+              ? initialTeamName.trim()
+              : undefined,
+          ground_id: selectedGround?.id || undefined,
         },
       });
 
@@ -350,12 +450,25 @@ const CreateTournamentScreen = () => {
           <Text style={styles.label}>Select Sport</Text>
           <View style={styles.sportGrid}>
             {SPORTS.map((sport) => {
-              const active = sportId === sport.id;
+              // Always lock/style Pickleball (id: 5) as active and disable changing it
+              const active = sport.id === 5;
               return (
                 <TouchableOpacity
                   key={sport.id}
-                  style={[styles.sportCard, active && styles.sportCardActive]}
-                  onPress={() => setSportId(sport.id)}
+                  style={[
+                    styles.sportCard,
+                    active && styles.sportCardActive,
+                    !active && { opacity: 0.5 },
+                  ]}
+                  onPress={() => {
+                    if (sport.id !== 5) {
+                      showMessage({
+                        message:
+                          "Only Pickleball tournaments are supported currently",
+                        type: "info",
+                      });
+                    }
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text
@@ -400,22 +513,81 @@ const CreateTournamentScreen = () => {
 
           <SizedBox height={16} />
 
+          {/* Ground / Venue Selection */}
+          <Text style={styles.label}>Tournament Ground / Venue (Optional)</Text>
+          {selectedGround ? (
+            <View style={styles.selectedGroundCard}>
+              <View style={styles.selectedGroundIcon}>
+                <Ionicons name="location" size={20} color="#10B981" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.selectedGroundName} numberOfLines={1}>
+                  {selectedGround.name}
+                </Text>
+                <Text style={styles.selectedGroundCity}>
+                  {selectedGround.city ||
+                    selectedGround.address ||
+                    "Venue Ground"}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setSelectedGround(null)}
+                style={styles.clearGroundBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close-circle" size={20} color="#EF4444" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.selectGroundBtn}
+              onPress={() => setShowGroundPicker(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="business-outline" size={20} color="#A78BFA" />
+              <Text style={styles.selectGroundBtnText}>
+                {groundsLoading
+                  ? "Loading grounds..."
+                  : "🏟️ Select Ground / Venue"}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+
+          <SizedBox height={16} />
+
           {/* Start Date & Time */}
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>Start Date</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openDatePicker('start')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openDatePicker("start")}
+              >
                 <Ionicons name="calendar-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !startDate && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !startDate && styles.placeholderText,
+                  ]}
+                >
                   {startDate || "Select Date"}
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.label}>Start Time</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openTimePicker('start')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openTimePicker("start")}
+              >
                 <Ionicons name="time-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !startTime && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !startTime && styles.placeholderText,
+                  ]}
+                >
                   {startTime || "Select Time"}
                 </Text>
               </TouchableOpacity>
@@ -428,18 +600,34 @@ const CreateTournamentScreen = () => {
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>End Date</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openDatePicker('end')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openDatePicker("end")}
+              >
                 <Ionicons name="calendar-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !endDate && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !endDate && styles.placeholderText,
+                  ]}
+                >
                   {endDate || "Select Date"}
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.label}>End Time</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openTimePicker('end')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openTimePicker("end")}
+              >
                 <Ionicons name="time-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !endTime && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !endTime && styles.placeholderText,
+                  ]}
+                >
                   {endTime || "Select Time"}
                 </Text>
               </TouchableOpacity>
@@ -478,7 +666,8 @@ const CreateTournamentScreen = () => {
               <Text
                 style={[
                   styles.visibilityText,
-                  registrationType === "INDIVIDUAL" && styles.visibilityTextActive,
+                  registrationType === "INDIVIDUAL" &&
+                    styles.visibilityTextActive,
                 ]}
               >
                 Individual
@@ -488,7 +677,7 @@ const CreateTournamentScreen = () => {
 
           <SizedBox height={16} />
 
-          {registrationType === 'TEAM' && (
+          {registrationType === "TEAM" && (
             <>
               <View style={styles.row}>
                 <View style={{ flex: 1 }}>
@@ -515,9 +704,12 @@ const CreateTournamentScreen = () => {
 
               <View style={styles.teamApprovalContainer}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.teamApprovalTitle}>Captain Approval Required</Text>
+                  <Text style={styles.teamApprovalTitle}>
+                    Captain Approval Required
+                  </Text>
                   <Text style={styles.teamApprovalDesc}>
-                    Players must request to join teams and captain has to accept.
+                    Players must request to join teams and captain has to
+                    accept.
                   </Text>
                 </View>
                 <Switch
@@ -531,7 +723,9 @@ const CreateTournamentScreen = () => {
 
               <SizedBox height={16} />
 
-              <Text style={styles.label}>Your Team Name (Initial Team - Optional)</Text>
+              <Text style={styles.label}>
+                Your Team Name (Initial Team - Optional)
+              </Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="e.g. My Awesome Team"
@@ -563,18 +757,34 @@ const CreateTournamentScreen = () => {
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>Reg. Deadline Date</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openDatePicker('reg')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openDatePicker("reg")}
+              >
                 <Ionicons name="calendar-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !regDate && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !regDate && styles.placeholderText,
+                  ]}
+                >
                   {regDate || "Select Date"}
                 </Text>
               </TouchableOpacity>
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.label}>Reg. Deadline Time</Text>
-              <TouchableOpacity style={styles.selectorInput} onPress={() => openTimePicker('reg')}>
+              <TouchableOpacity
+                style={styles.selectorInput}
+                onPress={() => openTimePicker("reg")}
+              >
                 <Ionicons name="time-outline" size={18} color="#A78BFA" />
-                <Text style={[styles.selectorInputText, !regTime && styles.placeholderText]}>
+                <Text
+                  style={[
+                    styles.selectorInputText,
+                    !regTime && styles.placeholderText,
+                  ]}
+                >
                   {regTime || "Select Time"}
                 </Text>
               </TouchableOpacity>
@@ -652,7 +862,7 @@ const CreateTournamentScreen = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Date</Text>
             {renderCalendar()}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.closeModalBtn}
               onPress={() => setShowDatePicker(false)}
             >
@@ -672,21 +882,34 @@ const CreateTournamentScreen = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Time</Text>
-            
+
             <View style={styles.timePickerContainer}>
               {/* Hours Column */}
               <View style={styles.timeColumnWrapper}>
                 <Text style={styles.timeColumnLabel}>Hour</Text>
-                <ScrollView style={styles.timeColumn} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                  style={styles.timeColumn}
+                  showsVerticalScrollIndicator={false}
+                >
                   {HOURS.map((h) => {
                     const isSel = selectedHour === h;
                     return (
-                      <TouchableOpacity 
-                        key={h} 
-                        style={[styles.timeSlot, isSel && styles.timeSlotSelected]}
+                      <TouchableOpacity
+                        key={h}
+                        style={[
+                          styles.timeSlot,
+                          isSel && styles.timeSlotSelected,
+                        ]}
                         onPress={() => setSelectedHour(h)}
                       >
-                        <Text style={[styles.timeSlotText, isSel && styles.timeSlotTextSelected]}>{h}</Text>
+                        <Text
+                          style={[
+                            styles.timeSlotText,
+                            isSel && styles.timeSlotTextSelected,
+                          ]}
+                        >
+                          {h}
+                        </Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -696,16 +919,29 @@ const CreateTournamentScreen = () => {
               {/* Minutes Column */}
               <View style={styles.timeColumnWrapper}>
                 <Text style={styles.timeColumnLabel}>Minute</Text>
-                <ScrollView style={styles.timeColumn} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                  style={styles.timeColumn}
+                  showsVerticalScrollIndicator={false}
+                >
                   {MINUTES.map((m) => {
                     const isSel = selectedMinute === m;
                     return (
-                      <TouchableOpacity 
-                        key={m} 
-                        style={[styles.timeSlot, isSel && styles.timeSlotSelected]}
+                      <TouchableOpacity
+                        key={m}
+                        style={[
+                          styles.timeSlot,
+                          isSel && styles.timeSlotSelected,
+                        ]}
                         onPress={() => setSelectedMinute(m)}
                       >
-                        <Text style={[styles.timeSlotText, isSel && styles.timeSlotTextSelected]}>{m}</Text>
+                        <Text
+                          style={[
+                            styles.timeSlotText,
+                            isSel && styles.timeSlotTextSelected,
+                          ]}
+                        >
+                          {m}
+                        </Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -714,19 +950,129 @@ const CreateTournamentScreen = () => {
             </View>
 
             <View style={styles.modalActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.closeModalBtn, { flex: 1, marginRight: 8 }]}
                 onPress={() => setShowTimePicker(false)}
               >
                 <Text style={styles.closeModalBtnText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.confirmModalBtn, { flex: 1, marginLeft: 8 }]}
                 onPress={() => handleTimeSelect(selectedHour, selectedMinute)}
               >
                 <Text style={styles.confirmModalBtnText}>Confirm</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Ground Picker Modal */}
+      <Modal
+        visible={showGroundPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowGroundPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "80%" }]}>
+            <View style={styles.pickerHeaderRow}>
+              <View>
+                <Text style={styles.modalTitle}>Select Tournament Ground</Text>
+                <Text style={{ color: "#9CA3AF", fontSize: 12, marginTop: 2 }}>
+                  Matches and fixtures will be hosted at this venue
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowGroundPicker(false)}
+                style={styles.closeBtnIcon}
+              >
+                <Ionicons name="close" size={20} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Search Bar */}
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search grounds by name or city..."
+                placeholderTextColor="#9CA3AF"
+                value={groundSearch}
+                onChangeText={setGroundSearch}
+              />
+            </View>
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 360 }}
+            >
+              {/* Option to clear / TBD */}
+              <TouchableOpacity
+                style={styles.groundItem}
+                onPress={() => {
+                  setSelectedGround(null);
+                  setShowGroundPicker(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.groundItemIcon,
+                    { backgroundColor: "rgba(255, 255, 255, 0.05)" },
+                  ]}
+                >
+                  <Ionicons
+                    name="help-circle-outline"
+                    size={20}
+                    color="#9CA3AF"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.groundItemName}>
+                    No Ground (Venue TBD)
+                  </Text>
+                  <Text style={styles.groundItemSub}>
+                    Ground can be assigned later
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {groundsList.map((g: any) => {
+                const isSelected = selectedGround?.id === g.id;
+                return (
+                  <TouchableOpacity
+                    key={g.id}
+                    style={[
+                      styles.groundItem,
+                      isSelected && styles.groundItemSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedGround(g);
+                      setShowGroundPicker(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.groundItemIcon}>
+                      <Ionicons name="location" size={20} color="#10B981" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.groundItemName}>{g.name}</Text>
+                      <Text style={styles.groundItemSub}>
+                        📍 {g.city || g.address || "City Ground"}
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={22}
+                        color="#10B981"
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -880,8 +1226,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     height: 48,
     paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   selectorInputText: {
@@ -892,8 +1238,8 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   teamApprovalContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.02)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
@@ -901,166 +1247,276 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   teamApprovalTitle: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 4,
   },
   teamApprovalDesc: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 11,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: '#120B24',
+    backgroundColor: "#120B24",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: "rgba(255,255,255,0.05)",
   },
   modalTitle: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 18,
-    fontWeight: '800',
-    textAlign: 'center',
+    fontWeight: "800",
+    textAlign: "center",
     marginBottom: 20,
   },
   calendarContainer: {
     marginBottom: 20,
   },
   calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   calendarMonthText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   weekdaysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
   weekdayText: {
-    color: '#6B7280',
+    color: "#6B7280",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     width: (SCREEN_WIDTH - 40) / 7,
-    textAlign: 'center',
+    textAlign: "center",
   },
   daysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   dayButton: {
     width: (SCREEN_WIDTH - 40) / 7 - 4,
     height: (SCREEN_WIDTH - 40) / 7 - 4,
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.02)",
   },
   dayButtonSelected: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
   },
   dayText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   dayTextSelected: {
-    color: '#FFF',
-    fontWeight: '700',
+    color: "#FFF",
+    fontWeight: "700",
   },
   emptyDay: {
     width: (SCREEN_WIDTH - 40) / 7 - 4,
     height: (SCREEN_WIDTH - 40) / 7 - 4,
   },
   closeModalBtn: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: "rgba(255,255,255,0.08)",
     borderRadius: 14,
     height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   closeModalBtnText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   timePickerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     height: 180,
     marginBottom: 20,
   },
   timeColumnWrapper: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timeColumnLabel: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   timeColumn: {
-    width: '80%',
+    width: "80%",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: "rgba(255,255,255,0.05)",
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.01)',
+    backgroundColor: "rgba(255,255,255,0.01)",
   },
   timeSlot: {
     paddingVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timeSlotSelected: {
-    backgroundColor: 'rgba(108,77,246,0.2)',
+    backgroundColor: "rgba(108,77,246,0.2)",
     borderLeftWidth: 3,
-    borderColor: '#6C4DF6',
+    borderColor: "#6C4DF6",
   },
   timeSlotText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
     fontSize: 14,
   },
   timeSlotTextSelected: {
-    color: '#FFF',
-    fontWeight: '700',
+    color: "#FFF",
+    fontWeight: "700",
   },
   modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
   },
   confirmModalBtn: {
-    backgroundColor: '#6C4DF6',
+    backgroundColor: "#6C4DF6",
     borderRadius: 14,
     height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#6C4DF6',
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#6C4DF6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
   },
   confirmModalBtnText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
+  },
+  pickerHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  closeBtnIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.06)",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#FFF",
+    fontSize: 14,
+  },
+  groundItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.05)",
+  },
+  groundItemSelected: {
+    backgroundColor: "rgba(16, 185, 129, 0.12)",
+    borderColor: "rgba(16, 185, 129, 0.4)",
+    borderWidth: 1,
+  },
+  groundItemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  groundItemName: {
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  groundItemSub: {
+    color: "#9CA3AF",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  selectedGroundCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "rgba(16, 185, 129, 0.1)",
+    borderWidth: 1,
+    borderColor: "#10B981",
+    borderRadius: 14,
+    padding: 12,
+  },
+  selectedGroundIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedGroundName: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  selectedGroundCity: {
+    color: "#A7F3D0",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  clearGroundBtn: {
+    padding: 4,
+  },
+  selectGroundBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 48,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    gap: 10,
+  },
+  selectGroundBtnText: {
+    color: "#D1D5DB",
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
   },
 });

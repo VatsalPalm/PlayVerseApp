@@ -172,27 +172,40 @@ const PlayerHomeScreen = () => {
   // Combine initial REST match data with real-time Socket.IO match state updates
   const currentLiveMatch = useMemo(() => {
     if (!activeSportMatch) return null;
-    if (!socketMatchState) return activeSportMatch;
+    const baseObj = socketMatchState
+      ? { ...activeSportMatch, ...socketMatchState }
+      : activeSportMatch;
+
+    const homeTeamName =
+      socketMatchState?.home_team_name ||
+      activeSportMatch.home_team_name ||
+      activeSportMatch.homeTeamName ||
+      activeSportMatch.home_team?.name ||
+      activeSportMatch.homeTeam?.name;
+
+    const awayTeamName =
+      socketMatchState?.away_team_name ||
+      activeSportMatch.away_team_name ||
+      activeSportMatch.awayTeamName ||
+      activeSportMatch.away_team?.name ||
+      activeSportMatch.awayTeam?.name;
+
     return {
-      ...activeSportMatch,
-      ...socketMatchState,
-      home_team_name:
-        socketMatchState.home_team_name ||
-        activeSportMatch.home_team_name ||
-        activeSportMatch.homeTeamName,
-      away_team_name:
-        socketMatchState.away_team_name ||
-        activeSportMatch.away_team_name ||
-        activeSportMatch.awayTeamName,
-      homePlayers: socketMatchState.homePlayers?.length
-        ? socketMatchState.homePlayers
-        : activeSportMatch.homePlayers,
-      awayPlayers: socketMatchState.awayPlayers?.length
-        ? socketMatchState.awayPlayers
-        : activeSportMatch.awayPlayers,
-      periods: socketMatchState.periods?.length
-        ? socketMatchState.periods
-        : activeSportMatch.periods,
+      ...baseObj,
+      home_team_name: homeTeamName,
+      away_team_name: awayTeamName,
+      homePlayers:
+        (socketMatchState?.homePlayers?.length
+          ? socketMatchState.homePlayers
+          : activeSportMatch.homePlayers) || [],
+      awayPlayers:
+        (socketMatchState?.awayPlayers?.length
+          ? socketMatchState.awayPlayers
+          : activeSportMatch.awayPlayers) || [],
+      periods:
+        (socketMatchState?.periods?.length
+          ? socketMatchState.periods
+          : activeSportMatch.periods) || [],
     };
   }, [activeSportMatch, socketMatchState]);
 
@@ -460,24 +473,41 @@ const PlayerHomeScreen = () => {
                 {currentLiveMatch ? (
                   (() => {
                     const homePlayerNames = currentLiveMatch.homePlayers
-                      ?.map((p: any) => p.display_name || p.name)
+                      ?.map(
+                        (p: any) =>
+                          p.display_name ||
+                          p.displayName ||
+                          p.name ||
+                          p.user_name ||
+                          p.user?.display_name ||
+                          p.user?.name ||
+                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                      )
                       .filter(Boolean)
                       .join(" & ");
                     const awayPlayerNames = currentLiveMatch.awayPlayers
-                      ?.map((p: any) => p.display_name || p.name)
+                      ?.map(
+                        (p: any) =>
+                          p.display_name ||
+                          p.displayName ||
+                          p.name ||
+                          p.user_name ||
+                          p.user?.display_name ||
+                          p.user?.name ||
+                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                      )
                       .filter(Boolean)
                       .join(" & ");
 
                     const homeName =
                       currentLiveMatch.home_team_name ||
                       currentLiveMatch.homeTeamName ||
-                      homePlayerNames;
-                    // "Team 1";
+                      (homePlayerNames ? homePlayerNames : "Team 1");
+
                     const awayName =
                       currentLiveMatch.away_team_name ||
                       currentLiveMatch.awayTeamName ||
-                      awayPlayerNames;
-                    // "Team 2";
+                      (awayPlayerNames ? awayPlayerNames : "Team 2");
 
                     const periods = currentLiveMatch.periods || [];
                     const currentPeriod = periods.find(
@@ -610,6 +640,31 @@ const PlayerHomeScreen = () => {
                 )}
               </View>
 
+              {/* AI Find Game Promoted Banner */}
+              <View style={[styles.section, { marginBottom: 4 }]}>
+                <TouchableOpacity
+                  style={styles.aiBannerCard}
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate("FindMatch")}
+                >
+                  <View style={styles.aiBannerLeft}>
+                    <View style={styles.aiBannerBadge}>
+                      <Ionicons name="sparkles" size={12} color="#FFF" />
+                      <Text style={styles.aiBannerBadgeText}>NEW FEATURE</Text>
+                    </View>
+                    <Text style={styles.aiBannerTitle}>Find Game with AI</Text>
+                    <Text style={styles.aiBannerSub}>
+                      Tell us when and what you want to play, and our AI will match you instantly.
+                    </Text>
+                  </View>
+                  <View style={styles.aiBannerRight}>
+                    <View style={styles.aiBannerIconCircle}>
+                      <Ionicons name="sparkles-sharp" size={20} color="#6C4DF6" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+
               {/* Quick Actions Grid */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -617,6 +672,7 @@ const PlayerHomeScreen = () => {
                   {[
                     { title: "Live Matches", icon: "⚡" },
                     { title: "Book Ground", icon: "🏟️" },
+                    { title: "Find Match", icon: "🔍" },
                     { title: "Tournaments", icon: "🏆" },
                     { title: "My Teams", icon: "👥" },
                   ].map((action, index) => (
@@ -633,6 +689,8 @@ const PlayerHomeScreen = () => {
                           navigation.navigate("TournamentList");
                         } else if (action.title === "My Teams") {
                           setShowMyTeamsModal(true);
+                        } else if (action.title === "Find Match") {
+                          navigation.navigate("FindMatch");
                         } else {
                           showMessage({
                             message: `${action.title} coming soon!`,
@@ -931,7 +989,7 @@ const PlayerHomeScreen = () => {
             <Ionicons
               name={activeBottomTab === "dashboard" ? "grid" : "grid-outline"}
               size={20}
-              color={activeBottomTab === "dashboard" ? "#00D2FF" : "#9CA3AF"}
+              color={activeBottomTab === "dashboard" ? "#A78BFA" : "#9CA3AF"}
             />
             <Text
               style={[
@@ -954,7 +1012,7 @@ const PlayerHomeScreen = () => {
             <Ionicons
               name={activeBottomTab === "profile" ? "person" : "person-outline"}
               size={20}
-              color={activeBottomTab === "profile" ? "#00D2FF" : "#9CA3AF"}
+              color={activeBottomTab === "profile" ? "#A78BFA" : "#9CA3AF"}
             />
             <Text
               style={[
@@ -1409,9 +1467,9 @@ const styles = StyleSheet.create({
   },
   bottomTabBar: {
     flexDirection: "row",
-    backgroundColor: "rgba(18, 14, 46, 0.95)",
+    backgroundColor: "rgba(22, 14, 42, 0.98)",
     borderTopWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: "rgba(108, 77, 246, 0.25)",
     paddingTop: 10,
     paddingHorizontal: 30,
     justifyContent: "space-around",
@@ -1426,8 +1484,8 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   tabBarItemActive: {
-    backgroundColor: "rgba(0, 210, 255, 0.12)",
-    borderColor: "rgba(0, 210, 255, 0.3)",
+    backgroundColor: "rgba(108, 77, 246, 0.18)",
+    borderColor: "rgba(167, 139, 250, 0.4)",
   },
   tabBarLabel: {
     color: "#9CA3AF",
@@ -1436,8 +1494,65 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tabBarLabelActive: {
-    color: "#00D2FF",
+    color: "#A78BFA",
     fontWeight: "700",
+  },
+  aiBannerCard: {
+    backgroundColor: "#1D113C",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.3)",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  aiBannerLeft: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  aiBannerBadge: {
+    backgroundColor: "#6C4DF6",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 4,
+    marginBottom: 6,
+  },
+  aiBannerBadgeText: {
+    color: "#FFF",
+    fontSize: 9,
+    fontWeight: "900",
+  },
+  aiBannerTitle: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+  aiBannerSub: {
+    color: "#9CA3AF",
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  aiBannerRight: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  aiBannerIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(108, 77, 246, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

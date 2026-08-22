@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { storage } from "../../services/mmkv";
 import {
   StyleSheet,
@@ -21,7 +21,9 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import FloatingOrbs from "../../Components/atoms/FloatingOrbs";
 import { showMessage } from "react-native-flash-message";
 import { useMatchSocket } from "../../hooks/useMatchSocket";
+import { fetchMatchControllerStartMatch } from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
+import JoinRequestsModal from "../../Components/JoinRequestsModal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -34,6 +36,7 @@ const LiveScoringScreen = () => {
 
   const [userId, setUserId] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
 
   useEffect(() => {
     try {
@@ -83,8 +86,51 @@ const LiveScoringScreen = () => {
   const match = matchState;
   const isCompleted = match?.status === "COMPLETED";
 
+  const [startingMatchLoading, setStartingMatchLoading] = useState(false);
+  const [completionModalDismissed, setCompletionModalDismissed] = useState(false);
+
+  // Check if match opponents are TBD
+  const isMatchTbd = Boolean(
+    match &&
+      (!match.home_team_id ||
+        !match.away_team_id ||
+        match.home_team_name === "TBD" ||
+        match.away_team_name === "TBD"),
+  );
+
+  // Check if current user is match organizer or team captain
+  const isOrganizerOrCaptain = useMemo(() => {
+    if (!match) return false;
+    const isMatchOrganizer =
+      userRole === "TOURNAMENT_ORGANIZER" ||
+      userRole === "ORGANIZER" ||
+      userRole === "ADMIN" ||
+      userRole === "GROUND_OWNER" ||
+      (userId &&
+        Number((match as any)?.tournament?.organizer_id) === Number(userId)) ||
+      (userId &&
+        Number((match as any)?.tournament?.created_by) === Number(userId)) ||
+      (userId && Number((match as any)?.organizer_id) === Number(userId)) ||
+      (userId && Number((match as any)?.created_by) === Number(userId));
+
+    const m = match as any;
+    const isCaptain = userId && (
+      Number(m?.homeTeam?.captain_id) === Number(userId) ||
+      Number(m?.homeTeam?.captainId) === Number(userId) ||
+      Number(m?.awayTeam?.captain_id) === Number(userId) ||
+      Number(m?.awayTeam?.captainId) === Number(userId) ||
+      Number(m?.home_team?.captain_id) === Number(userId) ||
+      Number(m?.home_team?.captainId) === Number(userId) ||
+      Number(m?.away_team?.captain_id) === Number(userId) ||
+      Number(m?.away_team?.captainId) === Number(userId)
+    );
+
+    return Boolean(isMatchOrganizer || isCaptain);
+  }, [match, userId, userRole]);
+
   // Determine if the user is authorized to perform scoring inputs
   const isAllowedToScore = (() => {
+    if (isMatchTbd) return false;
     if (route.params?.canScore !== undefined) {
       return Boolean(route.params.canScore);
     }
@@ -96,23 +142,78 @@ const LiveScoringScreen = () => {
         (p: any) =>
           (userId && Number(p.user_id) === Number(userId)) ||
           (userId && Number(p.id) === Number(userId)) ||
-          (userId && Number(p.player_id) === Number(userId))
+          (userId && Number(p.player_id) === Number(userId)),
       ) ||
       match.awayPlayers?.some(
         (p: any) =>
           (userId && Number(p.user_id) === Number(userId)) ||
           (userId && Number(p.id) === Number(userId)) ||
-          (userId && Number(p.player_id) === Number(userId))
+          (userId && Number(p.player_id) === Number(userId)),
       );
 
-    const isMatchOrganizer =
-      userRole === "TOURNAMENT_ORGANIZER" ||
-      userRole === "ORGANIZER" ||
-      userRole === "ADMIN" ||
-      userRole === "GROUND_OWNER";
-
-    return Boolean(isPlayerInMatch || isMatchOrganizer);
+    return Boolean(isPlayerInMatch || isOrganizerOrCaptain);
   })();
+
+  const handleStartMatchAction = async () => {
+    if (isMatchTbd) {
+      showMessage({
+        message: "Cannot start match: Opponents are not yet decided (TBD)",
+        type: "warning",
+      });
+      return;
+    }
+    try {
+      setStartingMatchLoading(true);
+      await fetchMatchControllerStartMatch({
+        pathParams: { matchId },
+      });
+      showMessage({
+        message: "Match is now LIVE!",
+        type: "success",
+      });
+      requestSync();
+    } catch (err: any) {
+      console.log("Error starting match:", err);
+      showMessage({
+        message: err?.message || "Failed to start match",
+        type: "danger",
+      });
+    } finally {
+      setStartingMatchLoading(false);
+    }
+  };
+
+  const handleSafeScorePoint = async (
+    teamId: number,
+    playerId?: number,
+    type: "POINT" | "FAULT" = "POINT",
+  ) => {
+    if (isMatchTbd) {
+      showMessage({
+        message: "Cannot score: Opponents are not yet decided (TBD)",
+        type: "warning",
+      });
+      return;
+    }
+    if (match?.status !== "LIVE") {
+      try {
+        setStartingMatchLoading(true);
+        await fetchMatchControllerStartMatch({
+          pathParams: { matchId },
+        });
+        showMessage({
+          message: "Match started!",
+          type: "success",
+        });
+        requestSync();
+      } catch (err: any) {
+        console.log("Error auto-starting match before score:", err);
+      } finally {
+        setStartingMatchLoading(false);
+      }
+    }
+    scorePoint(teamId, playerId, type);
+  };
 
   // Get player names
   const homePlayerNames =
@@ -131,6 +232,21 @@ const LiveScoringScreen = () => {
     (match as any)?.home_team_name || (match as any)?.homeTeamName || homeNames;
   const awayTeamDisplayName =
     (match as any)?.away_team_name || (match as any)?.awayTeamName || awayNames;
+
+  // Resolve player IDs for accurate rally attribution
+  const homePlayerUserId =
+    match?.homePlayers?.[0]?.user_id ??
+    match?.homePlayers?.[0]?.userId ??
+    match?.homePlayers?.[0]?.player_id ??
+    match?.homePlayers?.[0]?.id ??
+    undefined;
+
+  const awayPlayerUserId =
+    match?.awayPlayers?.[0]?.user_id ??
+    match?.awayPlayers?.[0]?.userId ??
+    match?.awayPlayers?.[0]?.player_id ??
+    match?.awayPlayers?.[0]?.id ??
+    undefined;
 
   // Active score calculation
   const periods = match?.periods || [];
@@ -408,10 +524,97 @@ const LiveScoringScreen = () => {
 
             <SizedBox height={10} />
 
+            {/* TBD MATCH WARNING BANNER */}
+            {isMatchTbd && (
+              <View
+                style={{
+                  backgroundColor: "rgba(245, 158, 11, 0.12)",
+                  borderColor: "rgba(245, 158, 11, 0.4)",
+                  borderWidth: 1,
+                  borderRadius: 16,
+                  padding: 18,
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={32}
+                  color="#F59E0B"
+                  style={{ marginBottom: 6 }}
+                />
+                <Text
+                  style={{
+                    color: "#F59E0B",
+                    fontSize: 16,
+                    fontWeight: "800",
+                    textAlign: "center",
+                  }}
+                >
+                  Opponents Pending (TBD)
+                </Text>
+                <Text
+                  style={{
+                    color: "#D1D5DB",
+                    fontSize: 13,
+                    textAlign: "center",
+                    marginTop: 6,
+                    lineHeight: 18,
+                  }}
+                >
+                  This match fixture cannot be started yet because opponents
+                  have not been determined. It will automatically unlock once
+                  the preceding match finishes.
+                </Text>
+              </View>
+            )}
+
             {/* ACTION CONTROLS */}
             {isAllowedToScore ? (
               <View style={styles.controlsCard}>
                 <Text style={styles.controlsHeader}>Score Management</Text>
+
+                {isOrganizerOrCaptain && (
+                  <TouchableOpacity
+                    style={styles.viewRequestsBtn}
+                    onPress={() => setShowRequestsModal(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="people-outline" size={18} color="#FFF" />
+                    <Text style={styles.viewRequestsBtnText}>View Join Requests</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Match Not Started Banner Action */}
+                {match?.status !== "LIVE" && !isCompleted && (
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "#10B981",
+                      borderRadius: 12,
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "row",
+                      gap: 8,
+                      marginBottom: 16,
+                    }}
+                    onPress={handleStartMatchAction}
+                    disabled={startingMatchLoading}
+                    activeOpacity={0.8}
+                  >
+                    {startingMatchLoading ? (
+                      <ActivityIndicator color="#FFF" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="play-circle-outline" size={20} color="#FFF" />
+                        <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "800" }}>
+                          Start Match (Make Live)
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
 
                 {/* Scoring Rule Explanation Banner */}
                 <View style={styles.scoringExplanationBanner}>
@@ -438,7 +641,7 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.homePointBtn]}
                     onPress={() =>
-                      scorePoint(match.home_team_id!, undefined, "POINT")
+                      handleSafeScorePoint(match.home_team_id!, homePlayerUserId, "POINT")
                     }
                     activeOpacity={0.8}
                   >
@@ -451,7 +654,7 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.awayPointBtn]}
                     onPress={() =>
-                      scorePoint(match.away_team_id!, undefined, "POINT")
+                      handleSafeScorePoint(match.away_team_id!, awayPlayerUserId, "POINT")
                     }
                     activeOpacity={0.8}
                   >
@@ -471,8 +674,11 @@ const LiveScoringScreen = () => {
                       const nonServingTeamId = match.servingTeamId === match.home_team_id 
                         ? match.away_team_id 
                         : match.home_team_id;
+                      const activePlayerUserId = match.servingTeamId === match.home_team_id
+                        ? homePlayerUserId
+                        : awayPlayerUserId;
                       if (nonServingTeamId) {
-                        scorePoint(nonServingTeamId, userId || undefined, 'FAULT');
+                        handleSafeScorePoint(nonServingTeamId, activePlayerUserId || userId || undefined, 'FAULT');
                       }
                     }}
                     activeOpacity={0.8}
@@ -582,54 +788,97 @@ const LiveScoringScreen = () => {
           </ScrollView>
 
           {/* CELEBRATORY COMPLETION OVERLAY */}
-          {isCompleted && (
+          {isCompleted && !completionModalDismissed && (
             <Modal
               transparent={true}
-              visible={isCompleted}
+              visible={isCompleted && !completionModalDismissed}
               animationType="fade"
+              onRequestClose={() => setCompletionModalDismissed(true)}
             >
               <View style={styles.completionOverlay}>
                 <View style={styles.completionCard}>
                   <Text style={styles.congratsIcon}>🏆</Text>
                   <Text style={styles.congratsTitle}>Match Completed!</Text>
                   <Text style={styles.congratsSubtitle}>
-                    authoritative final score
+                    Authoritative Final Score
                   </Text>
 
-                  <View style={styles.completionScoreBox}>
-                    <Text style={styles.completedTeamName}>{homeNames}</Text>
-                    <Text style={styles.completedFinalScore}>
-                      {homeGamesWon} - {awayGamesWon}
-                    </Text>
-                    <Text style={styles.completedTeamName}>{awayNames}</Text>
-                  </View>
+                  {(() => {
+                    const isHWon = match.winner_team_id === match.home_team_id;
+                    const isAWon = match.winner_team_id === match.away_team_id;
+                    let hScore = homeGamesWon;
+                    let aScore = awayGamesWon;
+                    if (hScore === 0 && aScore === 0) {
+                      if (isHWon) { hScore = 1; aScore = 0; }
+                      else if (isAWon) { aScore = 1; hScore = 0; }
+                    }
+                    return (
+                      <View style={styles.completionScoreBox}>
+                        <Text style={styles.completedTeamName}>{homeNames}</Text>
+                        <Text style={styles.completedFinalScore}>
+                          {hScore} - {aScore}
+                        </Text>
+                        <Text style={styles.completedTeamName}>{awayNames}</Text>
+                      </View>
+                    );
+                  })()}
 
                   <Text style={styles.winnerText}>
                     Winner:{" "}
                     {match.winner_team_id === match.home_team_id
                       ? homeNames
-                      : awayNames}
+                      : match.winner_team_id === match.away_team_id
+                        ? awayNames
+                        : "Match Concluded"}
                   </Text>
 
                   <SizedBox height={20} />
 
-                  <TouchableOpacity
-                    style={styles.closeOverlayBtn}
-                    onPress={() => {
-                      navigation.goBack();
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.closeOverlayText}>
-                      Back to Match Center
-                    </Text>
-                  </TouchableOpacity>
+                  <View style={{ gap: 10, width: "100%" }}>
+                    <TouchableOpacity
+                      style={styles.closeOverlayBtn}
+                      onPress={() => setCompletionModalDismissed(true)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.closeOverlayText}>
+                        View Match Scorecard
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.closeOverlayBtn,
+                        {
+                          backgroundColor: "transparent",
+                          borderColor: "rgba(255,255,255,0.2)",
+                          borderWidth: 1,
+                        },
+                      ]}
+                      onPress={() => {
+                        navigation.goBack();
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.closeOverlayText, { color: "#9CA3AF" }]}>
+                        Back to Match Center
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </Modal>
           )}
         </View>
       )}
+
+      <JoinRequestsModal
+        visible={showRequestsModal}
+        onClose={() => setShowRequestsModal(false)}
+        matchId={matchId}
+        onRosterUpdated={() => {
+          requestSync(); // Sync roster changes
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -921,6 +1170,22 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     marginBottom: 12,
     textTransform: "uppercase",
+  },
+  viewRequestsBtn: {
+    backgroundColor: "#6C4DF6",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  viewRequestsBtnText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
   },
   controlsRow: {
     flexDirection: "row",
