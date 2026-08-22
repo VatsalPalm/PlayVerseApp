@@ -34,6 +34,7 @@ interface TournamentParticipantsTabProps {
   setGroupsInput: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   handleSaveRanksAndGroups: () => void;
   handleAutoRandomizeSeedingAndGroups: () => void;
+  isTournamentEnded?: boolean;
   actionLoading: boolean;
   styles: any;
 }
@@ -61,6 +62,7 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
   setGroupsInput,
   handleSaveRanksAndGroups,
   handleAutoRandomizeSeedingAndGroups,
+  isTournamentEnded,
   actionLoading,
   styles,
 }) => {
@@ -86,7 +88,7 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
         >
           {isIndividual ? "Registered Players" : "Registered Teams"}
         </Text>
-        {tournament?.status === "UPCOMING" &&
+        {tournament?.status === "UPCOMING" && !isTournamentEnded &&
           (isMaxTeamsReached ? (
             <View
               style={[
@@ -291,6 +293,7 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
                   canRemove ||
                   (item.status === "PENDING" && isOrganizer);
 
+                if (isTournamentEnded) return null;
                 if (!hasActions) return null;
 
                 return (
@@ -473,27 +476,29 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
               </Text>
             </View>
 
-            <TouchableOpacity
-              style={{
-                backgroundColor: "rgba(108, 77, 246, 0.25)",
-                borderColor: "#6C4DF6",
-                borderWidth: 1,
-                paddingHorizontal: 12,
-                paddingVertical: 7,
-                borderRadius: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-              }}
-              onPress={handleAutoRandomizeSeedingAndGroups}
-            >
-              <Ionicons name="sparkles" size={14} color="#A78BFA" />
-              <Text
-                style={{ color: "#A78BFA", fontSize: 12, fontWeight: "700" }}
+            {!isTournamentEnded && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "rgba(108, 77, 246, 0.25)",
+                  borderColor: "#6C4DF6",
+                  borderWidth: 1,
+                  paddingHorizontal: 12,
+                  paddingVertical: 7,
+                  borderRadius: 10,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+                onPress={handleAutoRandomizeSeedingAndGroups}
               >
-                Auto-Assign
-              </Text>
-            </TouchableOpacity>
+                <Ionicons name="sparkles" size={14} color="#A78BFA" />
+                <Text
+                  style={{ color: "#A78BFA", fontSize: 12, fontWeight: "700" }}
+                >
+                  Auto-Assign
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Table Header */}
@@ -631,28 +636,30 @@ export const TournamentParticipantsTab: React.FC<TournamentParticipantsTabProps>
           })}
 
           {/* Save Button */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#6C4DF6",
-              borderRadius: 10,
-              paddingVertical: 10,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 14,
-            }}
-            onPress={handleSaveRanksAndGroups}
-            disabled={actionLoading}
-          >
-            {actionLoading ? (
-              <ActivityIndicator color="#FFF" size="small" />
-            ) : (
-              <Text
-                style={{ color: "#FFF", fontSize: 13, fontWeight: "700" }}
-              >
-                Save Rankings & Groups
-              </Text>
-            )}
-          </TouchableOpacity>
+          {!isTournamentEnded && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#6C4DF6",
+                borderRadius: 10,
+                paddingVertical: 10,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 14,
+              }}
+              onPress={handleSaveRanksAndGroups}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text
+                  style={{ color: "#FFF", fontSize: 13, fontWeight: "700" }}
+                >
+                  Save Rankings & Groups
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </ScrollView>

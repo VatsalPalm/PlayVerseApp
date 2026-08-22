@@ -40,7 +40,6 @@ import {
   fetchTournamentControllerGetFixtures,
   fetchTournamentControllerGetStandings,
   fetchTournamentControllerGetAnalytics,
-  fetchTournamentControllerRegisterTeam,
   fetchTournamentControllerApproveRegistration,
   fetchTournamentControllerCancelRegistration,
   fetchTournamentControllerUpdateSeeding,
@@ -883,6 +882,20 @@ const TournamentDetailsScreen = () => {
   const isMaxTeamsReached = maxTeams > 0 && registeredTeamsCount >= maxTeams;
   const isIndividual = tournament?.config?.registrationType === "INDIVIDUAL";
 
+  const isTournamentEnded = (() => {
+    if (!tournament?.end_date) return false;
+    const closingDate = new Date(tournament.end_date);
+    closingDate.setHours(23, 59, 59, 999);
+    return Date.now() > closingDate.getTime();
+  })();
+
+  const isTournamentStarted = (() => {
+    if (!tournament?.start_date) return true;
+    const startDate = new Date(tournament.start_date);
+    startDate.setHours(0, 0, 0, 0);
+    return Date.now() >= startDate.getTime();
+  })();
+
   const handlePickTeamLogo = async () => {
     try {
       const permissionResult =
@@ -1160,6 +1173,13 @@ const TournamentDetailsScreen = () => {
 
   // Player Action: Register Team or Individual
   const handleRegisterTeam = () => {
+    if (isTournamentEnded) {
+      showMessage({
+        message: "Registration Closed: The tournament has already ended.",
+        type: "warning",
+      });
+      return;
+    }
     if (isMaxTeamsReached) {
       showMessage({
         message: `Registration Closed: Maximum limit (${registeredTeamsCount}/${maxTeams}) reached for this tournament.`,
@@ -1196,8 +1216,9 @@ const TournamentDetailsScreen = () => {
     try {
       setActionLoading(true);
       setShowRegisterModal(false);
-      await fetchTournamentControllerRegisterTeam({
-        pathParams: { id: tournamentId },
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: `/api/tournament/v1/${tournamentId}/register`,
+        method: "POST",
         body: { teamId: targetId },
       });
       showMessage({
@@ -1316,9 +1337,10 @@ const TournamentDetailsScreen = () => {
       showMessage({ message: "Please select a team", type: "warning" });
       return;
     }
-    if (!memberUserId.trim()) {
+    const val = memberUserId.trim();
+    if (!val) {
       showMessage({
-        message: "Please enter Player User ID or Name",
+        message: "Please enter Mobile Number",
         type: "warning",
       });
       return;
@@ -1327,32 +1349,27 @@ const TournamentDetailsScreen = () => {
       setActionLoading(true);
       const targetTeamId =
         selectedTeamForMember.team_id || selectedTeamForMember.id;
+      const isShortId = !isNaN(Number(val)) && val.length <= 6;
       await stackApiFetch<any, any, any, any, any, any>({
-        url: `/api/teams/v1/${targetTeamId}/join`,
+        url: "/api/teams/v1/{id}/invitations",
         method: "POST",
+        pathParams: { id: String(targetTeamId) },
         body: {
-          userId: parseInt(memberUserId, 10) || undefined,
-          playerName: memberUserId.trim(),
+          phoneNumber: val,
+          mobileNumber: val,
+          userIdOrEmail: val,
+          playerId: isShortId ? Number(val) : undefined,
         },
-      }).catch(async () => {
-        await stackApiFetch<any, any, any, any, any, any>({
-          url: `/api/teams/v1/${targetTeamId}/members`,
-          method: "POST",
-          body: {
-            userId: parseInt(memberUserId, 10) || undefined,
-            role: "Player",
-          },
-        });
       });
 
-      showMessage({ message: "Player added to team!", type: "success" });
+      showMessage({ message: "Player invited successfully!", type: "success" });
       setShowAddMemberModal(false);
       setSelectedTeamForMember(null);
       setMemberUserId("");
       loadAllData();
     } catch (err: any) {
       showMessage({
-        message: safeErrorMessage(err, "Failed to add player to team"),
+        message: safeErrorMessage(err, "Failed to invite player"),
         type: "danger",
       });
     } finally {
@@ -1771,6 +1788,8 @@ const TournamentDetailsScreen = () => {
       isIndividual={isIndividual}
       handleRegisterTeam={handleRegisterTeam}
       handleDeleteTournament={handleDeleteTournament}
+      isTournamentEnded={isTournamentEnded}
+      isTournamentStarted={isTournamentStarted}
       styles={styles}
     />
   );
@@ -1799,6 +1818,7 @@ const TournamentDetailsScreen = () => {
       setGroupsInput={setGroupsInput}
       handleSaveRanksAndGroups={handleSaveRanksAndGroups}
       handleAutoRandomizeSeedingAndGroups={handleAutoRandomizeSeedingAndGroups}
+      isTournamentEnded={isTournamentEnded}
       actionLoading={actionLoading}
       styles={styles}
     />
@@ -1823,6 +1843,8 @@ const TournamentDetailsScreen = () => {
       manualMatchDate={manualMatchDate}
       setManualMatchDate={setManualMatchDate}
       handleCreateManualMatch={handleCreateManualMatch}
+      isTournamentEnded={isTournamentEnded}
+      isTournamentStarted={isTournamentStarted}
       actionLoading={actionLoading}
       styles={styles}
     />
@@ -2027,31 +2049,39 @@ const TournamentDetailsScreen = () => {
 
             <TextInput
               style={styles.modalInput}
-              placeholder="Player User ID or Name"
+              placeholder="Mobile Number"
               placeholderTextColor="#9CA3AF"
+              keyboardType="phone-pad"
               value={memberUserId}
               onChangeText={setMemberUserId}
             />
 
-            <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+            <View style={[styles.modalBtnRow, { marginTop: 16 }]}>
               <TouchableOpacity
                 style={[
+                  styles.modalBtn,
                   styles.modalBtnSubmit,
-                  { flex: 1, backgroundColor: "#6C4DF6" },
+                  { flex: 1, backgroundColor: "#6C4DF6", marginLeft: 0 },
                 ]}
                 onPress={handleAddMemberToTeam}
               >
-                <Text style={styles.modalSubmitText}>Add Player</Text>
+                <Text style={[styles.modalSubmitText, { color: "#FFFFFF" }]}>
+                  Add Player
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalCloseBtn, { flex: 1, marginTop: 0 }]}
+                style={[
+                  styles.modalBtn,
+                  styles.modalBtnCancel,
+                  { flex: 1, marginRight: 0 },
+                ]}
                 onPress={() => {
                   setShowAddMemberModal(false);
                   setSelectedTeamForMember(null);
                   setMemberUserId("");
                 }}
               >
-                <Text style={styles.modalCloseText}>Cancel</Text>
+                <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>

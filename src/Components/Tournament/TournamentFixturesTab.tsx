@@ -32,6 +32,8 @@ interface TournamentFixturesTabProps {
   manualMatchDate: string;
   setManualMatchDate: (date: string) => void;
   handleCreateManualMatch: () => void;
+  isTournamentEnded?: boolean;
+  isTournamentStarted?: boolean;
   actionLoading: boolean;
   styles: any;
 }
@@ -54,6 +56,8 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
   manualMatchDate,
   setManualMatchDate,
   handleCreateManualMatch,
+  isTournamentEnded,
+  isTournamentStarted,
   actionLoading,
   styles,
 }) => {
@@ -93,7 +97,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
           Fixtures & Brackets ({fixtures.length})
         </Text>
 
-        {isOrganizer && (
+        {isOrganizer && !isTournamentEnded && (
           <TouchableOpacity
             style={{
               backgroundColor:
@@ -222,7 +226,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
 
               <View style={styles.fixtureActions}>
                 {/* Start Match - Only organizer can start a scheduled match */}
-                {item.status === "SCHEDULED" && isOrganizer && (
+                {item.status === "SCHEDULED" && isOrganizer && !isTournamentEnded && isTournamentStarted && (
                   <TouchableOpacity
                     style={styles.liveScoreBtn}
                     onPress={() => {
@@ -270,7 +274,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
 
                       navigation.navigate("LiveScoring", {
                         matchId: item.id,
-                        canScore: isOrganizer,
+                        canScore: isOrganizer && !isTournamentEnded,
                       });
                     }}
                   >
@@ -278,7 +282,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   </TouchableOpacity>
                 )}
 
-                {item.status !== "COMPLETED" && (
+                {item.status !== "COMPLETED" && !isTournamentEnded && (
                   <TouchableOpacity
                     style={styles.overrideBtn}
                     onPress={() => handleAdminCompleteMatch(item.id)}
@@ -310,7 +314,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
         })
       )}
 
-      {isOrganizer && participants.length >= 2 && (
+      {isOrganizer && participants.length >= 2 && !isTournamentEnded && (
         <View
           style={{
             marginTop: 24,

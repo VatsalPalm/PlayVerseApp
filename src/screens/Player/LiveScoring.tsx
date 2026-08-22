@@ -21,7 +21,10 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import FloatingOrbs from "../../Components/atoms/FloatingOrbs";
 import { showMessage } from "react-native-flash-message";
 import { useMatchSocket } from "../../hooks/useMatchSocket";
-import { fetchMatchControllerStartMatch } from "../../Api/playVerseComponents";
+import {
+  fetchMatchControllerStartMatch,
+  fetchTournamentControllerGetTournament,
+} from "../../Api/playVerseComponents";
 import SizedBox from "../../Components/atoms/SizeBox";
 import JoinRequestsModal from "../../Components/JoinRequestsModal";
 
@@ -37,24 +40,26 @@ const LiveScoringScreen = () => {
   const [userId, setUserId] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [showRequestsModal, setShowRequestsModal] = useState(false);
+  const [tournamentEnded, setTournamentEnded] = useState(false);
 
   useEffect(() => {
     try {
-      const stored = storage.getString('userProfile');
+      const stored = storage.getString("userProfile");
       if (stored) {
         const userObj = JSON.parse(stored);
-        const resolvedId = userObj.user_id ?? userObj.id ?? userObj.userId ?? null;
+        const resolvedId =
+          userObj.user_id ?? userObj.id ?? userObj.userId ?? null;
         setUserId(resolvedId);
       }
-      const role = storage.getString('userRole');
-      setUserRole(role || 'PLAYER');
+      const role = storage.getString("userRole");
+      setUserRole(role || "PLAYER");
     } catch (e) {
-      console.log('Error parsing profile:', e);
+      console.log("Error parsing profile:", e);
     }
   }, []);
 
   if (!matchId) {
-    showMessage({ message: 'Invalid Match ID', type: 'danger' });
+    showMessage({ message: "Invalid Match ID", type: "danger" });
     navigation.goBack();
     return null;
   }
@@ -75,7 +80,7 @@ const LiveScoringScreen = () => {
     if (error) {
       showMessage({
         message: error,
-        type: 'danger',
+        type: "danger",
         duration: 3000,
       });
       clearError();
@@ -87,15 +92,32 @@ const LiveScoringScreen = () => {
   const isCompleted = match?.status === "COMPLETED";
 
   const [startingMatchLoading, setStartingMatchLoading] = useState(false);
-  const [completionModalDismissed, setCompletionModalDismissed] = useState(false);
+  const [completionModalDismissed, setCompletionModalDismissed] =
+    useState(false);
 
-  // Check if match opponents are TBD
+  // Check if tournament has ended — placed here AFTER matchState is declared
+  useEffect(() => {
+    const tid = matchState?.tournamentId;
+    if (!tid) return;
+    fetchTournamentControllerGetTournament({ pathParams: { id: tid } })
+      .then((tData: any) => {
+        if (tData?.end_date) {
+          const closingDate = new Date(tData.end_date);
+          closingDate.setHours(23, 59, 59, 999);
+          if (Date.now() > closingDate.getTime()) setTournamentEnded(true);
+        }
+      })
+      .catch((err: any) =>
+        console.log("Error loading tournament for scoring check:", err),
+      );
+  }, [matchState?.tournamentId]);
+
   const isMatchTbd = Boolean(
     match &&
-      (!match.home_team_id ||
-        !match.away_team_id ||
-        match.home_team_name === "TBD" ||
-        match.away_team_name === "TBD"),
+    (!match.home_team_id ||
+      !match.away_team_id ||
+      match.home_team_name === "TBD" ||
+      match.away_team_name === "TBD"),
   );
 
   // Check if current user is match organizer or team captain
@@ -114,25 +136,26 @@ const LiveScoringScreen = () => {
       (userId && Number((match as any)?.created_by) === Number(userId));
 
     const m = match as any;
-    const isCaptain = userId && (
-      Number(m?.homeTeam?.captain_id) === Number(userId) ||
-      Number(m?.homeTeam?.captainId) === Number(userId) ||
-      Number(m?.awayTeam?.captain_id) === Number(userId) ||
-      Number(m?.awayTeam?.captainId) === Number(userId) ||
-      Number(m?.home_team?.captain_id) === Number(userId) ||
-      Number(m?.home_team?.captainId) === Number(userId) ||
-      Number(m?.away_team?.captain_id) === Number(userId) ||
-      Number(m?.away_team?.captainId) === Number(userId)
-    );
+    const isCaptain =
+      userId &&
+      (Number(m?.homeTeam?.captain_id) === Number(userId) ||
+        Number(m?.homeTeam?.captainId) === Number(userId) ||
+        Number(m?.awayTeam?.captain_id) === Number(userId) ||
+        Number(m?.awayTeam?.captainId) === Number(userId) ||
+        Number(m?.home_team?.captain_id) === Number(userId) ||
+        Number(m?.home_team?.captainId) === Number(userId) ||
+        Number(m?.away_team?.captain_id) === Number(userId) ||
+        Number(m?.away_team?.captainId) === Number(userId));
 
     return Boolean(isMatchOrganizer || isCaptain);
   }, [match, userId, userRole]);
 
   // Determine if the user is authorized to perform scoring inputs
   const isAllowedToScore = (() => {
+    if (tournamentEnded) return false;
     if (isMatchTbd) return false;
     if (route.params?.canScore !== undefined) {
-      return Boolean(route.params.canScore);
+      return Boolean(route.params.canScore) && !tournamentEnded;
     }
     if (!match) return false;
 
@@ -336,6 +359,27 @@ const LiveScoringScreen = () => {
           <Ionicons name="sync" size={20} color="#6C4DF6" />
         </TouchableOpacity>
       </View>
+
+      {tournamentEnded && (
+        <View
+          style={{
+            backgroundColor: "rgba(239, 68, 68, 0.15)",
+            borderColor: "rgba(239, 68, 68, 0.4)",
+            borderWidth: 1,
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <Ionicons name="alert-circle" size={18} color="#EF4444" />
+          <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "700" }}>
+            Scoring Disabled: Tournament Closed
+          </Text>
+        </View>
+      )}
 
       {/* Syncing Overlay Loader */}
       {syncing && (
@@ -581,7 +625,9 @@ const LiveScoringScreen = () => {
                     activeOpacity={0.8}
                   >
                     <Ionicons name="people-outline" size={18} color="#FFF" />
-                    <Text style={styles.viewRequestsBtnText}>View Join Requests</Text>
+                    <Text style={styles.viewRequestsBtnText}>
+                      View Join Requests
+                    </Text>
                   </TouchableOpacity>
                 )}
 
@@ -607,8 +653,18 @@ const LiveScoringScreen = () => {
                       <ActivityIndicator color="#FFF" size="small" />
                     ) : (
                       <>
-                        <Ionicons name="play-circle-outline" size={20} color="#FFF" />
-                        <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "800" }}>
+                        <Ionicons
+                          name="play-circle-outline"
+                          size={20}
+                          color="#FFF"
+                        />
+                        <Text
+                          style={{
+                            color: "#FFF",
+                            fontSize: 15,
+                            fontWeight: "800",
+                          }}
+                        >
                           Start Match (Make Live)
                         </Text>
                       </>
@@ -641,7 +697,11 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.homePointBtn]}
                     onPress={() =>
-                      handleSafeScorePoint(match.home_team_id!, homePlayerUserId, "POINT")
+                      handleSafeScorePoint(
+                        match.home_team_id!,
+                        homePlayerUserId,
+                        "POINT",
+                      )
                     }
                     activeOpacity={0.8}
                   >
@@ -654,7 +714,11 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.awayPointBtn]}
                     onPress={() =>
-                      handleSafeScorePoint(match.away_team_id!, awayPlayerUserId, "POINT")
+                      handleSafeScorePoint(
+                        match.away_team_id!,
+                        awayPlayerUserId,
+                        "POINT",
+                      )
                     }
                     activeOpacity={0.8}
                   >
@@ -671,14 +735,20 @@ const LiveScoringScreen = () => {
                   <TouchableOpacity
                     style={[styles.controlBtn, styles.faultBtn]}
                     onPress={() => {
-                      const nonServingTeamId = match.servingTeamId === match.home_team_id 
-                        ? match.away_team_id 
-                        : match.home_team_id;
-                      const activePlayerUserId = match.servingTeamId === match.home_team_id
-                        ? homePlayerUserId
-                        : awayPlayerUserId;
+                      const nonServingTeamId =
+                        match.servingTeamId === match.home_team_id
+                          ? match.away_team_id
+                          : match.home_team_id;
+                      const activePlayerUserId =
+                        match.servingTeamId === match.home_team_id
+                          ? homePlayerUserId
+                          : awayPlayerUserId;
                       if (nonServingTeamId) {
-                        handleSafeScorePoint(nonServingTeamId, activePlayerUserId || userId || undefined, 'FAULT');
+                        handleSafeScorePoint(
+                          nonServingTeamId,
+                          activePlayerUserId || userId || undefined,
+                          "FAULT",
+                        );
                       }
                     }}
                     activeOpacity={0.8}
@@ -809,16 +879,25 @@ const LiveScoringScreen = () => {
                     let hScore = homeGamesWon;
                     let aScore = awayGamesWon;
                     if (hScore === 0 && aScore === 0) {
-                      if (isHWon) { hScore = 1; aScore = 0; }
-                      else if (isAWon) { aScore = 1; hScore = 0; }
+                      if (isHWon) {
+                        hScore = 1;
+                        aScore = 0;
+                      } else if (isAWon) {
+                        aScore = 1;
+                        hScore = 0;
+                      }
                     }
                     return (
                       <View style={styles.completionScoreBox}>
-                        <Text style={styles.completedTeamName}>{homeNames}</Text>
+                        <Text style={styles.completedTeamName}>
+                          {homeNames}
+                        </Text>
                         <Text style={styles.completedFinalScore}>
                           {hScore} - {aScore}
                         </Text>
-                        <Text style={styles.completedTeamName}>{awayNames}</Text>
+                        <Text style={styles.completedTeamName}>
+                          {awayNames}
+                        </Text>
                       </View>
                     );
                   })()}
@@ -859,7 +938,9 @@ const LiveScoringScreen = () => {
                       }}
                       activeOpacity={0.8}
                     >
-                      <Text style={[styles.closeOverlayText, { color: "#9CA3AF" }]}>
+                      <Text
+                        style={[styles.closeOverlayText, { color: "#9CA3AF" }]}
+                      >
                         Back to Match Center
                       </Text>
                     </TouchableOpacity>

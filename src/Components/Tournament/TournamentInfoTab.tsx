@@ -19,6 +19,8 @@ interface TournamentInfoTabProps {
   isIndividual: boolean;
   handleRegisterTeam: () => void;
   handleDeleteTournament: () => void;
+  isTournamentEnded?: boolean;
+  isTournamentStarted?: boolean;
   styles: any;
 }
 
@@ -32,6 +34,8 @@ export const TournamentInfoTab: React.FC<TournamentInfoTabProps> = ({
   isIndividual,
   handleRegisterTeam,
   handleDeleteTournament,
+  isTournamentEnded,
+  isTournamentStarted,
   styles,
 }) => {
   if (!tournament) return null;
@@ -168,7 +172,31 @@ export const TournamentInfoTab: React.FC<TournamentInfoTabProps> = ({
 
       {!isOrganizer &&
         tournament.status === "UPCOMING" &&
-        (isMaxTeamsReached ? (
+        (isTournamentEnded ? (
+          <View
+            style={[
+              styles.primaryBtn,
+              {
+                backgroundColor: "rgba(239, 68, 68, 0.12)",
+                borderColor: "rgba(239, 68, 68, 0.4)",
+                borderWidth: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              },
+            ]}
+          >
+            <Ionicons
+              name="lock-closed"
+              size={18}
+              color="#EF4444"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.primaryBtnText, { color: "#EF4444" }]}>
+              Tournament Ended / Closed
+            </Text>
+          </View>
+        ) : isMaxTeamsReached ? (
           <View
             style={[
               styles.primaryBtn,

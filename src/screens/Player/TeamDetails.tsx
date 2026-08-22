@@ -174,6 +174,28 @@ const TeamDetailsScreen = () => {
     }
   };
 
+  const handleBecomeCaptain = async () => {
+    try {
+      setActionLoading(true);
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: `/api/teams/v1/${teamId}/become-captain`,
+        method: "POST",
+      });
+      showMessage({
+        message: "You are now the team captain!",
+        type: "success",
+      });
+      loadData();
+    } catch (err: any) {
+      showMessage({
+        message: err.message || "Failed to claim captaincy",
+        type: "danger",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleRejectPlayer = async (userId: number, name: string) => {
     try {
       setActionLoading(true);
@@ -278,18 +300,20 @@ const TeamDetailsScreen = () => {
   };
 
   const handleDeleteOrLeaveTeam = () => {
-    const isCaptain =
+    const localIsCaptain =
       Number(teamDetails?.captain_id || teamDetails?.captainId) ===
       Number(currentUserId);
-    const title = isCaptain ? "Delete Team" : "Leave Team";
-    const desc = isCaptain
+    const isOwner = Number(teamDetails?.owner_id || teamDetails?.ownerId) === Number(currentUserId);
+    const canDelete = localIsCaptain || isOwner;
+    const title = canDelete ? "Delete Team" : "Leave Team";
+    const desc = canDelete
       ? "Are you sure you want to delete this team? This cannot be undone."
       : "Are you sure you want to leave this team?";
 
     Alert.alert(title, desc, [
       { text: "Cancel", style: "cancel" },
       {
-        text: isCaptain ? "Delete" : "Leave",
+        text: canDelete ? "Delete" : "Leave",
         style: "destructive",
         onPress: async () => {
           try {
@@ -439,9 +463,8 @@ const TeamDetailsScreen = () => {
   const teamDesc = safeStr(teamDetails?.description);
 
   const isCaptain =
-    Number(safeStr(unwrappedCaptainId)) === Number(currentUserId) ||
-    Number(safeStr(teamDetails?.owner_id || teamDetails?.ownerId)) ===
-      Number(currentUserId);
+    Boolean(unwrappedCaptainId) &&
+    Number(safeStr(unwrappedCaptainId)) === Number(currentUserId);
 
   const isAlreadyMember = members.some((m: any) => {
     const memberUid = safeStr(m.user_id || m.id || m.userId);
@@ -568,14 +591,15 @@ const TeamDetailsScreen = () => {
               <View style={styles.divider} />
 
               <View style={styles.infoGrid}>
-                <View style={styles.infoItem}>
+                <View style={[styles.infoItem, { marginRight: 8 }]}>
                   <Text style={styles.infoLabel}>Captain / Organizer</Text>
                   <View
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      gap: 4,
-                      marginTop: 2,
+                      gap: 6,
+                      marginTop: 4,
+                      flexWrap: "wrap",
                     }}
                   >
                     <Text style={styles.infoValue}>{captainName}</Text>
@@ -584,12 +608,30 @@ const TeamDetailsScreen = () => {
                         <Text style={styles.captainBadgeText}>👑 Captain</Text>
                       </View>
                     )}
+                    {!unwrappedCaptainId &&
+                      Number(teamDetails?.owner_id || teamDetails?.ownerId) ===
+                        Number(currentUserId) && (
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: "#6C4DF6",
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 6,
+                          }}
+                          onPress={handleBecomeCaptain}
+                          disabled={actionLoading}
+                        >
+                          <Text style={{ color: "#FFF", fontSize: 10, fontWeight: "800" }}>
+                            Become Captain
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                   </View>
                 </View>
 
-                <View style={styles.infoItem}>
+                <View style={[styles.infoItem, { alignItems: "flex-end" }]}>
                   <Text style={styles.infoLabel}>Total Members</Text>
-                  <Text style={styles.infoValue}>
+                  <Text style={[styles.infoValue, { marginTop: 4 }]}>
                     {acceptedMembers.length} Players
                   </Text>
                 </View>
@@ -739,7 +781,7 @@ const TeamDetailsScreen = () => {
             )}
 
             {/* Self Join Team Banner for non-members */}
-            {!isAlreadyMember && !isCaptain && (
+            {!isAlreadyMember && !isCaptain && Number(teamDetails?.owner_id || teamDetails?.ownerId) !== Number(currentUserId) && (
               <View
                 style={[
                   styles.card,

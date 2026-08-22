@@ -393,9 +393,7 @@ const PlayerHomeScreen = () => {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         {activeBottomTab === "profile" ? (
           <View style={{ flex: 1 }}>
-            <PlayerProfileSection
-              onSignOut={handleLocalLogout}
-            />
+            <PlayerProfileSection onSignOut={handleLocalLogout} />
           </View>
         ) : (
           <>
@@ -481,7 +479,9 @@ const PlayerHomeScreen = () => {
                           p.user_name ||
                           p.user?.display_name ||
                           p.user?.name ||
-                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                          (p.first_name
+                            ? `${p.first_name} ${p.last_name || ""}`.trim()
+                            : null),
                       )
                       .filter(Boolean)
                       .join(" & ");
@@ -494,7 +494,9 @@ const PlayerHomeScreen = () => {
                           p.user_name ||
                           p.user?.display_name ||
                           p.user?.name ||
-                          (p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null)
+                          (p.first_name
+                            ? `${p.first_name} ${p.last_name || ""}`.trim()
+                            : null),
                       )
                       .filter(Boolean)
                       .join(" & ");
@@ -654,12 +656,17 @@ const PlayerHomeScreen = () => {
                     </View>
                     <Text style={styles.aiBannerTitle}>Find Game with AI</Text>
                     <Text style={styles.aiBannerSub}>
-                      Tell us when and what you want to play, and our AI will match you instantly.
+                      Tell us when and what you want to play, and our AI will
+                      match you instantly.
                     </Text>
                   </View>
                   <View style={styles.aiBannerRight}>
                     <View style={styles.aiBannerIconCircle}>
-                      <Ionicons name="sparkles-sharp" size={20} color="#6C4DF6" />
+                      <Ionicons
+                        name="sparkles-sharp"
+                        size={20}
+                        color="#6C4DF6"
+                      />
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -674,7 +681,6 @@ const PlayerHomeScreen = () => {
                     { title: "Book Ground", icon: "🏟️" },
                     { title: "Find Match", icon: "🔍" },
                     { title: "Tournaments", icon: "🏆" },
-                    { title: "My Teams", icon: "👥" },
                   ].map((action, index) => (
                     <TouchableOpacity
                       key={index}
