@@ -485,6 +485,8 @@ const TeamDetailsScreen = () => {
       m.status !== "requested",
   );
 
+  const isTeamFull = acceptedMembers.length >= (teamDetails?.teamSize || 5);
+
   const displayName = safeStr(
     teamDetails?.name || teamDetails?.team_name || initialTeamName,
     "Team Details",
@@ -966,23 +968,26 @@ const TeamDetailsScreen = () => {
 
               <View style={styles.addPlayerRow}>
                 <TextInput
-                  style={styles.input}
-                  placeholder="Mobile Number or User ID"
+                  style={[styles.input, isTeamFull && { opacity: 0.5 }]}
+                  placeholder={isTeamFull ? "Team is Full" : "Mobile Number or User ID"}
                   placeholderTextColor="#9CA3AF"
                   value={newPlayerInput}
                   onChangeText={setNewPlayerInput}
                   keyboardType="phone-pad"
                   autoCapitalize="none"
+                  editable={!isTeamFull}
                 />
                 <TouchableOpacity
-                  style={styles.addBtn}
+                  style={[styles.addBtn, isTeamFull && { backgroundColor: "#4b5563" }]}
                   onPress={handleAddPlayer}
-                  disabled={addingPlayer}
+                  disabled={addingPlayer || isTeamFull}
                 >
                   {addingPlayer ? (
                     <ActivityIndicator size="small" color="#0F0D1A" />
                   ) : (
-                    <Text style={styles.addBtnText}>Add</Text>
+                    <Text style={[styles.addBtnText, isTeamFull && { color: "#9ca3af" }]}>
+                      {isTeamFull ? "Full" : "Add"}
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>
