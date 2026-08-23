@@ -6762,6 +6762,107 @@ export const useTeamControllerRemoveMember = (
   });
 };
 
+export type TeamControllerBecomeCaptainPathParams = {
+  id: number;
+};
+
+export type TeamControllerBecomeCaptainError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerBecomeCaptainVariables = {
+  pathParams: TeamControllerBecomeCaptainPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerBecomeCaptain = (
+  variables: TeamControllerBecomeCaptainVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerBecomeCaptainError,
+    undefined,
+    {},
+    {},
+    TeamControllerBecomeCaptainPathParams
+  >({
+    url: "/api/teams/v1/{id}/become-captain",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerBecomeCaptain = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerBecomeCaptainError,
+      TeamControllerBecomeCaptainVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerBecomeCaptainError,
+    TeamControllerBecomeCaptainVariables
+  >({
+    mutationFn: (variables: TeamControllerBecomeCaptainVariables) =>
+      fetchTeamControllerBecomeCaptain(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type TeamControllerAssignCaptainPathParams = {
+  id: number;
+};
+
+export type TeamControllerAssignCaptainError = Fetcher.ErrorWrapper<undefined>;
+
+export type TeamControllerAssignCaptainVariables = {
+  body: Schemas.AssignCaptainDto;
+  pathParams: TeamControllerAssignCaptainPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTeamControllerAssignCaptain = (
+  variables: TeamControllerAssignCaptainVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TeamControllerAssignCaptainError,
+    Schemas.AssignCaptainDto,
+    {},
+    {},
+    TeamControllerAssignCaptainPathParams
+  >({
+    url: "/api/teams/v1/{id}/captain",
+    method: "patch",
+    ...variables,
+    signal,
+  });
+
+export const useTeamControllerAssignCaptain = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      TeamControllerAssignCaptainError,
+      TeamControllerAssignCaptainVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = usePlayVerseContext();
+  return reactQuery.useMutation<
+    undefined,
+    TeamControllerAssignCaptainError,
+    TeamControllerAssignCaptainVariables
+  >({
+    mutationFn: (variables: TeamControllerAssignCaptainVariables) =>
+      fetchTeamControllerAssignCaptain(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
 export type CommunityControllerGetCommunityActivityError =
   Fetcher.ErrorWrapper<undefined>;
 
@@ -7963,6 +8064,133 @@ export const useTournamentControllerGetParticipants = <TData = undefined,>(
   });
 };
 
+export type TournamentControllerGetTournamentRequestsPathParams = {
+  /**
+   * Tournament ID
+   */
+  id: number;
+};
+
+export type TournamentControllerGetTournamentRequestsError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TournamentControllerGetTournamentRequestsVariables = {
+  pathParams: TournamentControllerGetTournamentRequestsPathParams;
+} & PlayVerseContext["fetcherOptions"];
+
+export const fetchTournamentControllerGetTournamentRequests = (
+  variables: TournamentControllerGetTournamentRequestsVariables,
+  signal?: AbortSignal,
+) =>
+  playVerseFetch<
+    undefined,
+    TournamentControllerGetTournamentRequestsError,
+    undefined,
+    {},
+    {},
+    TournamentControllerGetTournamentRequestsPathParams
+  >({
+    url: "/api/tournament/v1/{id}/requests",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function tournamentControllerGetTournamentRequestsQuery(
+  variables: TournamentControllerGetTournamentRequestsVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function tournamentControllerGetTournamentRequestsQuery(
+  variables:
+    | TournamentControllerGetTournamentRequestsVariables
+    | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function tournamentControllerGetTournamentRequestsQuery(
+  variables:
+    | TournamentControllerGetTournamentRequestsVariables
+    | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/tournament/v1/{id}/requests",
+      operationId: "tournamentControllerGetTournamentRequests",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchTournamentControllerGetTournamentRequests(variables, signal),
+  };
+}
+
+export const useSuspenseTournamentControllerGetTournamentRequests = <
+  TData = undefined,
+>(
+  variables: TournamentControllerGetTournamentRequestsVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerGetTournamentRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    TournamentControllerGetTournamentRequestsError,
+    TData
+  >({
+    ...tournamentControllerGetTournamentRequestsQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useTournamentControllerGetTournamentRequests = <
+  TData = undefined,
+>(
+  variables:
+    | TournamentControllerGetTournamentRequestsVariables
+    | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      TournamentControllerGetTournamentRequestsError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = usePlayVerseContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    TournamentControllerGetTournamentRequestsError,
+    TData
+  >({
+    ...tournamentControllerGetTournamentRequestsQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
 export type TournamentControllerGetFixturesPathParams = {
   /**
    * Tournament ID
@@ -8772,6 +9000,13 @@ export type QueryOperation =
       operationId: "tournamentControllerGetParticipants";
       variables:
         | TournamentControllerGetParticipantsVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/tournament/v1/{id}/requests";
+      operationId: "tournamentControllerGetTournamentRequests";
+      variables:
+        | TournamentControllerGetTournamentRequestsVariables
         | reactQuery.SkipToken;
     }
   | {

@@ -2864,6 +2864,70 @@
         ]
       }
     },
+    "/api/teams/v1/{id}/become-captain": {
+      "post": {
+        "operationId": "TeamController_becomeCaptain",
+        "summary": "Claim team captaincy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/teams/v1/{id}/captain": {
+      "patch": {
+        "operationId": "TeamController_assignCaptain",
+        "summary": "Assign or change the team captain (owner only)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignCaptainDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Teams (Phase 8)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/community/v1/activity": {
       "get": {
         "operationId": "CommunityController_getCommunityActivity",
@@ -3343,6 +3407,34 @@
           }
         },
         "tags": ["Tournament Management (Phase 5)"]
+      }
+    },
+    "/api/tournament/v1/{id}/requests": {
+      "get": {
+        "operationId": "TournamentController_getTournamentRequests",
+        "summary": "Get all pending join requests for a tournament",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tournament ID",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Tournament Management (Phase 5)"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/tournament/v1/{id}/fixtures": {
@@ -4209,6 +4301,17 @@
           }
         },
         "required": ["phoneNumber"]
+      },
+      "AssignCaptainDto": {
+        "type": "object",
+        "properties": {
+          "captainId": {
+            "type": "number",
+            "example": 42,
+            "description": "User ID of the team member to assign as captain"
+          }
+        },
+        "required": ["captainId"]
       },
       "ChallengeDto": {
         "type": "object",

@@ -1037,7 +1037,7 @@ const TournamentDetailsScreen = () => {
                 });
                 const membersList = Array.isArray(res)
                   ? res
-                  : res?.members || res?.data || [];
+                  : res?.members || res?.result || res?.data || [];
                 const pending = membersList.filter(
                   (m: any) =>
                     m.status === "PENDING" ||
@@ -1120,7 +1120,7 @@ const TournamentDetailsScreen = () => {
         method: "GET",
         pathParams: { id: String(teamId) },
       });
-      const list = Array.isArray(res) ? res : res?.members || res?.data || [];
+      const list = Array.isArray(res) ? res : res?.members || res?.result || res?.data || [];
       setTeamMembers(list);
     } catch (err: any) {
       console.log("Error loading team members:", err.message);

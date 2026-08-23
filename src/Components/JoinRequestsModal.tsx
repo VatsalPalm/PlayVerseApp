@@ -93,56 +93,9 @@ const JoinRequestsModal: React.FC<JoinRequestsModalProps> = ({
         pathParams: { id: requestId },
       });
 
-      // Auto-assign captaincy to the requesting player if this is a tournament
-      if (tournamentId) {
-        try {
-          // Find the player's userId from the request item
-          const requestItem = tournamentRequests.find((item: any) => {
-            const rId = item.request_id || item.id || item.invitationId || item.requestId;
-            return Number(rId) === Number(requestId);
-          });
-          const user = requestItem?.user || requestItem?.player || {};
-          const playerUserId = requestItem?.user_id || user.id || user.userId || user.user_id;
 
-          if (playerUserId) {
-            // Fetch updated tournament teams to locate the team that was just created
-            const teamsRes: any = await stackApiFetch<any, any, any, any, any, any>({
-              url: "/api/tournament/v1/{id}/teams",
-              method: "GET",
-              pathParams: { id: String(tournamentId) },
-            });
-            const teamsList = teamsRes?.teams || teamsRes?.data || teamsRes || [];
-            
-            // Find a team registered for this tournament that has no captain
-            const teamsWithNoCaptain = teamsList.filter(
-              (t: any) => !t.captainId && !t.captain_id
-            );
-
-            if (teamsWithNoCaptain.length > 0) {
-              const targetTeam = teamsWithNoCaptain[0];
-              const targetTeamId = targetTeam.id || targetTeam.teamId;
-              if (targetTeamId) {
-                // Set the requesting player as captain of the team
-                await stackApiFetch<any, any, any, any, any, any>({
-                  url: "/api/teams/v1/{id}/captain",
-                  method: "POST",
-                  pathParams: { id: String(targetTeamId) },
-                  body: { captainId: Number(playerUserId), userId: Number(playerUserId) },
-                }).catch(async () => {
-                  await stackApiFetch<any, any, any, any, any, any>({
-                    url: "/api/teams/v1/{id}",
-                    method: "PATCH",
-                    pathParams: { id: String(targetTeamId) },
-                    body: { captainId: Number(playerUserId) },
-                  });
-                });
-              }
-            }
-          }
-        } catch (assignErr) {
-          console.log("Error auto-assigning captain after find-game accept:", assignErr);
-        }
-      }
+      // Skip auto-assigning captain or adding the player during team creation.
+      // The team will start with no players, and the first player manually added will become captain.
 
       showMessage({
         message: `${userName} accepted successfully!`,

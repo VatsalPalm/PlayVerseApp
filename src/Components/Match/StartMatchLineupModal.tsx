@@ -116,7 +116,7 @@ export const StartMatchLineupModal: React.FC<StartMatchLineupModalProps> = ({
       const [hRes, aRes, tRes] = await Promise.all(promises);
 
       // Parse Home Team Members
-      const rawHList = Array.isArray(hRes) ? hRes : hRes?.members || hRes?.data || [];
+      const rawHList = Array.isArray(hRes) ? hRes : hRes?.members || hRes?.result || hRes?.data || [];
       const hMembers: PlayerOption[] = rawHList.map((m: any) => ({
         id: Number(m.user_id || m.userId || m.id || m.player_id),
         name: m.name || m.display_name || m.user?.name || `Player ${m.id}`,
@@ -125,7 +125,7 @@ export const StartMatchLineupModal: React.FC<StartMatchLineupModalProps> = ({
       setHomeTeamMembers(hMembers);
 
       // Parse Away Team Members
-      const rawAList = Array.isArray(aRes) ? aRes : aRes?.members || aRes?.data || [];
+      const rawAList = Array.isArray(aRes) ? aRes : aRes?.members || aRes?.result || aRes?.data || [];
       const aMembers: PlayerOption[] = rawAList.map((m: any) => ({
         id: Number(m.user_id || m.userId || m.id || m.player_id),
         name: m.name || m.display_name || m.user?.name || `Player ${m.id}`,
@@ -134,7 +134,7 @@ export const StartMatchLineupModal: React.FC<StartMatchLineupModalProps> = ({
       setAwayTeamMembers(aMembers);
 
       // Parse Tournament Participants
-      const rawTList = Array.isArray(tRes) ? tRes : tRes?.participants || tRes?.data || [];
+      const rawTList = Array.isArray(tRes) ? tRes : tRes?.participants || tRes?.result || tRes?.data || [];
       const tMembers: PlayerOption[] = rawTList.map((m: any) => ({
         id: Number(m.user_id || m.userId || m.id || m.player_id || m.team_id),
         name: m.name || m.display_name || m.team_name || `Participant ${m.id}`,

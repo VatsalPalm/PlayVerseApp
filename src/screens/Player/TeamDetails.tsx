@@ -84,7 +84,7 @@ const TeamDetailsScreen = () => {
       }
       const memberList = Array.isArray(mRes)
         ? mRes
-        : mRes?.members || mRes?.data || [];
+        : mRes?.members || mRes?.result || mRes?.data || [];
       setMembers(memberList);
     } catch (err: any) {
       console.log("Error loading team data:", err);
@@ -140,6 +140,57 @@ const TeamDetailsScreen = () => {
         type: "success",
       });
       setNewPlayerInput("");
+      
+      // Auto-assign as Captain if there is no captain yet and we can find the accepted member
+      const membersRes: any = await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members",
+        method: "GET",
+        pathParams: { id: String(teamId) },
+      }).catch(() => null);
+
+      const memberList = Array.isArray(membersRes)
+        ? membersRes
+        : membersRes?.members || membersRes?.result || membersRes?.data || [];
+
+      const currentCaptain =
+        teamDetails?.captain_id ||
+        teamDetails?.captainId ||
+        teamDetails?.captain?.id ||
+        memberList.find((m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain)?.user_id ||
+        memberList.find((m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain)?.id;
+
+      if (!currentCaptain && isOwner) {
+        const ownerIdVal = Number(teamDetails?.owner_id || teamDetails?.ownerId);
+        const accepted = memberList.filter((m: any) => {
+          const statusLower = (m.status || "").toLowerCase();
+          const isPending = ["pending", "waitlisted", "requested"].includes(statusLower);
+          const mIdVal = Number(m.user_id || m.id || m.userId);
+          return !isPending && mIdVal !== ownerIdVal;
+        });
+
+        const targetMember = accepted[0];
+        if (targetMember) {
+          const targetMemberId = Number(targetMember.user_id || targetMember.id || targetMember.userId);
+          const targetMemberName = targetMember.user_name || targetMember.name || targetMember.username || targetMember.display_name || "Player";
+          if (targetMemberId) {
+            try {
+              await stackApiFetch<any, any, any, any, any, any>({
+                url: "/api/teams/v1/{id}/captain",
+                method: "PATCH",
+                pathParams: { id: String(teamId) },
+                body: { captainId: targetMemberId },
+              });
+              showMessage({
+                message: `${targetMemberName} has been assigned as Team Captain! 👑`,
+                type: "success",
+              });
+            } catch (assignErr: any) {
+              console.log("Failed to auto-assign captain in handleAddPlayer:", assignErr?.message || assignErr);
+            }
+          }
+        }
+      }
+
       loadData();
     } catch (err: any) {
       showMessage({
@@ -154,54 +205,31 @@ const TeamDetailsScreen = () => {
   const handleApprovePlayer = async (userId: number, name: string) => {
     try {
       setActionLoading(true);
-      const isOwner = Number(teamDetails?.owner_id || teamDetails?.ownerId) === Number(currentUserId);
-      
-      // If there is no captain and the current user is the owner (e.g. organizer),
-      // auto-claim captaincy, approve the member, and make them the captain.
+      await stackApiFetch<any, any, any, any, any, any>({
+        url: "/api/teams/v1/{id}/members/{userId}/approve",
+        method: "POST",
+        pathParams: { id: String(teamId), userId: String(userId) },
+      });
+      showMessage({
+        message: `${name} has been approved and added to the team!`,
+        type: "success",
+      });
+      // If no captain is set yet and current user is owner, auto-assign this player as captain
       if (!unwrappedCaptainId && isOwner) {
-        // 1. Claim captaincy
-        await stackApiFetch<any, any, any, any, any, any>({
-          url: `/api/teams/v1/${teamId}/become-captain`,
-          method: "POST",
-        });
-        
-        // 2. Approve player
-        await stackApiFetch<any, any, any, any, any, any>({
-          url: "/api/teams/v1/{id}/members/{userId}/approve",
-          method: "POST",
-          pathParams: { id: String(teamId), userId: String(userId) },
-        });
-        
-        // 3. Make this player the captain
-        await stackApiFetch<any, any, any, any, any, any>({
-          url: "/api/teams/v1/{id}/captain",
-          method: "POST",
-          pathParams: { id: String(teamId) },
-          body: { captainId: userId, userId },
-        }).catch(async () => {
+        try {
           await stackApiFetch<any, any, any, any, any, any>({
-            url: "/api/teams/v1/{id}",
+            url: "/api/teams/v1/{id}/captain",
             method: "PATCH",
             pathParams: { id: String(teamId) },
             body: { captainId: userId },
           });
-        });
-        
-        showMessage({
-          message: `${name} has been approved and assigned as Team Captain! 👑`,
-          type: "success",
-        });
-      } else {
-        // Standard approve flow
-        await stackApiFetch<any, any, any, any, any, any>({
-          url: "/api/teams/v1/{id}/members/{userId}/approve",
-          method: "POST",
-          pathParams: { id: String(teamId), userId: String(userId) },
-        });
-        showMessage({
-          message: `${name} has been approved and added to the team!`,
-          type: "success",
-        });
+          showMessage({
+            message: `${name} has been assigned as Team Captain! 👑`,
+            type: "success",
+          });
+        } catch {
+          // Captain assignment is optional — ignore if it fails
+        }
       }
       loadData();
     } catch (err: any) {
@@ -218,11 +246,12 @@ const TeamDetailsScreen = () => {
     try {
       setActionLoading(true);
       await stackApiFetch<any, any, any, any, any, any>({
-        url: `/api/teams/v1/${teamId}/become-captain`,
+        url: "/api/teams/v1/{id}/become-captain",
         method: "POST",
+        pathParams: { id: String(teamId) },
       });
       showMessage({
-        message: "You are now the team captain!",
+        message: "You are now the team captain! 👑",
         type: "success",
       });
       loadData();
@@ -273,16 +302,9 @@ const TeamDetailsScreen = () => {
               setActionLoading(true);
               await stackApiFetch<any, any, any, any, any, any>({
                 url: "/api/teams/v1/{id}/captain",
-                method: "POST",
+                method: "PATCH",
                 pathParams: { id: String(teamId) },
-                body: { captainId: userId, userId },
-              }).catch(async () => {
-                await stackApiFetch<any, any, any, any, any, any>({
-                  url: "/api/teams/v1/{id}",
-                  method: "PATCH",
-                  pathParams: { id: String(teamId) },
-                  body: { captainId: userId },
-                });
+                body: { captainId: userId },
               });
               showMessage({
                 message: `${name} is now the Team Captain! 👑`,
@@ -340,9 +362,7 @@ const TeamDetailsScreen = () => {
   };
 
   const handleDeleteOrLeaveTeam = () => {
-    const localIsCaptain =
-      Number(teamDetails?.captain_id || teamDetails?.captainId) ===
-      Number(currentUserId);
+    const localIsCaptain = isCaptain;
     const isOwner = Number(teamDetails?.owner_id || teamDetails?.ownerId) === Number(currentUserId);
     const canDelete = localIsCaptain || isOwner;
     const title = canDelete ? "Delete Team" : "Leave Team";
@@ -420,9 +440,13 @@ const TeamDetailsScreen = () => {
     if (typeof val === "number" || typeof val === "boolean") return String(val);
     if (typeof val === "object") {
       if (typeof val.display_name === "string") return val.display_name;
+      if (typeof val.displayName === "string") return val.displayName;
+      if (typeof val.full_name === "string") return val.full_name;
+      if (typeof val.fullName === "string") return val.fullName;
       if (typeof val.name === "string") return val.name;
       if (typeof val.username === "string") return val.username;
       if (typeof val.user_name === "string") return val.user_name;
+      if (typeof val.userName === "string") return val.userName;
       if (
         val.id !== undefined &&
         (typeof val.id === "string" || typeof val.id === "number")
@@ -447,14 +471,18 @@ const TeamDetailsScreen = () => {
       m.status === "PENDING" ||
       m.status === "pending" ||
       m.status === "WAITLISTED" ||
-      m.status === "waitlisted",
+      m.status === "waitlisted" ||
+      m.status === "REQUESTED" ||
+      m.status === "requested",
   );
   const acceptedMembers = members.filter(
     (m: any) =>
       m.status !== "PENDING" &&
       m.status !== "pending" &&
       m.status !== "WAITLISTED" &&
-      m.status !== "waitlisted",
+      m.status !== "waitlisted" &&
+      m.status !== "REQUESTED" &&
+      m.status !== "requested",
   );
 
   const displayName = safeStr(
@@ -463,12 +491,14 @@ const TeamDetailsScreen = () => {
   );
 
   const unwrappedCaptainId =
-    teamDetails?.captain_id ??
-    teamDetails?.captainId ??
-    teamDetails?.captain?.id ??
     acceptedMembers.find(
       (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
     )?.user_id ??
+    teamDetails?.captain?.user_id ??
+    teamDetails?.captain?.userId ??
+    teamDetails?.captain_id ??
+    teamDetails?.captainId ??
+    teamDetails?.captain?.id ??
     acceptedMembers.find(
       (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
     )?.id;
@@ -477,17 +507,25 @@ const TeamDetailsScreen = () => {
     teamDetails?.captain_name ??
     teamDetails?.captainName ??
     teamDetails?.captain?.display_name ??
+    teamDetails?.captain?.displayName ??
     teamDetails?.captain?.full_name ??
+    teamDetails?.captain?.fullName ??
     teamDetails?.captain?.name ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.display_name ??
+    acceptedMembers.find(
+      (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
+    )?.displayName ??
     acceptedMembers.find(
       (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
     )?.user_name ??
     acceptedMembers.find(
       (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
-    )?.name ??
+    )?.userName ??
     acceptedMembers.find(
       (m: any) => m.role === "CAPTAIN" || m.role === "Captain" || m.isCaptain,
-    )?.display_name;
+    )?.name;
 
   const captainName = safeStr(
     rawCaptain,
@@ -652,24 +690,6 @@ const TeamDetailsScreen = () => {
                         <Text style={styles.captainBadgeText}>👑 Captain</Text>
                       </View>
                     )}
-                    {!unwrappedCaptainId &&
-                      Number(teamDetails?.owner_id || teamDetails?.ownerId) ===
-                        Number(currentUserId) && (
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "#6C4DF6",
-                            paddingHorizontal: 8,
-                            paddingVertical: 4,
-                            borderRadius: 6,
-                          }}
-                          onPress={handleBecomeCaptain}
-                          disabled={actionLoading}
-                        >
-                          <Text style={{ color: "#FFF", fontSize: 10, fontWeight: "800" }}>
-                            Become Captain
-                          </Text>
-                        </TouchableOpacity>
-                      )}
                   </View>
                 </View>
 
@@ -1079,19 +1099,7 @@ const TeamDetailsScreen = () => {
                           gap: 6,
                         }}
                       >
-                        {!isCap && (isCaptain || isOwner) && (
-                          <TouchableOpacity
-                            style={styles.makeCaptainBtn}
-                            onPress={() =>
-                              handleMakeCaptain(Number(mId) || 0, mName)
-                            }
-                            disabled={actionLoading}
-                          >
-                            <Text style={styles.makeCaptainBtnText}>
-                              👑 Make Captain
-                            </Text>
-                          </TouchableOpacity>
-                        )}
+
 
                         {!isCap && (isCaptain || isOwner) && (
                           <TouchableOpacity

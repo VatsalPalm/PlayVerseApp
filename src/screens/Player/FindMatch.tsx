@@ -130,7 +130,10 @@ const FindMatchScreen = () => {
           onPress: async () => {
             try {
               await invitePlayerMutation.mutateAsync({
-                body: { tournamentId: Number(tournamentId) },
+                body: {
+                  matchId: Number(match.id || match.matchId || 0),
+                  slotId: Number(match.slot_id || match.slotId || 0),
+                },
               });
               showMessage({
                 message: "Join request sent successfully!",
