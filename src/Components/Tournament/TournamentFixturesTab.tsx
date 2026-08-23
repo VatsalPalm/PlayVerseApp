@@ -66,10 +66,10 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
   const getTeamObj = (teamId: any) => {
     if (!teamId) return null;
     const fromParticipants = participants.find(
-      (p) => String(p.team_id || p.id) === String(teamId)
+      (p) => String(p.team_id || p.id) === String(teamId),
     );
     const fromTeams = tournamentTeams.find(
-      (t) => String(t.id || t.teamId) === String(teamId)
+      (t) => String(t.id || t.teamId) === String(teamId),
     );
     return fromParticipants || fromTeams;
   };
@@ -91,7 +91,10 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
         }}
       >
         <Text
-          style={[styles.sectionHeader, { flex: 1, marginRight: 8, marginBottom: 0 }]}
+          style={[
+            styles.sectionHeader,
+            { flex: 1, marginRight: 8, marginBottom: 0 },
+          ]}
           numberOfLines={1}
         >
           Fixtures & Brackets ({fixtures.length})
@@ -101,10 +104,9 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
           <TouchableOpacity
             style={{
               backgroundColor:
-                fixtures.length > 0
-                  ? "rgba(0, 210, 255, 0.12)"
-                  : "#6C4DF6",
-              borderColor: fixtures.length > 0 ? "rgba(0, 210, 255, 0.4)" : "#7C5CFF",
+                fixtures.length > 0 ? "rgba(0, 210, 255, 0.12)" : "#6C4DF6",
+              borderColor:
+                fixtures.length > 0 ? "rgba(0, 210, 255, 0.4)" : "#7C5CFF",
               borderWidth: 1,
               height: 36,
               borderRadius: 18,
@@ -120,9 +122,7 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
           >
             <Ionicons
               name={
-                fixtures.length > 0
-                  ? "refresh-outline"
-                  : "calendar-outline"
+                fixtures.length > 0 ? "refresh-outline" : "calendar-outline"
               }
               size={14}
               color={fixtures.length > 0 ? "#00D2FF" : "#FFF"}
@@ -176,13 +176,27 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                 </View>
               </View>
 
-              <View style={[styles.teamsRow, { alignItems: "center", justifyContent: "space-between" }]}>
+              <View
+                style={[
+                  styles.teamsRow,
+                  { alignItems: "center", justifyContent: "space-between" },
+                ]}
+              >
                 {/* Home Team */}
-                <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    justifyContent: "flex-end",
+                  }}
+                >
                   <Text
                     style={[
                       styles.teamNameText,
-                      item.winner_team_id === item.home_team_id && styles.winnerBold,
+                      item.winner_team_id === item.home_team_id &&
+                        styles.winnerBold,
                       { textAlign: "right" },
                     ]}
                     numberOfLines={1}
@@ -196,10 +210,20 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   />
                 </View>
 
-                <Text style={[styles.vsText, { marginHorizontal: 10 }]}>VS</Text>
+                <Text style={[styles.vsText, { marginHorizontal: 10 }]}>
+                  VS
+                </Text>
 
                 {/* Away Team */}
-                <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6, justifyContent: "flex-start" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    justifyContent: "flex-start",
+                  }}
+                >
                   <TeamAvatar
                     team={awayTeamObj}
                     size={28}
@@ -208,7 +232,8 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   <Text
                     style={[
                       styles.teamNameText,
-                      item.winner_team_id === item.away_team_id && styles.winnerBold,
+                      item.winner_team_id === item.away_team_id &&
+                        styles.winnerBold,
                       { textAlign: "left" },
                     ]}
                     numberOfLines={1}
@@ -226,34 +251,38 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
 
               <View style={styles.fixtureActions}>
                 {/* Start Match - Only organizer can start a scheduled match */}
-                {item.status === "SCHEDULED" && isOrganizer && !isTournamentEnded && isTournamentStarted && (
-                  <TouchableOpacity
-                    style={styles.liveScoreBtn}
-                    onPress={() => {
-                      const isTbd =
-                        !item.home_team_id ||
-                        !item.away_team_id ||
-                        item.home_team_name === "TBD" ||
-                        item.away_team_name === "TBD" ||
-                        item.is_bye === true ||
-                        item.is_bye === 1;
+                {item.status === "SCHEDULED" &&
+                  isOrganizer &&
+                  !isTournamentEnded &&
+                  isTournamentStarted && (
+                    <TouchableOpacity
+                      style={styles.liveScoreBtn}
+                      onPress={() => {
+                        const isTbd =
+                          !item.home_team_id ||
+                          !item.away_team_id ||
+                          item.home_team_name === "TBD" ||
+                          item.away_team_name === "TBD" ||
+                          item.is_bye === true ||
+                          item.is_bye === 1;
 
-                      if (isTbd) {
-                        showMessage({
-                          message: "Cannot start match: Opponents are not yet decided (TBD)",
-                          type: "warning",
-                        });
-                        return;
-                      }
+                        if (isTbd) {
+                          showMessage({
+                            message:
+                              "Cannot start match: Opponents are not yet decided (TBD)",
+                            type: "warning",
+                          });
+                          return;
+                        }
 
-                      setLineupModalMatch(item);
-                    }}
-                  >
-                    <Text style={styles.liveScoreBtnText}>Start Match</Text>
-                  </TouchableOpacity>
-                )}
+                        setLineupModalMatch(item);
+                      }}
+                    >
+                      <Text style={styles.liveScoreBtnText}>Start Match</Text>
+                    </TouchableOpacity>
+                  )}
 
-                 {/* Live Scoring / Match Center - Open detail view for LIVE or SCHEDULED matches */}
+                {/* Live Scoring / Match Center - Open detail view for LIVE or SCHEDULED matches */}
                 {(item.status === "LIVE" || item.status === "SCHEDULED") && (
                   <TouchableOpacity
                     style={[
@@ -273,7 +302,8 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
 
                       if (isTbd) {
                         showMessage({
-                          message: "Cannot open match: Opponents are not yet decided (TBD)",
+                          message:
+                            "Cannot open match: Opponents are not yet decided (TBD)",
                           type: "warning",
                         });
                         return;
@@ -296,14 +326,14 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                   </TouchableOpacity>
                 )}
 
-                {item.status !== "COMPLETED" && !isTournamentEnded && (
+                {/* {item.status !== "COMPLETED" && !isTournamentEnded && (
                   <TouchableOpacity
                     style={styles.overrideBtn}
                     onPress={() => handleAdminCompleteMatch(item.id)}
                   >
                     <Text style={styles.overrideBtnText}>Admin Complete</Text>
                   </TouchableOpacity>
-                )}
+                )} */}
 
                 {isOrganizer && item.status === "SCHEDULED" && (
                   <TouchableOpacity
@@ -317,7 +347,9 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
                     ]}
                     onPress={() => handleDeleteMatch(item.id)}
                   >
-                    <Text style={[styles.overrideBtnText, { color: "#EF4444" }]}>
+                    <Text
+                      style={[styles.overrideBtnText, { color: "#EF4444" }]}
+                    >
                       Delete
                     </Text>
                   </TouchableOpacity>
@@ -345,14 +377,32 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
             elevation: 5,
           }}
         >
-          <Text style={{ color: "#FFF", fontSize: 16, fontWeight: "800", marginBottom: 12 }}>
+          <Text
+            style={{
+              color: "#FFF",
+              fontSize: 16,
+              fontWeight: "800",
+              marginBottom: 12,
+            }}
+          >
             Add Match Manually
           </Text>
 
-          <Text style={{ color: "#D1D5DB", fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
+          <Text
+            style={{
+              color: "#D1D5DB",
+              fontSize: 13,
+              fontWeight: "700",
+              marginBottom: 8,
+            }}
+          >
             Select Home Team
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 14 }}
+          >
             {participants.map((p) => {
               const id = p.team_id || p.id;
               const name = p.team_name || p.name || `Team ${id}`;
@@ -393,10 +443,21 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
             })}
           </ScrollView>
 
-          <Text style={{ color: "#D1D5DB", fontSize: 13, fontWeight: "700", marginBottom: 8 }}>
+          <Text
+            style={{
+              color: "#D1D5DB",
+              fontSize: 13,
+              fontWeight: "700",
+              marginBottom: 8,
+            }}
+          >
             Select Away Team
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 14 }}
+          >
             {participants.map((p) => {
               const id = p.team_id || p.id;
               const name = p.team_name || p.name || `Team ${id}`;
@@ -437,7 +498,14 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
             })}
           </ScrollView>
 
-          <Text style={{ color: "#D1D5DB", fontSize: 13, fontWeight: "700", marginBottom: 6 }}>
+          <Text
+            style={{
+              color: "#D1D5DB",
+              fontSize: 13,
+              fontWeight: "700",
+              marginBottom: 6,
+            }}
+          >
             Match Date & Time (YYYY-MM-DD HH:MM)
           </Text>
           <TextInput
@@ -474,7 +542,9 @@ export const TournamentFixturesTab: React.FC<TournamentFixturesTabProps> = ({
             {actionLoading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "800" }}>
+              <Text
+                style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "800" }}
+              >
                 Create Match
               </Text>
             )}

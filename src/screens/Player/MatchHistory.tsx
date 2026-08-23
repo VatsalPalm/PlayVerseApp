@@ -126,8 +126,9 @@ const MatchHistoryScreen = () => {
           navigation.navigate('LiveScoring', { matchId });
         },
         onError: (err: any) => {
+          const isBadRequest = err?.statusCode === 400 || err?.status === 400 || err?.message === 'Bad Request';
           showMessage({
-            message: err?.message || 'Failed to start match',
+            message: isBadRequest ? 'Tournament has not started yet. Cannot start match.' : (err?.message || 'Failed to start match'),
             type: 'danger',
           });
         },

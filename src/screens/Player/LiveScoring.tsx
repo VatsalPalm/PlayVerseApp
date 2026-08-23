@@ -197,8 +197,9 @@ const LiveScoringScreen = () => {
       requestSync();
     } catch (err: any) {
       console.log("Error starting match:", err);
+      const isBadRequest = err?.statusCode === 400 || err?.status === 400 || err?.message === "Bad Request";
       showMessage({
-        message: err?.message || "Failed to start match",
+        message: isBadRequest ? "Tournament has not started yet. Cannot start match." : (err?.message || "Failed to start match"),
         type: "danger",
       });
     } finally {
