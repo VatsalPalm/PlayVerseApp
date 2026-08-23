@@ -27,7 +27,9 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 
   // Map values to coordinates
   const points = data.map((val, index) => {
-    const x = padding + (index / (data.length - 1)) * chartWidth;
+    const x = data.length === 1
+      ? padding + chartWidth / 2
+      : padding + (index / (data.length - 1)) * chartWidth;
     const y = padding + chartHeight - ((val - minVal) / range) * chartHeight;
     return { x, y, val };
   });
@@ -46,7 +48,9 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
   }
 
   // Generate SVG Path for Gradient Fill
-  const fillPath = `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
+  const fillPath = data.length > 1
+    ? `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`
+    : "";
 
   return (
     <View style={styles.container}>
@@ -59,10 +63,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
         </Defs>
 
         {/* Gradient Area under line */}
-        <Path d={fillPath} fill="url(#chartGrad)" />
+        {data.length > 1 && <Path d={fillPath} fill="url(#chartGrad)" />}
 
         {/* Trend Line */}
-        <Path d={linePath} fill="none" stroke="#00D2FF" strokeWidth={3} />
+        {data.length > 1 && <Path d={linePath} fill="none" stroke="#00D2FF" strokeWidth={3} />}
 
         {/* Interactive / static circles for data points */}
         {points.map((pt, i) => (
