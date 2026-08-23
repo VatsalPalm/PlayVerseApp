@@ -154,15 +154,55 @@ const TeamDetailsScreen = () => {
   const handleApprovePlayer = async (userId: number, name: string) => {
     try {
       setActionLoading(true);
-      await stackApiFetch<any, any, any, any, any, any>({
-        url: "/api/teams/v1/{id}/members/{userId}/approve",
-        method: "POST",
-        pathParams: { id: String(teamId), userId: String(userId) },
-      });
-      showMessage({
-        message: `${name} has been approved and added to the team!`,
-        type: "success",
-      });
+      const isOwner = Number(teamDetails?.owner_id || teamDetails?.ownerId) === Number(currentUserId);
+      
+      // If there is no captain and the current user is the owner (e.g. organizer),
+      // auto-claim captaincy, approve the member, and make them the captain.
+      if (!unwrappedCaptainId && isOwner) {
+        // 1. Claim captaincy
+        await stackApiFetch<any, any, any, any, any, any>({
+          url: `/api/teams/v1/${teamId}/become-captain`,
+          method: "POST",
+        });
+        
+        // 2. Approve player
+        await stackApiFetch<any, any, any, any, any, any>({
+          url: "/api/teams/v1/{id}/members/{userId}/approve",
+          method: "POST",
+          pathParams: { id: String(teamId), userId: String(userId) },
+        });
+        
+        // 3. Make this player the captain
+        await stackApiFetch<any, any, any, any, any, any>({
+          url: "/api/teams/v1/{id}/captain",
+          method: "POST",
+          pathParams: { id: String(teamId) },
+          body: { captainId: userId, userId },
+        }).catch(async () => {
+          await stackApiFetch<any, any, any, any, any, any>({
+            url: "/api/teams/v1/{id}",
+            method: "PATCH",
+            pathParams: { id: String(teamId) },
+            body: { captainId: userId },
+          });
+        });
+        
+        showMessage({
+          message: `${name} has been approved and assigned as Team Captain! 👑`,
+          type: "success",
+        });
+      } else {
+        // Standard approve flow
+        await stackApiFetch<any, any, any, any, any, any>({
+          url: "/api/teams/v1/{id}/members/{userId}/approve",
+          method: "POST",
+          pathParams: { id: String(teamId), userId: String(userId) },
+        });
+        showMessage({
+          message: `${name} has been approved and added to the team!`,
+          type: "success",
+        });
+      }
       loadData();
     } catch (err: any) {
       showMessage({
@@ -466,6 +506,10 @@ const TeamDetailsScreen = () => {
     Boolean(unwrappedCaptainId) &&
     Number(safeStr(unwrappedCaptainId)) === Number(currentUserId);
 
+  const isOwner =
+    Number(teamDetails?.owner_id || teamDetails?.ownerId) ===
+    Number(currentUserId);
+
   const isAlreadyMember = members.some((m: any) => {
     const memberUid = safeStr(m.user_id || m.id || m.userId);
     return Number(memberUid) === Number(currentUserId);
@@ -639,7 +683,7 @@ const TeamDetailsScreen = () => {
             </View>
 
             {/* PENDING JOIN REQUESTS CARD (IF ANY) */}
-            {pendingMembers.length > 0 && (
+            {(isCaptain || isOwner) && pendingMembers.length > 0 && (
               <View
                 style={[
                   styles.card,
@@ -1035,7 +1079,7 @@ const TeamDetailsScreen = () => {
                           gap: 6,
                         }}
                       >
-                        {!isCap && isCaptain && (
+                        {!isCap && (isCaptain || isOwner) && (
                           <TouchableOpacity
                             style={styles.makeCaptainBtn}
                             onPress={() =>
@@ -1049,7 +1093,7 @@ const TeamDetailsScreen = () => {
                           </TouchableOpacity>
                         )}
 
-                        {!isCap && isCaptain && (
+                        {!isCap && (isCaptain || isOwner) && (
                           <TouchableOpacity
                             style={styles.removeMemberBtn}
                             onPress={() =>
